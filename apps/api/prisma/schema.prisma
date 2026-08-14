@@ -98,6 +98,7 @@ model User {
   auditLogs           AdminAuditLog[]
   riskAssessments     RiskAssessment[]
   disputesOpened      Dispute[]
+  listingComments     ListingComment[]
 
   @@index([username])
   @@index([createdAt])
@@ -392,6 +393,7 @@ model Listing {
 
   viewCount     Int @default(0)
   favoriteCount Int @default(0)
+  commentCount  Int @default(0)
 
   /// Generated tsvector for full-text search, maintained by a trigger.
   searchVector Unsupported("tsvector")?
@@ -403,6 +405,7 @@ model Listing {
   updatedAt     DateTime  @updatedAt
 
   images        ListingImage[]
+  comments      ListingComment[]
   priceHistory  ListingPriceHistory[]
   auction       Auction?
   offers        Offer[]
@@ -418,6 +421,27 @@ model Listing {
   @@index([categoryId, status])
   @@index([kind, status, publishedAt])
   @@index([status, promotedUntil])
+}
+
+/// Comments on a listing. In direction 1c these work as public references
+/// ("Nacho: doy fe, la vi funcionando"), which is why they are attached to the
+/// listing rather than buried in a chat.
+model ListingComment {
+  id        String   @id @default(uuid()) @db.Uuid
+  listingId String   @db.Uuid
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  authorId  String   @db.Uuid
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  body      String
+  /// Set when this is a reply to another comment.
+  parentId  String?  @db.Uuid
+  parent    ListingComment?  @relation("commentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   ListingComment[] @relation("commentThread")
+  hiddenAt  DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([listingId, createdAt])
+  @@index([authorId])
 }
 
 model ListingImage {

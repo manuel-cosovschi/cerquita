@@ -23,6 +23,7 @@ import { ReservationsModule } from './modules/reservations/reservations.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { MatchingModule } from './modules/matching/matching.module';
+import { CommentsModule } from './modules/comments/comments.module';
 import { HealthController } from './modules/health/health.controller';
 import { RequestIdMiddleware } from './common/request-id.middleware';
 
@@ -58,6 +59,7 @@ import { RequestIdMiddleware } from './common/request-id.middleware';
     ReportsModule,
     AdminModule,
     MatchingModule,
+    CommentsModule,
     ReviewsModule,
     FavoritesModule,
     NotificationsModule,
