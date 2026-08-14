@@ -13,6 +13,11 @@ import { CheckoutModule } from './modules/checkout/checkout.module';
 import { SearchModule } from './modules/search/search.module';
 import { SocialModule } from './modules/social/social.module';
 import { OffersModule } from './modules/offers/offers.module';
+import { ChatModule } from './modules/chat/chat.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { FavoritesModule } from './modules/favorites/favorites.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
+import { UsersModule } from './modules/users/users.module';
 import { HealthController } from './modules/health/health.controller';
 import { RequestIdMiddleware } from './common/request-id.middleware';
 
@@ -42,6 +47,11 @@ import { RequestIdMiddleware } from './common/request-id.middleware';
     OffersModule,
     AuctionsModule,
     CheckoutModule,
+    UsersModule,
+    ReviewsModule,
+    FavoritesModule,
+    NotificationsModule,
+    ChatModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: JwtAuthGuard }],

@@ -79,16 +79,19 @@ reproducir el diseño sea reemplazar un archivo y no reescribir pantallas.
 | Búsqueda full-text + geo + filtros | ✅ | 🟡 |
 | Búsqueda con IA (adapter + mock real) | ✅ | ⬜ |
 | Ofertas y contraofertas | ✅ | ⬜ |
-| Perfiles | 🟡 | ⬜ |
-| Favoritos y colecciones | ⬜ | ⬜ |
-| Chat en tiempo real | ⬜ | ⬜ |
+| Perfiles | ✅ | ⬜ |
+| Favoritos y colecciones | ✅ | ⬜ |
+| Chat en tiempo real | ✅ | ⬜ |
 
-### Fase 4 — Social 🟡
+### Fase 4 — Social ✅ (backend)
 
 - ✅ Follows (unilateral) y amistades (bilateral, con orden canónico en BD).
-- ✅ Bloqueos, que ocultan contenido en ambas direcciones.
+- ✅ Bloqueos, que ocultan contenido en ambas direcciones y cortan el chat.
 - ✅ **Precios sociales resueltos en el servidor** — verificado end-to-end.
-- ⬜ Feed, notificaciones, reseñas.
+- ✅ Feed con fan-out a seguidores y amigos al publicar.
+- ✅ Notificaciones: in-app siempre, push best-effort, preferencias por tipo.
+- ✅ Reseñas atadas a una orden liquidada, con reputación transaccional.
+- ⬜ UI de feed y notificaciones en web.
 
 ### Fase 5 — Comercio ✅ (núcleo)
 
@@ -106,7 +109,7 @@ reproducir el diseño sea reemplazar un archivo y no reescribir pantallas.
 - ✅ Comprar ahora, que se retira si las pujas lo superan.
 - ✅ Scheduler que abre y cierra subastas sin depender de que alguien mire.
 - ✅ WebSocket de sólo lectura (las pujas van por HTTP, con los mismos guards).
-- ⬜ Notificaciones de outbid / ganada.
+- ✅ Notificaciones de outbid, subasta ganada y venta.
 
 ### Fase 7 — Tiendas 🟡
 

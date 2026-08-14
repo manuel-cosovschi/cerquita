@@ -140,11 +140,65 @@ Códigos habituales: `validation_error`, `unauthenticated`, `forbidden`,
 `not_found`, `insufficient_stock`, `price_changed`, `below_minimum`,
 `stale_minimum`, `already_highest_bidder`, `seller_cannot_bid`, `write_conflict`.
 
+## Chat
+
+| Método | Ruta |
+|---|---|
+| GET | `/conversations` |
+| POST | `/conversations` |
+| GET | `/conversations/:id` |
+| GET | `/conversations/:id/messages` |
+| POST | `/conversations/:id/messages` |
+| POST | `/conversations/:id/read` |
+
+Abrir una conversación que ya existe **reutiliza el hilo** en vez de crear uno
+nuevo. `clientId` hace idempotente el envío: reintentar tras una conexión
+inestable devuelve el mensaje ya guardado.
+
+**WebSocket** `/chat` — sólo lectura. Autentica en el connect y mete al socket en
+una sala por usuario, así que nadie puede suscribirse a los mensajes de otro.
+
+## Notificaciones
+
+| Método | Ruta |
+|---|---|
+| GET | `/notifications` |
+| GET | `/notifications/unread-count` |
+| POST | `/notifications/:id/read` |
+| POST | `/notifications/read-all` |
+| POST | `/notifications/devices` |
+| POST | `/notifications/preferences` |
+
+El registro in-app se escribe siempre; el push es best-effort encima. Si el
+proveedor falla, la notificación igual aparece al abrir la app.
+
+## Favoritos, colecciones y alertas
+
+`GET|POST /favorites` · `DELETE /favorites/listing/:id` ·
+`DELETE /favorites/store/:id` · `GET|POST /collections` ·
+`GET|POST /saved-searches` · `DELETE /saved-searches/:id`
+
+## Perfiles
+
+`GET /users/:username` · `GET /users/:username/listings?tab=selling|wanted|auctions|sold` ·
+`GET /users/:username/reviews` · `PATCH /users/me/profile` ·
+`PATCH /users/me/discounts` · `PATCH /users/me/privacy`
+
+El perfil incluye `relationship` con el `tier` resuelto por el servidor. La
+solapa `sold` respeta la preferencia de privacidad del dueño incluso si se pide
+el endpoint directo.
+
+## Reseñas
+
+`POST /reviews` · `GET /reviews/pending`
+
+Requieren una orden liquidada en la que el autor participó. La reputación se
+actualiza en la misma transacción que la reseña.
+
 ## Pendiente
 
-Chat, notificaciones, favoritos, reseñas, tiendas (ABM), reservas y admin tienen
-modelo de datos y reglas de dominio, pero todavía no endpoints. Ver
-`docs/implementation-plan.md`.
+ABM de tiendas, reservas y admin tienen modelo de datos y reglas de dominio,
+pero todavía no endpoints. Ver `docs/implementation-plan.md`.
 
 ### Liquidación marketplace
 
