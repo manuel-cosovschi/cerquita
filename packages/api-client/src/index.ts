@@ -78,6 +78,54 @@ export interface MapResponse {
   truncated: boolean;
 }
 
+export interface PersonResult {
+  id: string;
+  username: string;
+  displayName: string;
+  avatarUrl?: string;
+  verified: boolean;
+  rating?: number;
+  reviewCount: number;
+  area?: string;
+  salesCount: number;
+  /** "Amigo de Nacho" — resolved per viewer, null when there is no connection. */
+  socialProof: string | null;
+}
+
+export interface StoreResult {
+  id: string;
+  handle: string;
+  name: string;
+  logoUrl?: string;
+  verified: boolean;
+  rating?: number;
+  followerCount: number;
+  activeListingCount: number;
+  address?: string;
+  isFollowedByViewer: boolean;
+}
+
+export interface SocialHint {
+  count: number;
+  people: Array<{ id: string; displayName: string }>;
+  label: string;
+}
+
+export interface ListingComment {
+  id: string;
+  body: string;
+  author: {
+    id: string;
+    username: string;
+    displayName: string;
+    avatarUrl?: string;
+    verified: boolean;
+  };
+  socialProof: string | null;
+  createdAt: string;
+  replies?: ListingComment[];
+}
+
 export interface SearchQuery {
   q?: string;
   kind?: 'sale' | 'wanted' | 'auction';
@@ -183,11 +231,27 @@ export function createClient(options: ClientOptions) {
 
     search: {
       query: (body: SearchQuery) => post<Paginated<ListingSummary>>('/search', body),
+
+      /** The People tab (spec §18, direction 1c). */
+      people: (q: string) => post<PersonResult[]>('/search/people', { q }),
+
+      /** The Stores tab. */
+      stores: (q: string) => post<StoreResult[]>('/search/stores', { q }),
+
+      /** "2 personas que seguís tienen algo publicado". Null when there is none. */
+      socialHint: (q: string) => post<SocialHint | null>('/search/social-hint', { q }),
       ai: (prompt: string, center?: { lat: number; lng: number }) =>
         post<Paginated<ListingSummary> & { interpreted: Record<string, unknown> }>('/search/ai', {
           prompt,
           center,
         }),
+    },
+
+    comments: {
+      list: (listingId: string) => request<ListingComment[]>(`/listings/${listingId}/comments`),
+      create: (listingId: string, body: string, parentId?: string) =>
+        post<ListingComment>(`/listings/${listingId}/comments`, { body, parentId }),
+      hide: (commentId: string) => request(`/comments/${commentId}`, { method: 'DELETE' }),
     },
 
     offers: {
