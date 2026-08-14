@@ -42,7 +42,6 @@ export function ListingCard({ listing, hovered, selected, onHover, onSelect }: L
       >
         <div className={styles.media}>
           {listing.coverImage ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={listing.coverImage.url}
               alt={listing.coverImage.alt ?? listing.title}

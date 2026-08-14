@@ -1,12 +1,7 @@
 'use client';
 
 import type { MapMarker } from '@cerquita/types';
-import {
-  clusterSizeBucket,
-  formatClusterCount,
-  formatMoneyCompact,
-  money,
-} from '@cerquita/utils';
+import { clusterSizeBucket, formatClusterCount, formatMoneyCompact, money } from '@cerquita/utils';
 import { Countdown } from './Countdown';
 import styles from './Marker.module.css';
 
@@ -113,7 +108,9 @@ function MarkerBody({ marker }: { marker: MapMarker }) {
   );
 }
 
-function markerVariant(marker: MapMarker): 'clusterMarker' | 'sale' | 'auction' | 'wanted' | 'store' {
+function markerVariant(
+  marker: MapMarker,
+): 'clusterMarker' | 'sale' | 'auction' | 'wanted' | 'store' {
   if (marker.type === 'cluster') return 'clusterMarker';
   if (marker.type === 'store') return 'store';
   if (marker.kind === 'auction') return 'auction';

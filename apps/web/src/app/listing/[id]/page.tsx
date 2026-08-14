@@ -68,7 +68,6 @@ export default async function ListingPage({ params }: PageProps) {
         <div className={styles.gallery}>
           {listing.images.length > 0 ? (
             listing.images.map((image) => (
-              // eslint-disable-next-line @next/next/no-img-element
               <img
                 key={image.id}
                 src={image.url}
@@ -218,9 +217,8 @@ export default async function ListingPage({ params }: PageProps) {
           <section aria-label="Ubicación">
             <h2 className={styles.sectionTitle}>Dónde está</h2>
             <p className={styles.location}>
-              {[listing.location.neighborhood, listing.location.city]
-                .filter(Boolean)
-                .join(', ') || 'Zona aproximada'}
+              {[listing.location.neighborhood, listing.location.city].filter(Boolean).join(', ') ||
+                'Zona aproximada'}
               {listing.distanceMeters !== undefined && (
                 <> · a {formatDistance(listing.distanceMeters)}</>
               )}

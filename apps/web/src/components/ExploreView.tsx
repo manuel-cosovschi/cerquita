@@ -68,7 +68,12 @@ export function ExploreView() {
         // map wants a bounded, possibly clustered set; the list wants ranked,
         // paginated detail. One request each, never one per marker.
         const [mapResponse, searchResponse] = await Promise.all([
-          api.map.query({ bbox, zoom: Math.round(current.zoom), layer: activeLayer, q: text || undefined }),
+          api.map.query({
+            bbox,
+            zoom: Math.round(current.zoom),
+            layer: activeLayer,
+            q: text || undefined,
+          }),
           api.search.query({
             q: text || undefined,
             bbox,

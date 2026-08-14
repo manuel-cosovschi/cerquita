@@ -3,7 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MapMarker } from '@cerquita/types';
 import type { Coordinates } from '@cerquita/utils';
-import { boundsCenter, fromScreen, metersPerPixel, toScreen, zoomForBounds, type Viewport } from '@/lib/projection';
+import {
+  boundsCenter,
+  fromScreen,
+  metersPerPixel,
+  toScreen,
+  zoomForBounds,
+  type Viewport,
+} from '@/lib/projection';
 import { Marker } from './Marker';
 import styles from './MapSurface.module.css';
 
@@ -15,7 +22,12 @@ export interface MapSurfaceProps {
   hoveredId?: string;
   loading?: boolean;
   /** Fires after the user finishes panning or zooming, debounced by the parent. */
-  onViewportChange: (viewport: { center: Coordinates; zoom: number; width: number; height: number }) => void;
+  onViewportChange: (viewport: {
+    center: Coordinates;
+    zoom: number;
+    width: number;
+    height: number;
+  }) => void;
   onMarkerClick?: (marker: MapMarker) => void;
   onMarkerHover?: (id: string | undefined) => void;
   /**
@@ -236,7 +248,9 @@ export function MapSurface({
 
       <div className={styles.scale} aria-hidden="true">
         <span className={styles.scaleBar} />
-        <span className="numeric">{scaleMeters >= 1000 ? `${(scaleMeters / 1000).toFixed(1)} km` : `${scaleMeters} m`}</span>
+        <span className="numeric">
+          {scaleMeters >= 1000 ? `${(scaleMeters / 1000).toFixed(1)} km` : `${scaleMeters} m`}
+        </span>
       </div>
 
       <div className={styles.zoomControls}>
@@ -299,7 +313,10 @@ function TileLayer({
       const wrappedX = ((x % (maxTile + 1)) + maxTile + 1) % (maxTile + 1);
       tiles.push({
         key: `${z}/${x}/${y}`,
-        url: template.replace('{z}', String(z)).replace('{x}', String(wrappedX)).replace('{y}', String(y)),
+        url: template
+          .replace('{z}', String(z))
+          .replace('{x}', String(wrappedX))
+          .replace('{y}', String(y)),
         left: x * 256 - centerPx.x + viewport.width / 2,
         top: y * 256 - centerPx.y + viewport.height / 2,
       });
@@ -313,7 +330,6 @@ function TileLayer({
       style={{ transform: `translate3d(${offset.x}px, ${offset.y}px, 0)` }}
     >
       {tiles.map((tile) => (
-        // eslint-disable-next-line @next/next/no-img-element
         <img
           key={tile.key}
           src={tile.url}

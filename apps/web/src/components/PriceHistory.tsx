@@ -23,7 +23,11 @@ export function PriceHistory({ points }: { points: PricePoint[] }) {
         return (
           <li key={`${point.recordedAt}-${index}`} className={styles.entry}>
             <span className={styles.date}>
-              {index === 0 ? 'Publicado' : isLatest ? 'Hoy' : formatter.format(new Date(point.recordedAt))}
+              {index === 0
+                ? 'Publicado'
+                : isLatest
+                  ? 'Hoy'
+                  : formatter.format(new Date(point.recordedAt))}
             </span>
             <span className={`${styles.amount} ${dropped ? styles.dropped : ''} numeric`}>
               {formatMoney(current)}
