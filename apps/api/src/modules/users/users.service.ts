@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import type { ListingSummary, RelationshipState, UserProfile } from '@cerquita/types';
 import { resolveAudienceTier } from '@cerquita/domain';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserSerializer } from './user.serializer';
 import { ListingsService } from '../listings/listings.service';
 import { SocialProofService } from '../social/social-proof.service';
-import type { ListingRow } from '../listings/listing.serializer';
+import { LISTING_ROW_COLUMNS, type ListingRow } from '../listings/listing.serializer';
 
 /** What the owner of an account can see and change about it. */
 export interface UserSettings {
@@ -183,38 +184,30 @@ export class UsersService {
     const isOwner = viewerId === user.id;
     if (tab === 'sold' && !user.showSoldListings && !isOwner) return [];
 
+    // Built as `Prisma.sql` fragments rather than interpolated strings: the tab
+    // is a closed set, but composing SQL from a request parameter by hand is a
+    // habit worth not having.
     const statusFilter =
-      tab === 'sold' ? `l."status" = 'sold'` : `l."status" IN ('active', 'reserved')`;
+      tab === 'sold'
+        ? Prisma.sql`l."status" = 'sold'`
+        : Prisma.sql`l."status" IN ('active', 'reserved')`;
+
     const kindFilter =
       tab === 'wanted'
-        ? `AND l."kind" = 'wanted'`
+        ? Prisma.sql`AND l."kind" = 'wanted'`
         : tab === 'auctions'
-          ? `AND l."kind" = 'auction'`
+          ? Prisma.sql`AND l."kind" = 'auction'`
           : tab === 'selling'
-            ? `AND l."kind" = 'sale'`
-            : '';
+            ? Prisma.sql`AND l."kind" = 'sale'`
+            : Prisma.empty;
 
-    const rows = await this.prisma.$queryRawUnsafe<ListingRow[]>(
-      `SELECT
-         l."id", l."kind"::text AS "kind", l."status"::text AS "status",
-         l."title", l."description", l."tags", l."categoryId",
-         l."condition"::text AS "condition",
-         l."priceAmount", l."priceCurrency", l."maxBudgetAmount", l."wantedRadiusMeters",
-         l."quantity", l."reserved", l."sold",
-         ARRAY(SELECT unnest(l."deliveryMethods")::text) AS "deliveryMethods",
-         l."acceptsOffers", l."followerDiscountBps", l."friendDiscountBps",
-         ST_Y(l."publicLocation"::geometry) AS "publicLat",
-         ST_X(l."publicLocation"::geometry) AS "publicLng",
-         l."neighborhood", l."city", l."region", l."country",
-         l."viewCount", l."favoriteCount", l."commentCount", l."promotedUntil",
-         l."publishedAt", l."createdAt", l."updatedAt",
-         l."sellerId", l."storeId"
-       FROM "Listing" l
-       WHERE l."sellerId" = $1::uuid AND ${statusFilter} ${kindFilter}
-       ORDER BY l."publishedAt" DESC NULLS LAST
-       LIMIT 60`,
-      user.id,
-    );
+    const rows = await this.prisma.$queryRaw<ListingRow[]>(Prisma.sql`
+      SELECT ${LISTING_ROW_COLUMNS}
+      FROM "Listing" l
+      WHERE l."sellerId" = ${user.id}::uuid AND ${statusFilter} ${kindFilter}
+      ORDER BY l."publishedAt" DESC NULLS LAST
+      LIMIT 60
+    `);
 
     return this.listings.toSummaries(rows, viewerId);
   }

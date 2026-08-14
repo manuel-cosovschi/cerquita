@@ -16,7 +16,7 @@ import {
 import type { CreateListingInput } from '@cerquita/validation';
 import { fuzzCoordinates, money, type Coordinates } from '@cerquita/utils';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ListingSerializer, type ListingRow } from './listing.serializer';
+import { LISTING_ROW_COLUMNS, ListingSerializer, type ListingRow } from './listing.serializer';
 import { EventBus } from '../events/event-bus.service';
 import { SocialProofService } from '../social/social-proof.service';
 import { ConfigService } from '../config/config.service';
@@ -374,26 +374,40 @@ export class ListingsService {
 
   /** Selects a listing with its public location already projected to lat/lng. */
   private async selectRow(id: string): Promise<ListingRow | null> {
-    const rows = await this.prisma.$queryRaw<ListingRow[]>`
-      SELECT
-        l."id", l."kind"::text AS "kind", l."status"::text AS "status",
-        l."title", l."description", l."tags", l."categoryId",
-        l."condition"::text AS "condition",
-        l."priceAmount", l."priceCurrency", l."maxBudgetAmount", l."wantedRadiusMeters",
-        l."quantity", l."reserved", l."sold",
-        ARRAY(SELECT unnest(l."deliveryMethods")::text) AS "deliveryMethods",
-        l."acceptsOffers", l."followerDiscountBps", l."friendDiscountBps",
-        ST_Y(l."publicLocation"::geometry) AS "publicLat",
-        ST_X(l."publicLocation"::geometry) AS "publicLng",
-        l."neighborhood", l."city", l."region", l."country",
-        l."viewCount", l."favoriteCount", l."commentCount", l."promotedUntil",
-        l."publishedAt", l."createdAt", l."updatedAt",
-        l."sellerId", l."storeId"
+    const rows = await this.prisma.$queryRaw<ListingRow[]>(Prisma.sql`
+      SELECT ${LISTING_ROW_COLUMNS}
       FROM "Listing" l
       WHERE l."id" = ${id}::uuid
       LIMIT 1
-    `;
+    `);
     return rows[0] ?? null;
+  }
+
+  /**
+   * Summaries for a set of ids, in one query, resolved for this viewer.
+   *
+   * Anything that stores a listing reference and later needs to show it —
+   * favourites, a conversation's context card, a feed row — goes through here
+   * rather than writing the column list again.
+   *
+   * Returns a Map because callers have their own ordering (a favourite list is
+   * ordered by when it was saved, not by listing id) and because ids that no
+   * longer resolve simply come back missing rather than as holes in an array.
+   */
+  async summariesByIds(
+    ids: readonly string[],
+    viewerId?: string,
+  ): Promise<Map<string, ListingSummary>> {
+    if (ids.length === 0) return new Map();
+
+    const rows = await this.prisma.$queryRaw<ListingRow[]>(Prisma.sql`
+      SELECT ${LISTING_ROW_COLUMNS}
+      FROM "Listing" l
+      WHERE l."id" = ANY(${[...ids]}::uuid[])
+    `);
+
+    const summaries = await this.toSummaries(rows, viewerId);
+    return new Map(summaries.map((summary) => [summary.id, summary]));
   }
 
   /**

@@ -102,9 +102,14 @@ const light: SemanticColors = {
   textSecondary: 'rgba(20, 18, 16, 0.62)',
   textTertiary: 'rgba(20, 18, 16, 0.42)',
   textInverse: palette.neutral[0],
-  // The export puts DARK text on the orange, not white. Reversing it would
-  // fail contrast and lose the design's warmth.
-  textOnBrand: palette.accent.onAccent,
+  // Two different surfaces, two different answers.
+  //
+  // `brand` is the INK — "Comprar ahora" is a near-black pill, so its label is
+  // the cream. `accent` is the orange, and the export deliberately puts DARK
+  // text on it; reversing that would fail contrast and lose the warmth.
+  //
+  // Collapsing these into one value is what put dark text on the black button.
+  textOnBrand: palette.neutral[0],
   textOnAccent: palette.accent.onAccent,
 
   border: 'rgba(20, 18, 16, 0.09)',

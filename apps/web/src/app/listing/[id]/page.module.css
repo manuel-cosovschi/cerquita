@@ -256,3 +256,114 @@
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
 }
+
+/* ── viewer actions ───────────────────────────────────────────────────────── */
+
+.topBarRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+/* The heart lives in the top bar, where a thumb reaches it without scrolling. */
+.favorite {
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  border: none;
+  border-radius: var(--radius-full);
+  background: none;
+  font-size: var(--font-size-lg);
+  line-height: 1;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+}
+
+.favoriteOn {
+  color: var(--color-auction);
+}
+
+.primary:disabled,
+.secondary:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+/*
+ * The amount panel for an offer or a bid.
+ *
+ * Inline rather than a modal: on a listing the number you type depends on the
+ * price you are looking at, and a dialog that covers it makes you guess.
+ */
+.amountPanel {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--ring-hairline-strong);
+}
+
+.amountLabel {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.amountRow {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.amountInput {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--touch-target-comfortable);
+  padding: 0 var(--space-5);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-background);
+  box-shadow: var(--ring-hairline);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+
+.amountHint {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.feedback {
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.feedbackError {
+  background: var(--color-danger-subtle);
+  color: var(--color-danger);
+}
+
+.feedbackOk {
+  background: var(--color-success-subtle);
+  color: var(--color-success);
+}
+
+.signedOutNote {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+.signedOutLink {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

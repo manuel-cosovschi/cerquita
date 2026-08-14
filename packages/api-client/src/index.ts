@@ -321,7 +321,19 @@ export function createClient(options: ClientOptions) {
     },
 
     checkout: {
-      submit: (body: unknown) => post<{ order: Order; checkoutUrl?: string }>('/checkout', body),
+      /**
+       * `quotedTotal` is what the buyer was shown. The server compares it and
+       * refuses if the price moved in between — it is a tripwire, never the
+       * amount charged (spec §41).
+       */
+      submit: (body: {
+        cartId: string;
+        deliveryMethod: string;
+        couponCode?: string;
+        offerId?: string;
+        reservationId?: string;
+        quotedTotal?: { amount: number; currency: string };
+      }) => post<{ order: Order; checkoutUrl?: string }>('/checkout', body),
       order: (id: string) => request<Order>(`/orders/${id}`),
     },
 
@@ -362,11 +374,16 @@ export function createClient(options: ClientOptions) {
       conversations: () => request<Conversation[]>('/conversations'),
       conversation: (id: string) => request<Conversation>(`/conversations/${id}`),
       /** Opens or reuses the thread for a listing — never creates a duplicate. */
-      open: (body: { participantId: string; listingId?: string }) =>
+      open: (body: { recipientId: string; listingId?: string; firstMessage?: string }) =>
         post<Conversation>('/conversations', body),
       messages: (id: string, cursor?: string) =>
         request<Paginated<Message>>(`/conversations/${id}/messages`, { query: { cursor } }),
-      send: (id: string, body: string) => post<Message>(`/conversations/${id}/messages`, { body }),
+      /**
+       * `clientId` is an idempotency key: a retried send after a flaky
+       * connection resolves to the same message instead of posting it twice.
+       */
+      send: (id: string, body: string, clientId?: string) =>
+        post<Message>(`/conversations/${id}/messages`, { body, clientId }),
       markRead: (id: string) => post<unknown>(`/conversations/${id}/read`, {}),
     },
 

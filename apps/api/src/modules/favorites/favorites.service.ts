@@ -2,7 +2,6 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import type { ListingSummary, Paginated } from '@cerquita/types';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListingsService } from '../listings/listings.service';
-import type { ListingRow } from '../listings/listing.serializer';
 
 /**
  * Favourites, collections and saved searches (spec §31, §32).
@@ -103,26 +102,14 @@ export class FavoritesService {
     const ids = favorites.map((favorite) => favorite.listingId).filter((id): id is string => !!id);
     if (ids.length === 0) return { items: [], nextCursor: null };
 
-    const rows = await this.prisma.$queryRaw<ListingRow[]>`
-      SELECT
-        l."id", l."kind"::text AS "kind", l."status"::text AS "status",
-        l."title", l."description", l."tags", l."categoryId",
-        l."condition"::text AS "condition",
-        l."priceAmount", l."priceCurrency", l."maxBudgetAmount", l."wantedRadiusMeters",
-        l."quantity", l."reserved", l."sold",
-        ARRAY(SELECT unnest(l."deliveryMethods")::text) AS "deliveryMethods",
-        l."acceptsOffers", l."followerDiscountBps", l."friendDiscountBps",
-        ST_Y(l."publicLocation"::geometry) AS "publicLat",
-        ST_X(l."publicLocation"::geometry) AS "publicLng",
-        l."neighborhood", l."city", l."region", l."country",
-        l."viewCount", l."favoriteCount", l."commentCount", l."promotedUntil",
-        l."publishedAt", l."createdAt", l."updatedAt",
-        l."sellerId", l."storeId"
-      FROM "Listing" l
-      WHERE l."id" = ANY(${ids}::uuid[])
-    `;
+    // Ordered by when it was saved, not by whatever order the rows come back
+    // in — the list is a history, so the most recently saved comes first.
+    const summaries = await this.listings.summariesByIds(ids, userId);
+    const items = ids
+      .map((id) => summaries.get(id))
+      .filter((summary): summary is ListingSummary => summary !== undefined);
 
-    return { items: await this.listings.toSummaries(rows, userId), nextCursor: null };
+    return { items, nextCursor: null };
   }
 
   async createCollection(userId: string, name: string): Promise<{ id: string; name: string }> {

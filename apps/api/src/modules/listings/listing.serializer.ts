@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import type {
   AudienceTier,
   ImageAsset,
@@ -66,6 +67,33 @@ export interface ListingRow {
   /** Metres from the viewer. Present only when the query supplied a centre. */
   distanceMeters?: number | null;
 }
+
+/**
+ * The exact columns `ListingRow` expects, as one SQL fragment.
+ *
+ * Five queries select this list, and every time a field is added to
+ * `ListingRow` all five have to change together — which is how `commentCount`
+ * ended up missing from three of them. Sharing the fragment makes the row
+ * shape and the query that produces it impossible to drift apart.
+ *
+ * The table must be aliased `l`. Geography is projected here rather than sent
+ * as WKB: the client only ever gets the fuzzed public point.
+ */
+export const LISTING_ROW_COLUMNS = Prisma.sql`
+  l."id", l."kind"::text AS "kind", l."status"::text AS "status",
+  l."title", l."description", l."tags", l."categoryId",
+  l."condition"::text AS "condition",
+  l."priceAmount", l."priceCurrency", l."maxBudgetAmount", l."wantedRadiusMeters",
+  l."quantity", l."reserved", l."sold",
+  ARRAY(SELECT unnest(l."deliveryMethods")::text) AS "deliveryMethods",
+  l."acceptsOffers", l."followerDiscountBps", l."friendDiscountBps",
+  ST_Y(l."publicLocation"::geometry) AS "publicLat",
+  ST_X(l."publicLocation"::geometry) AS "publicLng",
+  l."neighborhood", l."city", l."region", l."country",
+  l."viewCount", l."favoriteCount", l."commentCount", l."promotedUntil",
+  l."publishedAt", l."createdAt", l."updatedAt",
+  l."sellerId", l."storeId"
+`;
 
 export interface SerializeContext {
   readonly tier: AudienceTier;

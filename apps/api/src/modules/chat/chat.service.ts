@@ -4,10 +4,46 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type { Conversation, Message, Paginated } from '@cerquita/types';
+import type { Conversation, ListingSummary, Message, Paginated } from '@cerquita/types';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserSerializer, USER_SUMMARY_SELECT } from '../users/user.serializer';
 import { NotificationsService } from '../notifications/notifications.service';
+import { ListingsService } from '../listings/listings.service';
+
+/** Everything a conversation needs to be serialized, in one round trip. */
+const CONVERSATION_INCLUDE = {
+  members: { include: { user: { select: USER_SUMMARY_SELECT } } },
+  messages: { orderBy: { createdAt: 'desc' }, take: 1 },
+} as const;
+
+interface MessageRow {
+  id: string;
+  conversationId: string;
+  kind: string;
+  body: string | null;
+  imageUrl: string | null;
+  offerId: string | null;
+  senderId: string;
+  createdAt: Date;
+}
+
+interface ConversationRow {
+  id: string;
+  context: Conversation['context'] | null;
+  contextId: string | null;
+  listingId: string | null;
+  updatedAt: Date;
+  members: Array<{
+    userId: string;
+    lastReadAt: Date | null;
+    user: Parameters<UserSerializer['toSummary']>[0];
+  }>;
+  messages: MessageRow[];
+}
+
+function listingIdsOf(rows: ReadonlyArray<{ listingId: string | null }>): string[] {
+  return [...new Set(rows.map((row) => row.listingId).filter((id): id is string => id !== null))];
+}
 
 export interface SendMessageInput {
   body?: string;
@@ -32,6 +68,7 @@ export class ChatService {
     private readonly prisma: PrismaService,
     private readonly users: UserSerializer,
     private readonly notifications: NotificationsService,
+    private readonly listings: ListingsService,
   ) {}
 
   /**
@@ -171,42 +208,54 @@ export class ChatService {
       where: { members: { some: { userId } } },
       orderBy: { updatedAt: 'desc' },
       take: 50,
-      select: { id: true },
+      include: CONVERSATION_INCLUDE,
     });
 
-    return Promise.all(rows.map((row) => this.findOne(row.id, userId)));
+    // One query for every listing referenced across the whole list. Resolving
+    // them per conversation would be a query per row, and a chat list is the
+    // one screen where that cost is guaranteed to be paid every time.
+    const listings = await this.listings.summariesByIds(listingIdsOf(rows), userId);
+
+    return Promise.all(rows.map((row) => this.serializeConversation(row, userId, listings)));
   }
 
   async findOne(conversationId: string, viewerId: string): Promise<Conversation> {
     const conversation = await this.prisma.conversation.findUnique({
       where: { id: conversationId },
-      include: {
-        members: { include: { user: { select: USER_SUMMARY_SELECT } } },
-        listing: {
-          select: {
-            id: true,
-            title: true,
-            priceAmount: true,
-            priceCurrency: true,
-            images: { orderBy: { position: 'asc' }, take: 1 },
-          },
-        },
-        messages: { orderBy: { createdAt: 'desc' }, take: 1 },
-      },
+      include: CONVERSATION_INCLUDE,
     });
 
     if (!conversation) {
       throw new NotFoundException({ message: 'Conversación no encontrada', code: 'not_found' });
     }
 
+    const listings = await this.listings.summariesByIds(listingIdsOf([conversation]), viewerId);
+    return this.serializeConversation(conversation, viewerId, listings);
+  }
+
+  /**
+   * Turns a conversation row into what the viewer is allowed to see.
+   *
+   * The listing summary is passed in rather than looked up here: it is resolved
+   * for this viewer (so a friend's context card shows the friend price) and
+   * batched across the list.
+   */
+  private async serializeConversation(
+    conversation: ConversationRow,
+    viewerId: string,
+    listings: Map<string, ListingSummary>,
+  ): Promise<Conversation> {
     const member = conversation.members.find((entry) => entry.userId === viewerId);
     if (!member) {
-      throw new ForbiddenException({ message: 'No participás de esta conversación', code: 'forbidden' });
+      throw new ForbiddenException({
+        message: 'No participás de esta conversación',
+        code: 'forbidden',
+      });
     }
 
     const unreadCount = await this.prisma.message.count({
       where: {
-        conversationId,
+        conversationId: conversation.id,
         senderId: { not: viewerId },
         ...(member.lastReadAt ? { createdAt: { gt: member.lastReadAt } } : {}),
       },
@@ -222,7 +271,7 @@ export class ChatService {
       participants: conversation.members
         .filter((entry) => entry.userId !== viewerId)
         .map((entry) => this.users.toSummary(entry.user)),
-      listing: undefined,
+      listing: conversation.listingId ? listings.get(conversation.listingId) : undefined,
       lastMessage: lastMessage ? this.toMessage(lastMessage) : undefined,
       unreadCount,
       updatedAt: conversation.updatedAt.toISOString(),
@@ -248,12 +297,15 @@ export class ChatService {
     });
 
     const hasMore = rows.length > limit;
-    const page = hasMore ? rows.slice(0, limit) : rows;
+    // Newest-first from the query so the cursor walks backwards through
+    // history; reversed for the client, which renders oldest at the top.
+    const newestFirst = hasMore ? rows.slice(0, limit) : rows;
+    const oldestFirst = [...newestFirst].reverse();
 
     return {
-      // Reversed so the client renders oldest-first without re-sorting.
-      items: page.reverse().map((row) => this.toMessage(row)),
-      nextCursor: hasMore ? (page[0]?.id ?? null) : null,
+      items: oldestFirst.map((row) => this.toMessage(row)),
+      // The oldest message on this page is where the next page starts.
+      nextCursor: hasMore ? (newestFirst[newestFirst.length - 1]?.id ?? null) : null,
     };
   }
 
@@ -297,16 +349,7 @@ export class ChatService {
     }
   }
 
-  private toMessage(row: {
-    id: string;
-    conversationId: string;
-    kind: string;
-    body: string | null;
-    imageUrl: string | null;
-    offerId: string | null;
-    senderId: string;
-    createdAt: Date;
-  }): Message {
+  private toMessage(row: MessageRow): Message {
     return {
       id: row.id,
       conversationId: row.conversationId,

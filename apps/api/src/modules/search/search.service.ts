@@ -4,7 +4,7 @@ import type { ListingSummary, Paginated } from '@cerquita/types';
 import type { SearchQueryInput } from '@cerquita/validation';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListingsService } from '../listings/listings.service';
-import type { ListingRow } from '../listings/listing.serializer';
+import { LISTING_ROW_COLUMNS, type ListingRow } from '../listings/listing.serializer';
 import { AI_PROVIDER, type AiProvider } from '../../providers/ai/ai-provider';
 import { ConfigService } from '../config/config.service';
 
@@ -87,19 +87,7 @@ export class SearchService {
     const offset = decodeCursor(query.cursor);
     const rows = await this.prisma.$queryRaw<ListingRow[]>(Prisma.sql`
       SELECT
-        l."id", l."kind"::text AS "kind", l."status"::text AS "status",
-        l."title", l."description", l."tags", l."categoryId",
-        l."condition"::text AS "condition",
-        l."priceAmount", l."priceCurrency", l."maxBudgetAmount", l."wantedRadiusMeters",
-        l."quantity", l."reserved", l."sold",
-        ARRAY(SELECT unnest(l."deliveryMethods")::text) AS "deliveryMethods",
-        l."acceptsOffers", l."followerDiscountBps", l."friendDiscountBps",
-        ST_Y(l."publicLocation"::geometry) AS "publicLat",
-        ST_X(l."publicLocation"::geometry) AS "publicLng",
-        l."neighborhood", l."city", l."region", l."country",
-        l."viewCount", l."favoriteCount", l."commentCount", l."promotedUntil",
-        l."publishedAt", l."createdAt", l."updatedAt",
-        l."sellerId", l."storeId",
+        ${LISTING_ROW_COLUMNS},
         ${
           centerPoint
             ? Prisma.sql`ST_Distance(l."publicLocation", ${centerPoint})`
