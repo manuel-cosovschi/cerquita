@@ -28,9 +28,23 @@
   opacity: 0.5;
 }
 
+/*
+ * The export desaturates and warms OSM tiles so markers stay the loudest thing
+ * on screen. Without it the map competes with its own content.
+ */
 .tileLayer {
   position: absolute;
   inset: 0;
+  filter: var(--map-tile-filter);
+}
+
+/* Accent wash over the tiles, at the 7% the export uses. */
+.tileTint {
+  position: absolute;
+  inset: 0;
+  background: var(--color-auction);
+  opacity: 0.07;
+  pointer-events: none;
 }
 
 .markerLayer {

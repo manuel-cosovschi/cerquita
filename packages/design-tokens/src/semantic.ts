@@ -65,6 +65,17 @@ export interface SemanticColors {
   /** Friend relationship. */
   friend: string;
   friendSubtle: string;
+  /**
+   * The teal that rings a friend's marker and fills its price bubble. Brighter
+   * than `friend`, which is the text colour — a ring needs to read against map
+   * tiles, text needs to read against the canvas.
+   */
+  friendRing: string;
+  /** Auction wording on the light canvas, where the base orange is too light. */
+  auctionText: string;
+  /** Diagonal-stripe placeholder used wherever a photo is missing. */
+  placeholderFrom: string;
+  placeholderTo: string;
   /** Follower relationship. */
   follower: string;
   followerSubtle: string;
@@ -128,6 +139,10 @@ const light: SemanticColors = {
   storeSubtle: palette.neutral[200],
   friend: palette.social[700],
   friendSubtle: palette.social[100],
+  friendRing: palette.social[500],
+  auctionText: palette.accent[700],
+  placeholderFrom: palette.neutral[400],
+  placeholderTo: palette.neutral[500],
   follower: palette.neutral[700],
   followerSubtle: palette.neutral[200],
   discount: palette.accent[700],
@@ -192,6 +207,10 @@ const dark: SemanticColors = {
   storeSubtle: palette.neutral[800],
   friend: palette.social[500],
   friendSubtle: '#062e2c',
+  friendRing: palette.social[500],
+  auctionText: palette.accent[300],
+  placeholderFrom: palette.neutral[800],
+  placeholderTo: palette.neutral[700],
   follower: palette.neutral[300],
   followerSubtle: palette.neutral[800],
   discount: palette.accent[300],

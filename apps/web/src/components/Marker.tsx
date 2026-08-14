@@ -16,13 +16,17 @@ export interface MarkerProps {
 }
 
 /**
- * A map marker (spec §9).
+ * A map marker, direction 1a.
  *
- * The marker carries the information that decides whether the listing is worth
- * a tap: price, type, distance, countdown, and the social relationship. Each
- * variant reads a distinct semantic token (`sale`, `auction`, `wanted`,
- * `friend`, `store`) so the type is legible at a glance and stays correct when
- * the exported design replaces the palette.
+ * Three stacked parts — photo, price bubble overlapping it, caption underneath —
+ * that read as one object. Which is a deliberate choice from the export: the
+ * thing you recognise on a map is the *photo*, and the price is what decides
+ * whether you tap. A text-only pin makes every listing look identical.
+ *
+ * Relationship is encoded in the RING, not in extra text: a teal ring means
+ * friend. Auctions swap the price for a countdown in an orange bubble. Wanted
+ * posts are not photos at all — they are outlined pills, because there is no
+ * item to show yet.
  */
 export function Marker({ marker, x, y, selected, hovered, onActivate, onHover }: MarkerProps) {
   const className = [
@@ -55,9 +59,8 @@ export function Marker({ marker, x, y, selected, hovered, onActivate, onHover }:
 
 function MarkerBody({ marker }: { marker: MapMarker }) {
   if (marker.type === 'cluster') {
-    const bucket = clusterSizeBucket(marker.count);
     return (
-      <span className={`${styles.cluster} ${styles[`cluster_${bucket}`]} numeric`}>
+      <span className={`${styles.cluster} ${styles[`cluster_${clusterSizeBucket(marker.count)}`]}`}>
         {formatClusterCount(marker.count)}
       </span>
     );
@@ -65,56 +68,88 @@ function MarkerBody({ marker }: { marker: MapMarker }) {
 
   if (marker.type === 'store') {
     return (
-      <span className={styles.body}>
-        <span className={styles.title}>{marker.name}</span>
-        <span className={styles.meta}>
+      <span className={styles.storePill}>
+        <span className={styles.storeName}>{marker.name}</span>
+        <span className={styles.storeCount}>
           +{marker.activeListingCount} producto{marker.activeListingCount === 1 ? '' : 's'}
         </span>
-        {marker.hasActivePromotion && <span className={styles.flash}>Promo</span>}
+        {marker.hasActivePromotion && <span className={styles.storePromo}>Promo</span>}
       </span>
     );
   }
 
-  const price = marker.price ?? marker.maxBudget;
+  // "Busco" has no product photo — there is nothing to photograph yet.
+  if (marker.kind === 'wanted') {
+    return (
+      <span className={styles.wantedPill}>
+        <span className={styles.wantedAvatar} aria-hidden="true">
+          ?
+        </span>
+        <span>
+          <span className={styles.wantedLabel}>BUSCA</span>
+          <span className={styles.wantedTitle}>{truncate(marker.title, 18)}</span>
+        </span>
+      </span>
+    );
+  }
+
+  const isAuction = marker.kind === 'auction';
+  const price = marker.price;
 
   return (
-    <span className={styles.body}>
-      {marker.kind === 'wanted' && <span className={styles.tag}>BUSCO</span>}
-      {marker.kind === 'auction' && <span className={styles.tag}>SUBASTA</span>}
-      {marker.tier === 'friend' && <span className={styles.tagSocial}>AMIGO</span>}
-      {marker.tier === 'follower' && marker.kind === 'sale' && (
-        <span className={styles.tagSocial}>SIGUIENDO</span>
-      )}
+    <>
+      <span className={styles.thumb}>
+        {marker.thumbnailUrl ? (
+          <img className={styles.thumbImage} src={marker.thumbnailUrl} alt="" loading="lazy" />
+        ) : (
+          <span className={styles.thumbPlaceholder}>{truncate(marker.title, 10)}</span>
+        )}
+      </span>
 
-      <span className={styles.title}>{marker.title}</span>
-
-      {price && (
-        <span className={`${styles.price} numeric`}>
-          {marker.kind === 'wanted' && <span className={styles.upTo}>Hasta </span>}
-          {formatMoneyCompact(money(price.amount, price.currency))}
-        </span>
-      )}
-
-      {marker.auctionEndsAt && (
-        <span className={styles.countdown}>
+      <span className={styles.bubble}>
+        {isAuction && marker.auctionEndsAt ? (
           <Countdown endsAt={marker.auctionEndsAt} compact />
-        </span>
-      )}
+        ) : price ? (
+          formatMoneyCompact(money(price.amount, price.currency))
+        ) : (
+          '—'
+        )}
+      </span>
 
-      {marker.distanceMeters !== undefined && (
-        <span className={styles.meta}>{formatDistanceShort(marker.distanceMeters)}</span>
-      )}
-    </span>
+      <Caption marker={marker} isAuction={isAuction} />
+    </>
   );
+}
+
+/**
+ * The caption carries whichever fact matters most for this marker: the
+ * relationship if there is one, the type if it is an auction, otherwise distance.
+ * Showing all three at once would turn the map into a wall of text.
+ */
+function Caption({ marker, isAuction }: { marker: MapMarker; isAuction: boolean }) {
+  if (marker.type !== 'listing') return null;
+
+  if (marker.tier === 'friend') {
+    return <span className={`${styles.caption} ${styles.captionFriend}`}>AMIGO</span>;
+  }
+  if (isAuction) {
+    return <span className={`${styles.caption} ${styles.captionAuction}`}>SUBASTA</span>;
+  }
+  if (marker.distanceMeters !== undefined) {
+    return <span className={styles.caption}>{formatDistanceShort(marker.distanceMeters)}</span>;
+  }
+  return null;
 }
 
 function markerVariant(
   marker: MapMarker,
-): 'clusterMarker' | 'sale' | 'auction' | 'wanted' | 'store' {
+): 'clusterMarker' | 'sale' | 'auction' | 'wanted' | 'store' | 'friend' {
   if (marker.type === 'cluster') return 'clusterMarker';
   if (marker.type === 'store') return 'store';
-  if (marker.kind === 'auction') return 'auction';
   if (marker.kind === 'wanted') return 'wanted';
+  if (marker.kind === 'auction') return 'auction';
+  // The friend ring wins over the default sale treatment.
+  if (marker.tier === 'friend') return 'friend';
   return 'sale';
 }
 
@@ -131,10 +166,15 @@ function markerLabel(marker: MapMarker): string {
     marker.kind === 'auction' ? 'Subasta' : marker.kind === 'wanted' ? 'Busco' : 'En venta';
   const price = marker.price ?? marker.maxBudget;
   const priceText = price ? `, ${formatMoneyCompact(money(price.amount, price.currency))}` : '';
+  const relationship = marker.tier === 'friend' ? ', de un amigo' : '';
   const distance =
     marker.distanceMeters !== undefined ? `, a ${formatDistanceShort(marker.distanceMeters)}` : '';
 
-  return `${kind}: ${marker.title}${priceText}${distance}`;
+  return `${kind}: ${marker.title}${priceText}${relationship}${distance}`;
+}
+
+function truncate(value: string, max: number): string {
+  return value.length > max ? `${value.slice(0, max - 1)}…` : value;
 }
 
 function formatDistanceShort(meters: number): string {

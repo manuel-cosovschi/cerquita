@@ -1,0 +1,88 @@
+/*
+ * Inset on all sides and translucent — the map keeps showing through, which is
+ * what separates a dock from a nav bar.
+ */
+.dock {
+  position: absolute;
+  left: var(--layout-dock-inset);
+  right: var(--layout-dock-inset);
+  bottom: var(--layout-dock-bottom);
+  height: var(--layout-dock-height);
+  z-index: var(--z-dock);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 var(--space-3);
+
+  border-radius: var(--radius-sheet);
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-dock), var(--ring-hairline);
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  /* Inactive items recede rather than changing colour. */
+  opacity: 0.4;
+  min-width: var(--touch-target-min);
+  transition: opacity var(--duration-fast) var(--easing-standard);
+}
+
+.item:hover,
+.active {
+  opacity: 1;
+}
+
+.icon {
+  width: var(--layout-nav-icon-size);
+  height: var(--layout-nav-icon-size);
+  border-radius: var(--space-3);
+  /* Inactive: outline. Active: filled. */
+  box-shadow: inset 0 0 0 2px var(--color-text-primary);
+  display: block;
+}
+
+.iconCircle {
+  border-radius: var(--radius-full);
+}
+
+.active .icon {
+  background: var(--color-text-primary);
+  box-shadow: none;
+}
+
+.label {
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.active .label {
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Publishing is the loudest thing in the dock, on purpose. */
+.publish {
+  width: var(--layout-dock-fab-size);
+  height: var(--layout-dock-fab-size);
+  border-radius: var(--radius-lg);
+  background: var(--color-auction);
+  color: var(--color-text-on-accent);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-family-sans);
+  font-size: 30px;
+  line-height: 1;
+  font-weight: var(--font-weight-regular);
+  box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--color-auction) 80%, transparent);
+  transition: transform var(--duration-fast) var(--easing-standard);
+}
+
+.publish:hover {
+  transform: scale(1.04);
+}

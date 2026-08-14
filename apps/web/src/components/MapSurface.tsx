@@ -203,7 +203,10 @@ export function MapSurface({
       onKeyDown={handleKeyDown}
     >
       {tileUrlTemplate ? (
-        <TileLayer viewport={viewport} offset={dragOffset} template={tileUrlTemplate} />
+        <>
+          <TileLayer viewport={viewport} offset={dragOffset} template={tileUrlTemplate} />
+          <div className={styles.tileTint} aria-hidden="true" />
+        </>
       ) : (
         <div className={styles.grid} aria-hidden="true" />
       )}

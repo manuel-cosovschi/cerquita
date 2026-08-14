@@ -8,6 +8,7 @@ import { api } from '@/lib/api';
 import { MapSurface } from './MapSurface';
 import { LayerChips } from './LayerChips';
 import { ResultsPanel } from './ResultsPanel';
+import { FloatingDock } from './FloatingDock';
 import styles from './ExploreView.module.css';
 
 /** Obelisco. Used until the browser grants a location (spec §102: ask in context). */
@@ -223,6 +224,9 @@ export function ExploreView() {
             onMarkerHover={setHoveredId}
             tileUrlTemplate={process.env.NEXT_PUBLIC_MAP_TILE_URL}
           />
+
+          {/* The dock lives over the map, never below it — 1a's rule. */}
+          <FloatingDock active="map" />
         </section>
       </main>
     </div>
