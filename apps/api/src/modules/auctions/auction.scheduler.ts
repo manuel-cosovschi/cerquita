@@ -1,8 +1,10 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { AuctionsService } from './auctions.service';
+import { OffersService } from '../offers/offers.service';
+import { ReservationsService } from '../reservations/reservations.service';
 
 /**
- * Drives auction state transitions on a timer.
+ * Drives every time-based transition in the product.
  *
  * An auction must start and end on schedule whether or not anyone has the page
  * open — the alternative is an auction that only closes when someone visits it,
@@ -20,7 +22,11 @@ export class AuctionScheduler implements OnModuleInit, OnModuleDestroy {
 
   private static readonly TICK_MS = 5_000;
 
-  constructor(private readonly auctions: AuctionsService) {}
+  constructor(
+    private readonly auctions: AuctionsService,
+    private readonly offers: OffersService,
+    private readonly reservations: ReservationsService,
+  ) {}
 
   onModuleInit(): void {
     this.timer = setInterval(() => void this.tick(), AuctionScheduler.TICK_MS);
@@ -38,12 +44,20 @@ export class AuctionScheduler implements OnModuleInit, OnModuleDestroy {
     this.running = true;
 
     try {
-      const [started, closed] = await Promise.all([
+      // Everything time-driven runs on one tick: auctions opening and closing,
+      // offers expiring, and reservations returning stock. Three timers would
+      // only mean three ways to drift.
+      const [started, closed, expiredOffers, releasedHolds] = await Promise.all([
         this.auctions.startDueAuctions(),
         this.auctions.closeDueAuctions(),
+        this.offers.expireDueOffers(),
+        this.reservations.releaseExpired(),
       ]);
-      if (started > 0 || closed > 0) {
-        this.logger.log(`Auctions: ${started} started, ${closed} closed`);
+
+      if (started || closed || expiredOffers || releasedHolds) {
+        this.logger.log(
+          `Tick: ${started} auctions started, ${closed} closed, ${expiredOffers} offers expired, ${releasedHolds} holds released`,
+        );
       }
     } catch (error) {
       this.logger.error('Auction tick failed', error instanceof Error ? error.stack : error);

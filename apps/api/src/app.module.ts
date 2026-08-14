@@ -19,6 +19,9 @@ import { FavoritesModule } from './modules/favorites/favorites.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { UsersModule } from './modules/users/users.module';
 import { StoresModule } from './modules/stores/stores.module';
+import { ReservationsModule } from './modules/reservations/reservations.module';
+import { ReportsModule } from './modules/reports/reports.module';
+import { AdminModule } from './modules/admin/admin.module';
 import { HealthController } from './modules/health/health.controller';
 import { RequestIdMiddleware } from './common/request-id.middleware';
 
@@ -50,6 +53,9 @@ import { RequestIdMiddleware } from './common/request-id.middleware';
     CheckoutModule,
     UsersModule,
     StoresModule,
+    ReservationsModule,
+    ReportsModule,
+    AdminModule,
     ReviewsModule,
     FavoritesModule,
     NotificationsModule,

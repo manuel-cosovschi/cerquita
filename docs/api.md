@@ -231,10 +231,47 @@ debajo de lo ya reservado o vendido.
 salen al mapa, en vez de que cada fila del catálogo se convierta en un pin
 (spec §49). En el mapa la tienda aparece como **un** marker con su contador.
 
+## Reservas
+
+`GET|POST /reservations` · `DELETE /reservations/:id`
+
+Usan el mismo UPDATE condicional que el checkout, así que reservar y comprar
+nunca pueden superar juntos lo que existe. Reservar dos veces devuelve el hold
+que ya tenías. Las reservas vencidas las barre el scheduler y el stock vuelve
+solo, mire alguien la publicación o no.
+
+## Reportes
+
+`POST /reports` — cualquiera puede reportar una publicación, usuario, tienda,
+mensaje o reseña. La triage es de moderación.
+
+## Admin
+
+| Método | Ruta | Rol mínimo |
+|---|---|---|
+| GET | `/admin/dashboard` | `support` |
+| GET | `/admin/reports` | `moderator` |
+| POST | `/admin/reports/:id/resolve` | `moderator` |
+| POST | `/admin/moderate` | `moderator` |
+| GET | `/admin/disputes` | `support` |
+| POST | `/admin/disputes/:id/resolve` | `moderator` |
+| GET | `/admin/users/:id/risk` | `moderator` |
+| GET | `/admin/audit-log` | `support` |
+| GET | `/admin/config/flags` | `support` |
+| PATCH | `/admin/config` | `admin` |
+
+`reason` es **obligatorio** en toda acción de moderación, y la acción y su
+entrada de auditoría se escriben en la misma transacción: no existe forma de
+suspender a alguien sin dejar registro de quién y por qué.
+
+Suspender o banear revoca las sesiones en el acto, no cuando venza el token.
+
+El risk score es **advisory**: expone señales con su explicación para que un
+humano decida, y no toma ninguna acción irreversible automática (§76).
+
 ## Pendiente
 
-Reservas y admin tienen modelo de datos y reglas de dominio, pero todavía no
-endpoints. Ver `docs/implementation-plan.md`.
+Ver `docs/implementation-plan.md`.
 
 ### Liquidación marketplace
 

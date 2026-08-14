@@ -100,7 +100,8 @@ reproducir el diseño sea reemplazar un archivo y no reescribir pantallas.
 - ✅ Órdenes con snapshots inmutables.
 - ✅ `PaymentProvider` con mock + Mercado Pago.
 - ✅ Historial de precios.
-- 🟡 Reservas (dominio ✅, endpoints ⬜), promociones (motor ✅, ABM ⬜).
+- ✅ Reservas con el mismo guard de stock que el checkout, barridas por el scheduler.
+- 🟡 Promociones (motor ✅, ABM ⬜).
 
 ### Fase 6 — Subastas ✅
 
@@ -129,10 +130,14 @@ reproducir el diseño sea reemplazar un archivo y no reescribir pantallas.
 - ✅ Matching de búsquedas guardadas y de "Busco" en el dominio.
 - ⬜ Job de matching, demanda local agregada, recomendaciones.
 
-### Fase 9 — Admin ⬜
+### Fase 9 — Admin 🟡 (backend ✅)
 
-Modelo listo (roles, audit log, reportes, disputas, risk score, feature flags,
-configuración global). Falta la app.
+- ✅ Dashboard con métricas agregadas en SQL (usuarios, GMV, comisiones, cola).
+- ✅ Moderación con razón obligatoria y audit log transaccional.
+- ✅ Suspender/banear revoca sesiones al instante.
+- ✅ Reportes, disputas, risk score advisory, feature flags y configuración
+  global editable.
+- ⬜ La app `apps/admin` (el backend está listo para consumirse).
 
 ### Fase 10 — Hardening 🟡
 
