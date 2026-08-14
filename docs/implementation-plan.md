@@ -111,13 +111,17 @@ reproducir el diseño sea reemplazar un archivo y no reescribir pantallas.
 - ✅ WebSocket de sólo lectura (las pujas van por HTTP, con los mismos guards).
 - ✅ Notificaciones de outbid, subasta ganada y venta.
 
-### Fase 7 — Tiendas 🟡
+### Fase 7 — Tiendas ✅ (backend)
 
 - ✅ Modelo completo: miembros, roles, horarios, ubicación física, seguidores.
 - ✅ Marker único de tienda en el mapa (§49) — una tienda con 500 productos no
   tapa el mapa.
-- ✅ Producto / variante / inventario en el schema.
-- ⬜ Endpoints de ABM y dashboard.
+- ✅ ABM de tienda, miembros con roles jerárquicos y horarios.
+- ✅ Catálogo: producto / opciones / variantes / inventario, con validación de
+  combinaciones y guarda de stock comprometido.
+- ✅ Publicación explícita de un producto al mapa.
+- ✅ Dashboard del vendedor agregado en SQL (§50).
+- ⬜ UI de gestión de tienda.
 
 ### Fase 8 — Inteligencia 🟡
 

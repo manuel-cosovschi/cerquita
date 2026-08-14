@@ -195,10 +195,46 @@ el endpoint directo.
 Requieren una orden liquidada en la que el autor participó. La reputación se
 actualiza en la misma transacción que la reseña.
 
+## Tiendas
+
+| Método | Ruta | Rol mínimo |
+|---|---|---|
+| POST | `/stores` | — (el creador queda `owner`) |
+| GET | `/stores/:handle` | público |
+| PATCH | `/stores/:id` | `admin` |
+| DELETE | `/stores/:id` | `owner` |
+| GET/POST | `/stores/:id/members` | miembro / `admin` |
+| DELETE | `/stores/:id/members/:userId` | `admin` |
+| POST | `/stores/:id/hours` | `admin` |
+| GET | `/stores/:id/dashboard` | `manager` |
+| GET | `/stores/:id/products` | público |
+
+Una tienda **no es una cuenta**: es una entidad con miembros. Un usuario puede
+pertenecer a varias con distinto rol en cada una. No se puede quitar al último
+dueño.
+
+## Catálogo
+
+| Método | Ruta | Rol mínimo |
+|---|---|---|
+| POST | `/products` | `seller` |
+| GET | `/products/:id` | público |
+| PATCH | `/products/variants/:variantId/stock` | `seller` |
+| POST | `/products/:id/publish` | `seller` |
+| DELETE | `/products/:id` | `seller` |
+
+Las variantes se validan contra las opciones del producto: un valor inexistente
+o una combinación repetida se rechazan al crear. El stock no puede bajarse por
+debajo de lo ya reservado o vendido.
+
+`publish` es explícito a propósito: una tienda con 500 productos elige cuáles
+salen al mapa, en vez de que cada fila del catálogo se convierta en un pin
+(spec §49). En el mapa la tienda aparece como **un** marker con su contador.
+
 ## Pendiente
 
-ABM de tiendas, reservas y admin tienen modelo de datos y reglas de dominio,
-pero todavía no endpoints. Ver `docs/implementation-plan.md`.
+Reservas y admin tienen modelo de datos y reglas de dominio, pero todavía no
+endpoints. Ver `docs/implementation-plan.md`.
 
 ### Liquidación marketplace
 

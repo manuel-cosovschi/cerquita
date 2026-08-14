@@ -18,6 +18,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { FavoritesModule } from './modules/favorites/favorites.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { UsersModule } from './modules/users/users.module';
+import { StoresModule } from './modules/stores/stores.module';
 import { HealthController } from './modules/health/health.controller';
 import { RequestIdMiddleware } from './common/request-id.middleware';
 
@@ -48,6 +49,7 @@ import { RequestIdMiddleware } from './common/request-id.middleware';
     AuctionsModule,
     CheckoutModule,
     UsersModule,
+    StoresModule,
     ReviewsModule,
     FavoritesModule,
     NotificationsModule,
