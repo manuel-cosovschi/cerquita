@@ -1,0 +1,98 @@
+/*
+ * Exact-location picker for the publish form.
+ *
+ * Two things the design has to say at once: this is where the thing is, and
+ * nobody else will ever see this point. The blurred halo is the second message
+ * drawn rather than written — what a buyer sees is the circle, not the pin.
+ */
+
+.picker {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.canvas {
+  position: relative;
+  height: 220px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-surface-sunken);
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.tiles {
+  position: absolute;
+  inset: 0;
+  filter: var(--map-tile-filter);
+}
+
+.tile {
+  position: absolute;
+  width: 256px;
+  height: 256px;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* The area a buyer would be shown. Sized to the fuzz radius, not decorative. */
+.halo {
+  position: absolute;
+  border-radius: var(--radius-full);
+  background: rgba(250, 137, 39, 0.16);
+  box-shadow: 0 0 0 1.5px rgba(250, 137, 39, 0.5) inset;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.pin {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-full);
+  background: var(--color-auction);
+  box-shadow:
+    0 0 0 3px var(--color-surface),
+    var(--shadow-marker);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-tertiary);
+}
+
+.row {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.button {
+  min-height: var(--touch-target-min);
+  padding: 0 var(--space-5);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow: var(--ring-hairline);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.button:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.coords {
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-tertiary);
+  align-self: center;
+}

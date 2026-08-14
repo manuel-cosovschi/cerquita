@@ -24,6 +24,8 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { MatchingModule } from './modules/matching/matching.module';
 import { CommentsModule } from './modules/comments/comments.module';
+import { UploadsModule } from './modules/uploads/uploads.module';
+import { CategoriesModule } from './modules/categories/categories.module';
 import { HealthController } from './modules/health/health.controller';
 import { RequestIdMiddleware } from './common/request-id.middleware';
 
@@ -60,6 +62,8 @@ import { RequestIdMiddleware } from './common/request-id.middleware';
     AdminModule,
     MatchingModule,
     CommentsModule,
+    UploadsModule,
+    CategoriesModule,
     ReviewsModule,
     FavoritesModule,
     NotificationsModule,

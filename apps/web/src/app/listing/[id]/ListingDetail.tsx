@@ -113,6 +113,16 @@ export function ListingDetail({ initial }: { initial: Listing }) {
     });
   }
 
+  async function setStatus(status: 'active' | 'paused' | 'removed', confirmation: string) {
+    await run('status', async () => {
+      await api.listings.setStatus(listing.id, status);
+      // Re-fetched rather than patched: pausing changes what the rest of the
+      // page is allowed to offer, and the server decides that.
+      setListing(await api.listings.get(listing.id));
+      return confirmation;
+    });
+  }
+
   async function addToCart() {
     if (!requireSession()) return;
 
@@ -206,6 +216,10 @@ export function ListingDetail({ initial }: { initial: Listing }) {
             {isAuction && <span className={styles.auctionTag}>Subasta</span>}
             {isWanted && <span className={styles.wantedTag}>Busco</span>}
             {listing.isPromoted && <span className={styles.promotedTag}>Destacado</span>}
+            {/* Anything but "active" changes what this page means, so it is said. */}
+            {listing.status !== 'active' && (
+              <span className={styles.promotedTag}>{statusLabel(listing.status)}</span>
+            )}
           </div>
 
           <h1 className={styles.title}>{listing.title}</h1>
@@ -396,6 +410,48 @@ export function ListingDetail({ initial }: { initial: Listing }) {
             </div>
           )}
 
+          {/*
+            The seller's own view. Without this, publishing something is a
+            one-way door: you could see your listing but not pause or retire it.
+          */}
+          {isOwn && (
+            <div className={styles.actions}>
+              {listing.status === 'paused' ? (
+                <button
+                  type="button"
+                  className={styles.primary}
+                  onClick={() => void setStatus('active', 'Volvió a estar visible.')}
+                  disabled={busy === 'status'}
+                >
+                  Reactivar
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.secondary}
+                  onClick={() => void setStatus('paused', 'Pausada. Nadie la ve por ahora.')}
+                  disabled={busy === 'status' || listing.status !== 'active'}
+                >
+                  Pausar
+                </button>
+              )}
+
+              <button
+                type="button"
+                className={styles.secondary}
+                onClick={() => {
+                  // Retiring is not reversible through the UI, so it asks.
+                  if (window.confirm('¿Retirar esta publicación? No se puede deshacer.')) {
+                    void setStatus('removed', 'La retiramos.');
+                  }
+                }}
+                disabled={busy === 'status' || listing.status === 'removed'}
+              >
+                Retirar
+              </button>
+            </div>
+          )}
+
           <section className={styles.sellerBox} aria-label="Vendedor">
             <div>
               <p className={styles.sellerName}>
@@ -457,6 +513,19 @@ export function ListingDetail({ initial }: { initial: Listing }) {
       </main>
     </div>
   );
+}
+
+function statusLabel(status: Listing['status']): string {
+  const labels: Record<Listing['status'], string> = {
+    draft: 'Borrador',
+    active: 'Activa',
+    reserved: 'Reservada',
+    sold: 'Vendida',
+    paused: 'Pausada',
+    expired: 'Vencida',
+    removed: 'Retirada',
+  };
+  return labels[status];
 }
 
 /** Pre-fills the bid box with the smallest bid the server would accept. */

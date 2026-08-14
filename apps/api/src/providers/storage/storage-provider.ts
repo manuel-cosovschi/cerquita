@@ -59,6 +59,94 @@ export function assertValidImage(buffer: Buffer, contentType: string): void {
   }
 }
 
+export interface ImageDimensions {
+  readonly width: number;
+  readonly height: number;
+}
+
+/**
+ * Reads an image's pixel dimensions from its header.
+ *
+ * The alternative is to let the client tell us how big its own upload is, and
+ * those numbers end up in `<img width height>` on every listing card. A wrong
+ * value only costs a layout shift, but the bytes already say the truth and we
+ * are already parsing them to sniff the type.
+ *
+ * Returns undefined when the format is one we cannot read without decoding
+ * (some AVIF layouts); the caller falls back rather than rejecting the upload.
+ */
+export function readImageDimensions(buffer: Buffer): ImageDimensions | undefined {
+  const type = detectImageType(buffer);
+  if (type === 'image/png') return readPngDimensions(buffer);
+  if (type === 'image/jpeg') return readJpegDimensions(buffer);
+  if (type === 'image/webp') return readWebpDimensions(buffer);
+  return undefined;
+}
+
+/** IHDR is always the first chunk, at a fixed offset. */
+function readPngDimensions(buffer: Buffer): ImageDimensions | undefined {
+  if (buffer.length < 24 || buffer.toString('ascii', 12, 16) !== 'IHDR') return undefined;
+  return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
+}
+
+/**
+ * Walks the JPEG marker chain to the Start Of Frame, which is the only segment
+ * that carries the dimensions. Everything before it is skipped by its own
+ * declared length.
+ */
+function readJpegDimensions(buffer: Buffer): ImageDimensions | undefined {
+  let offset = 2; // past SOI
+
+  while (offset + 9 < buffer.length) {
+    if (buffer[offset] !== 0xff) return undefined;
+
+    const marker = buffer[offset + 1];
+    if (marker === undefined) return undefined;
+
+    // SOF0..SOF15, excluding the DHT/JPG/DAC markers that share the range.
+    const isStartOfFrame =
+      marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc;
+
+    if (isStartOfFrame) {
+      return { height: buffer.readUInt16BE(offset + 5), width: buffer.readUInt16BE(offset + 7) };
+    }
+
+    const segmentLength = buffer.readUInt16BE(offset + 2);
+    if (segmentLength < 2) return undefined;
+    offset += 2 + segmentLength;
+  }
+
+  return undefined;
+}
+
+/** WebP has three container variants and each stores the size differently. */
+function readWebpDimensions(buffer: Buffer): ImageDimensions | undefined {
+  const format = buffer.toString('ascii', 12, 16);
+
+  if (format === 'VP8 ' && buffer.length >= 30) {
+    // Lossy: 14 bits each, after the 3-byte start code.
+    return {
+      width: buffer.readUInt16LE(26) & 0x3fff,
+      height: buffer.readUInt16LE(28) & 0x3fff,
+    };
+  }
+
+  if (format === 'VP8L' && buffer.length >= 25) {
+    // Lossless: 14 bits each, packed across four bytes, both minus one.
+    const bits = buffer.readUInt32LE(21);
+    return { width: (bits & 0x3fff) + 1, height: ((bits >> 14) & 0x3fff) + 1 };
+  }
+
+  if (format === 'VP8X' && buffer.length >= 30) {
+    // Extended: 24-bit little-endian, both minus one.
+    const width = buffer.readUIntLE(24, 3) + 1;
+    const height = buffer.readUIntLE(27, 3) + 1;
+    return { width, height };
+  }
+
+  return undefined;
+}
+
 /** Sniffs the file signature. Returns undefined when it is not a supported image. */
 export function detectImageType(buffer: Buffer): string | undefined {
   if (buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
