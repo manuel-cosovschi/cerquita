@@ -2,7 +2,7 @@
 
 Estado: **export recibido y tokens aplicados**. Última actualización: 2026-08-14.
 
-Fuente: `design-reference/mobile-app-design/` (handoff bundle de Claude Design,
+Fuente: `design-reference/concepto-a-map-first/` (handoff bundle de Claude Design,
 entregado por el usuario). El bundle original se conserva sin modificar, como
 pide la spec §112.
 
@@ -21,10 +21,21 @@ pide la spec §112.
 dc-runtime/src/*.ts`), exactamente lo que la spec §1 anticipaba. No hay ninguna
 dependencia hacia él.
 
-## 2. El hallazgo más importante
+## 2. Las siete direcciones
 
-El board se titula **"Siete direcciones para la misma app"**, pero **contiene una
-sola**: `1a · Map first`. Las otras seis no están en el archivo.
+El segundo bundle (182 KB, vs 37 KB del primero) sí trae las siete:
+
+| | Dirección | Idea |
+|---|---|---|
+| 1a | Map first | El mapa es la app, todo lo demás flota encima |
+| 1b | Marketplace + mapa | Grilla primero, el mapa es una vista más |
+| 1c | Social commerce | Personas antes que objetos, feed a pantalla completa |
+| 1d | Minimal / premium | Editorial, mucho aire, tipografía haciendo el trabajo |
+| 1e | Cámara first | Apuntás el teléfono a la calle y ves qué se vende |
+| 1f | Búsqueda conversacional | Escribís lo que necesitás y el mapa se reconfigura |
+| 1g | "Ahora" | Feed de tiempo real: subastas, bajas, gente buscando |
+
+El usuario pidió una mezcla de **1a + 1c**. La propuesta de síntesis está en §9.
 
 Además, el board declara explícitamente que su branding es descartable:
 
