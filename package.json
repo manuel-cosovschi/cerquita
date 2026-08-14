@@ -1,0 +1,36 @@
+{
+  "name": "cerquita",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Cerquita — hyperlocal social marketplace",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/**\" build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "dev:infra": "docker compose up -d",
+    "dev:infra:down": "docker compose down",
+    "db:generate": "pnpm --filter @cerquita/api db:generate",
+    "db:migrate": "pnpm --filter @cerquita/api db:migrate",
+    "db:seed": "pnpm --filter @cerquita/api db:seed",
+    "dev:api": "pnpm --filter @cerquita/api dev",
+    "dev:web": "pnpm --filter @cerquita/web dev",
+    "dev:admin": "pnpm --filter @cerquita/admin dev",
+    "dev:mobile": "pnpm --filter @cerquita/mobile start"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "eslint": "^9.18.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.21.0",
+    "vitest": "^3.0.4"
+  }
+}
