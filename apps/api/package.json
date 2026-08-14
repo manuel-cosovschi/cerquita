@@ -1,0 +1,55 @@
+{
+  "name": "@cerquita/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "nest start --watch",
+    "build": "nest build",
+    "start": "node dist/main.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:reset": "prisma migrate reset --force",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@cerquita/domain": "workspace:*",
+    "@cerquita/types": "workspace:*",
+    "@cerquita/utils": "workspace:*",
+    "@cerquita/validation": "workspace:*",
+    "@nestjs/common": "^11.0.6",
+    "@nestjs/config": "^4.0.0",
+    "@nestjs/core": "^11.0.6",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.6",
+    "@nestjs/platform-socket.io": "^11.0.6",
+    "@nestjs/swagger": "^11.0.3",
+    "@nestjs/websockets": "^11.0.6",
+    "@prisma/client": "^6.3.0",
+    "argon2": "^0.41.1",
+    "bullmq": "^5.34.10",
+    "helmet": "^8.0.0",
+    "ioredis": "^5.4.2",
+    "pino": "^9.6.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "socket.io": "^4.8.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.2",
+    "@nestjs/testing": "^11.0.6",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.7",
+    "prisma": "^6.3.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.4"
+  }
+}
