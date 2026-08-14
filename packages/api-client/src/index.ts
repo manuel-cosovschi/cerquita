@@ -8,11 +8,16 @@
 
 import type {
   Cart,
+  Conversation,
   Listing,
   ListingSummary,
   MapMarker,
+  Message,
+  NotificationItem,
   Order,
   Paginated,
+  Store,
+  UserProfile,
 } from '@cerquita/types';
 
 export interface ApiErrorBody {
@@ -124,6 +129,34 @@ export interface ListingComment {
   socialProof: string | null;
   createdAt: string;
   replies?: ListingComment[];
+}
+
+/**
+ * What the owner of an account can see and change about it.
+ *
+ * Discounts stay in basis points on the wire. A percentage rounded for display
+ * and posted back would drift the seller's own pricing policy a little every
+ * time the screen is opened.
+ */
+export interface UserSettings {
+  discounts: { followerBasisPoints: number; friendBasisPoints: number };
+  privacy: {
+    showSoldListings: boolean;
+    showFavorites: boolean;
+    showActivity: boolean;
+    showPurchases: boolean;
+  };
+}
+
+/** The tabs a profile splits its listings into (spec §21). */
+export type ProfileTab = 'selling' | 'wanted' | 'auctions' | 'sold';
+
+export interface ProfileReview {
+  id: string;
+  rating: number;
+  body?: string;
+  author: { id: string; username: string; displayName: string; avatarUrl?: string };
+  createdAt: string;
 }
 
 export interface SearchQuery {
@@ -290,6 +323,59 @@ export function createClient(options: ClientOptions) {
     checkout: {
       submit: (body: unknown) => post<{ order: Order; checkoutUrl?: string }>('/checkout', body),
       order: (id: string) => request<Order>(`/orders/${id}`),
+    },
+
+    users: {
+      profile: (username: string) => request<UserProfile>(`/users/${username}`),
+      settings: () => request<UserSettings>('/users/me/settings'),
+      listings: (username: string, tab: ProfileTab = 'selling') =>
+        request<ListingSummary[]>(`/users/${username}/listings`, { query: { tab } }),
+      reviews: (username: string, cursor?: string) =>
+        request<Paginated<ProfileReview>>(`/users/${username}/reviews`, { query: { cursor } }),
+      updateProfile: (body: { displayName?: string; bio?: string; avatarUrl?: string }) =>
+        request<UserProfile>('/users/me/profile', { method: 'PATCH', body: JSON.stringify(body) }),
+      /** The seller's own social pricing policy (spec §30). */
+      updateDiscounts: (body: { followerBasisPoints: number; friendBasisPoints: number }) =>
+        request<unknown>('/users/me/discounts', { method: 'PATCH', body: JSON.stringify(body) }),
+      updatePrivacy: (body: UserSettings['privacy']) =>
+        request<unknown>('/users/me/privacy', { method: 'PATCH', body: JSON.stringify(body) }),
+    },
+
+    stores: {
+      get: (handle: string) => request<Store>(`/stores/${handle}`),
+      products: (storeId: string) => request<ListingSummary[]>(`/stores/${storeId}/products`),
+    },
+
+    favorites: {
+      list: (cursor?: string) =>
+        request<Paginated<ListingSummary>>('/favorites', { query: { cursor } }),
+      add: (listingId: string, collectionId?: string) =>
+        post<unknown>('/favorites', { listingId, collectionId }),
+      remove: (listingId: string) =>
+        request<unknown>(`/favorites/listing/${listingId}`, { method: 'DELETE' }),
+      collections: () => request<Array<{ id: string; name: string }>>('/collections'),
+      createCollection: (name: string) =>
+        post<{ id: string; name: string }>('/collections', { name }),
+    },
+
+    chat: {
+      conversations: () => request<Conversation[]>('/conversations'),
+      conversation: (id: string) => request<Conversation>(`/conversations/${id}`),
+      /** Opens or reuses the thread for a listing — never creates a duplicate. */
+      open: (body: { participantId: string; listingId?: string }) =>
+        post<Conversation>('/conversations', body),
+      messages: (id: string, cursor?: string) =>
+        request<Paginated<Message>>(`/conversations/${id}/messages`, { query: { cursor } }),
+      send: (id: string, body: string) => post<Message>(`/conversations/${id}/messages`, { body }),
+      markRead: (id: string) => post<unknown>(`/conversations/${id}/read`, {}),
+    },
+
+    notifications: {
+      list: (cursor?: string) =>
+        request<Paginated<NotificationItem>>('/notifications', { query: { cursor } }),
+      unreadCount: () => request<{ count: number }>('/notifications/unread-count'),
+      markRead: (id: string) => post<unknown>(`/notifications/${id}/read`, {}),
+      markAllRead: () => post<unknown>('/notifications/read-all', {}),
     },
 
     social: {

@@ -1,0 +1,121 @@
+/*
+ * Social pricing settings (spec §30).
+ *
+ * The seller sets two discounts and sees, in money, what they mean on a real
+ * price. A basis-point field with no worked example is a number nobody can
+ * reason about.
+ */
+
+.intro {
+  margin: 0 0 var(--space-8);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
+.group {
+  padding: var(--space-6) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.label {
+  display: block;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.note {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  margin-top: var(--space-5);
+}
+
+.slider {
+  flex: 1;
+  accent-color: var(--color-auction);
+}
+
+.value {
+  flex: none;
+  min-width: 4ch;
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+  text-align: right;
+}
+
+/* The worked example: what the discount does to a real number. */
+.example {
+  margin: var(--space-4) 0 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text-tertiary);
+}
+
+.exampleAmount {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.warning {
+  margin: var(--space-5) 0 0;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-warning-subtle);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+}
+
+.save {
+  width: 100%;
+  min-height: var(--touch-target-comfortable);
+  margin-top: var(--space-8);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+}
+
+.save:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.saved {
+  margin: var(--space-4) 0 0;
+  text-align: center;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-success);
+}
+
+.error {
+  margin: var(--space-4) 0 0;
+  text-align: center;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-danger);
+}
+
+.state {
+  padding: var(--space-9) 0;
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-md);
+}

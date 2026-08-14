@@ -56,6 +56,7 @@ export interface ListingRow {
   country: string | null;
   viewCount: number;
   favoriteCount: number;
+  commentCount: number;
   promotedUntil: Date | null;
   publishedAt: Date | null;
   createdAt: Date;
@@ -77,6 +78,8 @@ export interface SerializeContext {
   /** Raw metres from the viewer; bucketed before it leaves the server. */
   readonly rawDistanceMeters?: number;
   readonly publicLocationPrecisionMeters: number;
+  /** "Amigo de Nacho". Null when the viewer has no connection to the seller. */
+  readonly socialProof?: string | null;
   readonly now: Date;
 }
 
@@ -132,9 +135,11 @@ export class ListingSerializer {
       priceHistory: extras.priceHistory,
       viewCount: row.viewCount,
       favoriteCount: row.favoriteCount,
+      commentCount: row.commentCount,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
       wantedRadiusMeters: row.wantedRadiusMeters ?? undefined,
+      socialProof: context.socialProof ?? null,
     };
   }
 
@@ -144,10 +149,7 @@ export class ListingSerializer {
    * Checkout calls the same `resolvePrice` with the same inputs rather than
    * trusting this output, so the two can never disagree about what is owed.
    */
-  private resolveListingPrice(
-    row: ListingRow,
-    context: SerializeContext,
-  ): ListingSummary['price'] {
+  private resolveListingPrice(row: ListingRow, context: SerializeContext): ListingSummary['price'] {
     if (row.priceAmount === null) return undefined;
 
     const resolution = resolvePrice({

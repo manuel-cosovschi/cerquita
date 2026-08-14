@@ -18,6 +18,7 @@ import { fuzzCoordinates, money, type Coordinates } from '@cerquita/utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListingSerializer, type ListingRow } from './listing.serializer';
 import { EventBus } from '../events/event-bus.service';
+import { SocialProofService } from '../social/social-proof.service';
 import { ConfigService } from '../config/config.service';
 import type { AuthenticatedUser } from '../../common/current-user.decorator';
 
@@ -36,6 +37,7 @@ export class ListingsService {
     private readonly serializer: ListingSerializer,
     private readonly events: EventBus,
     private readonly config: ConfigService,
+    private readonly socialProof: SocialProofService,
   ) {}
 
   async create(input: CreateListingInput, actor: AuthenticatedUser): Promise<Listing> {
@@ -97,8 +99,7 @@ export class ListingsService {
           priceAmount: 'price' in input ? input.price.amount : null,
           priceCurrency: 'price' in input ? input.price.currency : 'ARS',
           maxBudgetAmount: 'maxBudget' in input && input.maxBudget ? input.maxBudget.amount : null,
-          wantedRadiusMeters:
-            'wantedRadiusMeters' in input ? input.wantedRadiusMeters : null,
+          wantedRadiusMeters: 'wantedRadiusMeters' in input ? input.wantedRadiusMeters : null,
           acceptedConditions:
             'acceptedConditions' in input && input.acceptedConditions
               ? input.acceptedConditions
@@ -202,44 +203,52 @@ export class ListingsService {
       this.prisma.auction.findUnique({ where: { listingId: id } }),
     ]);
 
-    return this.serializer.toDetail(row, context, {
-      priceHistory: priceHistory.map((point) => ({
-        price: { amount: point.priceAmount, currency: point.priceCurrency as 'ARS' },
-        recordedAt: point.recordedAt.toISOString(),
-        reason: point.reason ?? undefined,
-      })),
-      auction: auction
-        ? {
-            id: auction.id,
-            status: auction.status,
-            startsAt: auction.startsAt.toISOString(),
-            endsAt: auction.endsAt.toISOString(),
-            currentPrice: {
-              amount: auction.highestBidAmount ?? auction.startingPriceAmount,
-              currency: auction.currency as 'ARS',
-            },
-            nextMinimumBid: {
-              amount:
-                auction.highestBidAmount === null
-                  ? auction.startingPriceAmount
-                  : auction.highestBidAmount + auction.minimumIncrementAmount,
-              currency: auction.currency as 'ARS',
-            },
-            bidCount: auction.bidCount,
-            participantCount: auction.participantCount,
-            buyNowPrice:
-              auction.buyNowPriceAmount === null
-                ? undefined
-                : { amount: auction.buyNowPriceAmount, currency: auction.currency as 'ARS' },
-            // Whether a reserve exists is public; its value never is.
-            hasReserve: auction.reservePriceAmount !== null,
-            reserveMet:
-              auction.reservePriceAmount === null ||
-              (auction.highestBidAmount ?? 0) >= auction.reservePriceAmount,
-            viewerIsHighestBidder: viewerId ? auction.highestBidderId === viewerId : undefined,
-          }
-        : undefined,
-    });
+    // "Amigo de Nacho" — the reason a stranger should trust this seller. Comes
+    // from the graph, resolved per viewer (direction 1c).
+    const proof = await this.socialProof.forSeller(row.sellerId, viewerId);
+
+    return this.serializer.toDetail(
+      row,
+      { ...context, socialProof: proof.label },
+      {
+        priceHistory: priceHistory.map((point) => ({
+          price: { amount: point.priceAmount, currency: point.priceCurrency as 'ARS' },
+          recordedAt: point.recordedAt.toISOString(),
+          reason: point.reason ?? undefined,
+        })),
+        auction: auction
+          ? {
+              id: auction.id,
+              status: auction.status,
+              startsAt: auction.startsAt.toISOString(),
+              endsAt: auction.endsAt.toISOString(),
+              currentPrice: {
+                amount: auction.highestBidAmount ?? auction.startingPriceAmount,
+                currency: auction.currency as 'ARS',
+              },
+              nextMinimumBid: {
+                amount:
+                  auction.highestBidAmount === null
+                    ? auction.startingPriceAmount
+                    : auction.highestBidAmount + auction.minimumIncrementAmount,
+                currency: auction.currency as 'ARS',
+              },
+              bidCount: auction.bidCount,
+              participantCount: auction.participantCount,
+              buyNowPrice:
+                auction.buyNowPriceAmount === null
+                  ? undefined
+                  : { amount: auction.buyNowPriceAmount, currency: auction.currency as 'ARS' },
+              // Whether a reserve exists is public; its value never is.
+              hasReserve: auction.reservePriceAmount !== null,
+              reserveMet:
+                auction.reservePriceAmount === null ||
+                (auction.highestBidAmount ?? 0) >= auction.reservePriceAmount,
+              viewerIsHighestBidder: viewerId ? auction.highestBidderId === viewerId : undefined,
+            }
+          : undefined,
+      },
+    );
   }
 
   async update(
@@ -353,7 +362,10 @@ export class ListingsService {
         { sellerId: existing.sellerId, storeId: existing.storeId ?? undefined },
       )
     ) {
-      throw new ForbiddenException({ message: 'No podés editar esta publicación', code: 'forbidden' });
+      throw new ForbiddenException({
+        message: 'No podés editar esta publicación',
+        code: 'forbidden',
+      });
     }
 
     await this.prisma.listing.update({ where: { id }, data: { status } });
@@ -374,7 +386,7 @@ export class ListingsService {
         ST_Y(l."publicLocation"::geometry) AS "publicLat",
         ST_X(l."publicLocation"::geometry) AS "publicLng",
         l."neighborhood", l."city", l."region", l."country",
-        l."viewCount", l."favoriteCount", l."promotedUntil",
+        l."viewCount", l."favoriteCount", l."commentCount", l."promotedUntil",
         l."publishedAt", l."createdAt", l."updatedAt",
         l."sellerId", l."storeId"
       FROM "Listing" l

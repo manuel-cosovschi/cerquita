@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserSerializer, USER_SUMMARY_SELECT } from '../users/user.serializer';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -101,6 +106,30 @@ export class CommentsService {
       throw new ForbiddenException({ message: 'No podés comentar acá', code: 'blocked' });
     }
 
+    // Threads are two levels deep and never cross listings. Both checks matter
+    // because `list()` only reads replies nested under a visible top-level
+    // comment: a reply to a reply, or a reply parented on another listing,
+    // would be stored and then never rendered anywhere.
+    if (input.parentId) {
+      const parent = await this.prisma.listingComment.findUnique({
+        where: { id: input.parentId },
+        select: { listingId: true, parentId: true, hiddenAt: true },
+      });
+
+      if (!parent || parent.listingId !== listing.id || parent.hiddenAt) {
+        throw new NotFoundException({
+          message: 'El comentario que querés responder ya no está',
+          code: 'parent_not_found',
+        });
+      }
+      if (parent.parentId) {
+        throw new BadRequestException({
+          message: 'No se puede responder a una respuesta',
+          code: 'nesting_too_deep',
+        });
+      }
+    }
+
     const comment = await this.prisma.$transaction(async (tx) => {
       const created = await tx.listingComment.create({
         data: {
@@ -141,24 +170,64 @@ export class CommentsService {
     };
   }
 
-  /** Soft delete. Authors may remove their own; the seller may hide any. */
+  /**
+   * Soft delete. Authors may remove their own; the seller may hide any.
+   *
+   * Hiding a top-level comment takes its replies with it — they only exist as
+   * answers to a question that is no longer there, and `list()` would drop them
+   * regardless since it reads replies nested under visible parents. The counter
+   * is decremented by everything that actually disappeared, so the badge tracks
+   * what a reader can see.
+   */
   async hide(commentId: string, actorId: string): Promise<{ ok: true }> {
     const comment = await this.prisma.listingComment.findUnique({
       where: { id: commentId },
-      select: { id: true, authorId: true, listing: { select: { sellerId: true } } },
+      select: {
+        id: true,
+        authorId: true,
+        hiddenAt: true,
+        listingId: true,
+        listing: { select: { sellerId: true } },
+      },
     });
 
     if (!comment) {
       throw new NotFoundException({ message: 'Comentario no encontrado', code: 'not_found' });
     }
     if (comment.authorId !== actorId && comment.listing.sellerId !== actorId) {
-      throw new ForbiddenException({ message: 'No podés eliminar este comentario', code: 'forbidden' });
+      throw new ForbiddenException({
+        message: 'No podés eliminar este comentario',
+        code: 'forbidden',
+      });
     }
+    // Already hidden: nothing disappears, so nothing may be subtracted. Without
+    // this a repeated DELETE would walk the counter below zero.
+    if (comment.hiddenAt) return { ok: true };
 
-    await this.prisma.listingComment.update({
-      where: { id: commentId },
-      data: { hiddenAt: new Date() },
+    await this.prisma.$transaction(async (tx) => {
+      const hiddenAt = new Date();
+
+      // Conditional update: `hiddenAt: null` in the WHERE is what makes this
+      // idempotent under concurrency. Two simultaneous deletes both pass the
+      // check above, but only one of them updates a row — and only that one
+      // subtracts from the counter.
+      const hidden = await tx.listingComment.updateMany({
+        where: { id: commentId, hiddenAt: null },
+        data: { hiddenAt },
+      });
+      if (hidden.count === 0) return;
+
+      const replies = await tx.listingComment.updateMany({
+        where: { parentId: commentId, hiddenAt: null },
+        data: { hiddenAt },
+      });
+
+      await tx.listing.update({
+        where: { id: comment.listingId },
+        data: { commentCount: { decrement: 1 + replies.count } },
+      });
     });
+
     return { ok: true };
   }
 }

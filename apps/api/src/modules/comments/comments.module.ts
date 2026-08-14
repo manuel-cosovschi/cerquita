@@ -2,13 +2,13 @@ import { Module } from '@nestjs/common';
 import { CommentsService } from './comments.service';
 import { CommentsController } from './comments.controller';
 import { UserSerializer } from '../users/user.serializer';
-import { SocialProofService } from '../social/social-proof.service';
+import { SocialModule } from '../social/social.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [NotificationsModule],
+  imports: [SocialModule, NotificationsModule],
   controllers: [CommentsController],
-  providers: [CommentsService, UserSerializer, SocialProofService],
+  providers: [CommentsService, UserSerializer],
   exports: [CommentsService],
 })
 export class CommentsModule {}

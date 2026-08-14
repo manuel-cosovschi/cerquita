@@ -25,10 +25,7 @@ export class SearchService {
     @Inject(AI_PROVIDER) private readonly ai: AiProvider,
   ) {}
 
-  async search(
-    query: SearchQueryInput,
-    viewerId?: string,
-  ): Promise<Paginated<ListingSummary>> {
+  async search(query: SearchQueryInput, viewerId?: string): Promise<Paginated<ListingSummary>> {
     const settings = await this.config.settings();
     const radius = Math.min(
       query.radiusMeters ?? settings.maxSearchRadiusMeters,
@@ -44,9 +41,7 @@ export class SearchService {
       filters.push(Prisma.sql`l."categoryId" = ANY(${query.categoryIds}::uuid[])`);
     }
     if (query.condition?.length) {
-      filters.push(
-        Prisma.sql`l."condition"::text = ANY(${query.condition}::text[])`,
-      );
+      filters.push(Prisma.sql`l."condition"::text = ANY(${query.condition}::text[])`);
     }
     if (query.minPrice !== undefined) {
       filters.push(Prisma.sql`l."priceAmount" >= ${query.minPrice}`);
@@ -102,7 +97,7 @@ export class SearchService {
         ST_Y(l."publicLocation"::geometry) AS "publicLat",
         ST_X(l."publicLocation"::geometry) AS "publicLng",
         l."neighborhood", l."city", l."region", l."country",
-        l."viewCount", l."favoriteCount", l."promotedUntil",
+        l."viewCount", l."favoriteCount", l."commentCount", l."promotedUntil",
         l."publishedAt", l."createdAt", l."updatedAt",
         l."sellerId", l."storeId",
         ${

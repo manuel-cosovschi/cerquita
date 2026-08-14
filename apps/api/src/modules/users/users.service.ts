@@ -4,7 +4,19 @@ import { resolveAudienceTier } from '@cerquita/domain';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserSerializer } from './user.serializer';
 import { ListingsService } from '../listings/listings.service';
+import { SocialProofService } from '../social/social-proof.service';
 import type { ListingRow } from '../listings/listing.serializer';
+
+/** What the owner of an account can see and change about it. */
+export interface UserSettings {
+  readonly discounts: { followerBasisPoints: number; friendBasisPoints: number };
+  readonly privacy: {
+    showSoldListings: boolean;
+    showFavorites: boolean;
+    showActivity: boolean;
+    showPurchases: boolean;
+  };
+}
 
 /**
  * Public profiles (spec §7, §34).
@@ -18,6 +30,7 @@ export class UsersService {
     private readonly prisma: PrismaService,
     private readonly serializer: UserSerializer,
     private readonly listings: ListingsService,
+    private readonly socialProof: SocialProofService,
   ) {}
 
   async profileByUsername(username: string, viewerId?: string): Promise<UserProfile> {
@@ -60,18 +73,22 @@ export class UsersService {
       throw new NotFoundException({ message: 'Perfil no encontrado', code: 'not_found' });
     }
 
-    const [followerCount, followingCount, friendCount, relationship] = await Promise.all([
+    const [followerCount, followingCount, friendCount, relationship, proof] = await Promise.all([
       this.prisma.follow.count({ where: { followeeId: user.id } }),
       this.prisma.follow.count({ where: { followerId: user.id } }),
       this.prisma.friendship.count({
         where: { status: 'accepted', OR: [{ userAId: user.id }, { userBId: user.id }] },
       }),
       this.relationship(user.id, viewerId),
+      // "Amiga de Nacho" — the sentence that decides whether a stranger trusts
+      // this profile. It belongs on the profile itself, not only in search.
+      this.socialProof.forSeller(user.id, viewerId),
     ]);
 
     return {
       ...this.serializer.toSummary(user),
       relationship,
+      socialProof: proof.label,
       bio: user.bio ?? undefined,
       area: user.area ?? undefined,
       joinedAt: user.createdAt.toISOString(),
@@ -189,7 +206,7 @@ export class UsersService {
          ST_Y(l."publicLocation"::geometry) AS "publicLat",
          ST_X(l."publicLocation"::geometry) AS "publicLng",
          l."neighborhood", l."city", l."region", l."country",
-         l."viewCount", l."favoriteCount", l."promotedUntil",
+         l."viewCount", l."favoriteCount", l."commentCount", l."promotedUntil",
          l."publishedAt", l."createdAt", l."updatedAt",
          l."sellerId", l."storeId"
        FROM "Listing" l
@@ -223,6 +240,44 @@ export class UsersService {
   }
 
   /** Seller-wide social discount defaults, inherited by new listings (spec §24). */
+  /**
+   * Everything the settings screen needs, in one call.
+   *
+   * Discounts are stored in basis points and travel that way: a percentage
+   * rounded for display and sent back would silently move the seller's own
+   * pricing policy every time the screen is opened.
+   */
+  async settings(userId: string): Promise<UserSettings> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        followerDiscountBps: true,
+        friendDiscountBps: true,
+        showSoldListings: true,
+        showFavorites: true,
+        showActivity: true,
+        showPurchases: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException({ message: 'Perfil no encontrado', code: 'not_found' });
+    }
+
+    return {
+      discounts: {
+        followerBasisPoints: user.followerDiscountBps,
+        friendBasisPoints: user.friendDiscountBps,
+      },
+      privacy: {
+        showSoldListings: user.showSoldListings,
+        showFavorites: user.showFavorites,
+        showActivity: user.showActivity,
+        showPurchases: user.showPurchases,
+      },
+    };
+  }
+
   async updateDiscountPolicy(
     userId: string,
     policy: { followerBasisPoints: number; friendBasisPoints: number },

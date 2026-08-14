@@ -1,0 +1,130 @@
+/*
+ * Auth, direction 1a.
+ *
+ * Full-bleed cream, the display face for the promise, a single stacked column of
+ * fields on the raised surface. No card, no logo lockup, no marketing panel —
+ * the export never uses one, and a login screen is a door, not a landing page.
+ */
+
+.screen {
+  min-height: 100dvh;
+  background: var(--color-background);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-9) var(--space-7) var(--space-12);
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.wordmark {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--letter-spacing-tighter);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.promise {
+  margin: var(--space-3) 0 var(--space-9);
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+  max-width: 34ch;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.input {
+  min-height: var(--touch-target-comfortable);
+  padding: 0 var(--space-6);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--ring-hairline);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  width: 100%;
+}
+
+.input:focus-visible {
+  /* The global rule already draws the focus outline; the hairline stays so the
+     field keeps its shape while focused. */
+  box-shadow: var(--ring-hairline-strong);
+}
+
+.hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+/* The failure is attached to the form, not thrown in an alert. */
+.error {
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-subtle);
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.submit {
+  min-height: var(--touch-target-comfortable);
+  margin-top: var(--space-3);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+}
+
+.submit:hover:not(:disabled) {
+  background: var(--color-brand-hover);
+}
+
+.submit:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.alt {
+  margin: var(--space-8) 0 0;
+  text-align: center;
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+}
+
+.altLink {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-bold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.back {
+  align-self: flex-start;
+  margin-bottom: var(--space-7);
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+}

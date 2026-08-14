@@ -5,7 +5,7 @@ import {
   updateDiscountPolicySchema,
   updateProfileSchema,
 } from '@cerquita/validation';
-import { UsersService } from './users.service';
+import { UsersService, type UserSettings } from './users.service';
 import { ReviewsService } from '../reviews/reviews.service';
 import { zodBody } from '../../common/zod-validation.pipe';
 import { CurrentUser, type AuthenticatedUser } from '../../common/current-user.decorator';
@@ -17,6 +17,17 @@ export class UsersController {
     private readonly users: UsersService,
     private readonly reviews: ReviewsService,
   ) {}
+
+  /**
+   * The viewer's own settings.
+   *
+   * Declared before `:username` on purpose: Nest matches routes in declaration
+   * order, and a wildcard segment above this one would swallow `me`.
+   */
+  @Get('me/settings')
+  settings(@CurrentUser() user: AuthenticatedUser): Promise<UserSettings> {
+    return this.users.settings(user.userId);
+  }
 
   /** Public profile. Signed-in viewers additionally get their relationship. */
   @OptionalAuth()

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
 import { tokensCss } from '@/lib/tokens.css';
+import { SessionProvider } from '@/lib/session';
 
 export const metadata: Metadata = {
   title: {
@@ -41,7 +42,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <a className="skip-link" href="#contenido">
           Saltar al contenido
         </a>
-        {children}
+        {/*
+          Every social surface — friend pricing, "amiga de Nacho", who may see an
+          exact address — is resolved per viewer, so the session sits above the
+          whole tree rather than inside the screens that happen to need it.
+        */}
+        <SessionProvider>{children}</SessionProvider>
       </body>
     </html>
   );

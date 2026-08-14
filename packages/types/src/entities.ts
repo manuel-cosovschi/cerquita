@@ -81,6 +81,12 @@ export interface RelationshipState {
 }
 
 export interface UserProfile extends UserSummary {
+  /**
+   * "Amiga de Nacho" — friends this viewer and this person have in common,
+   * already phrased. Null when there is no connection, and always null for an
+   * anonymous viewer: the graph is resolved per viewer, never published.
+   */
+  readonly socialProof: string | null;
   readonly bio?: string;
   readonly area?: string;
   readonly joinedAt: IsoDateTime;
@@ -175,10 +181,17 @@ export interface Listing extends ListingSummary {
   readonly priceHistory: PricePoint[];
   readonly viewCount: number;
   readonly favoriteCount: number;
+  readonly commentCount: number;
   readonly createdAt: IsoDateTime;
   readonly updatedAt: IsoDateTime;
   /** Radius the wanted post covers, in metres. Wanted listings only. */
   readonly wantedRadiusMeters?: number;
+  /**
+   * Why the viewer should trust this seller, e.g. "Amigo de Nacho" (spec §46,
+   * direction 1c). Null when there is no connection. Resolved server-side from
+   * the graph — the client never computes it.
+   */
+  readonly socialProof?: string | null;
 }
 
 export interface PricePoint {

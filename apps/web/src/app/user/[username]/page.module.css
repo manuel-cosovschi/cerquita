@@ -1,0 +1,200 @@
+/*
+ * A public profile.
+ *
+ * Direction 1c's argument, applied: the thing that makes a stranger comfortable
+ * buying from you is not a badge, it is that you and they know some of the same
+ * people. So the social reference sits directly under the name — above the
+ * rating, above the sales count — and the follow/friend actions come next.
+ */
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-6);
+  padding: var(--space-3) 0 var(--space-6);
+}
+
+.avatar {
+  width: 68px;
+  height: 68px;
+  flex: none;
+  border-radius: var(--radius-full);
+  background: var(--color-brand-subtle);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-black);
+  color: var(--color-text-primary);
+  object-fit: cover;
+}
+
+.identity {
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text-primary);
+}
+
+.handle {
+  margin: 2px 0 0;
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+}
+
+/* The reference, in the position the design gives to the most load-bearing fact. */
+.proof {
+  display: inline-block;
+  margin-top: var(--space-3);
+  padding: 3px var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--color-friend-subtle);
+  color: var(--color-friend);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.bio {
+  margin: var(--space-4) 0 0;
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
+.area {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text-tertiary);
+}
+
+/* ── actions ──────────────────────────────────────────────────────────────── */
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  padding-bottom: var(--space-6);
+}
+
+.action {
+  flex: 1;
+  min-height: var(--touch-target-comfortable);
+  border: none;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionPrimary {
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
+}
+
+.actionSecondary {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--ring-hairline-strong);
+}
+
+.actionDone {
+  background: var(--color-surface-sunken);
+  color: var(--color-text-secondary);
+}
+
+.action:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* ── numbers ──────────────────────────────────────────────────────────────── */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-6) 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.stat {
+  text-align: center;
+}
+
+.statValue {
+  display: block;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+
+.statLabel {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+/* ── tabs ─────────────────────────────────────────────────────────────────── */
+
+.tabs {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-6) 0 var(--space-5);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  flex: none;
+  min-height: var(--touch-target-min);
+  padding: 0 var(--space-6);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow: var(--ring-hairline);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tabActive {
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
+  box-shadow: none;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-5);
+  padding-bottom: var(--space-8);
+}
+
+.state {
+  padding: var(--space-9) 0;
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-md);
+}

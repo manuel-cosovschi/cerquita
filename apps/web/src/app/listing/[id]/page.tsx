@@ -7,6 +7,7 @@ import { serverApi } from '@/lib/api';
 import { Price } from '@/components/Price';
 import { Countdown } from '@/components/Countdown';
 import { PriceHistory } from '@/components/PriceHistory';
+import { Comments } from '@/components/Comments';
 import styles from './page.module.css';
 
 interface PageProps {
@@ -196,6 +197,12 @@ export default async function ListingPage({ params }: PageProps) {
                 {listing.store?.name ?? listing.seller.displayName}
                 {listing.seller.verified && <span className={styles.verified}> ✓</span>}
               </p>
+              {/*
+                The social reference goes ABOVE the metrics: "amiga de Nacho"
+                answers "can I trust this person" better than a star average
+                does, which is the whole argument of direction 1c.
+              */}
+              {listing.socialProof && <p className={styles.socialProof}>{listing.socialProof}</p>}
               <p className={styles.sellerMeta}>
                 {listing.seller.rating !== undefined
                   ? `${listing.seller.rating.toFixed(1)} ★ · ${listing.seller.reviewCount} reseñas`
@@ -232,6 +239,8 @@ export default async function ListingPage({ params }: PageProps) {
               acuerda por chat.
             </p>
           </section>
+
+          <Comments listingId={listing.id} count={listing.commentCount ?? 0} />
 
           {listing.priceHistory.length > 1 && (
             <section aria-label="Historial de precios">

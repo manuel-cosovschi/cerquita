@@ -2,14 +2,14 @@ import { Module } from '@nestjs/common';
 import { SearchService } from './search.service';
 import { EntitySearchService } from './entity-search.service';
 import { UserSerializer } from '../users/user.serializer';
-import { SocialProofService } from '../social/social-proof.service';
+import { SocialModule } from '../social/social.module';
 import { SearchController } from './search.controller';
 import { ListingsModule } from '../listings/listings.module';
 
 @Module({
-  imports: [ListingsModule],
+  imports: [SocialModule, ListingsModule],
   controllers: [SearchController],
-  providers: [SearchService, EntitySearchService, UserSerializer, SocialProofService],
+  providers: [SearchService, EntitySearchService, UserSerializer],
   exports: [SearchService, EntitySearchService],
 })
 export class SearchModule {}

@@ -115,7 +115,7 @@ export class FavoritesService {
         ST_Y(l."publicLocation"::geometry) AS "publicLat",
         ST_X(l."publicLocation"::geometry) AS "publicLng",
         l."neighborhood", l."city", l."region", l."country",
-        l."viewCount", l."favoriteCount", l."promotedUntil",
+        l."viewCount", l."favoriteCount", l."commentCount", l."promotedUntil",
         l."publishedAt", l."createdAt", l."updatedAt",
         l."sellerId", l."storeId"
       FROM "Listing" l
