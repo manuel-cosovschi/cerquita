@@ -183,3 +183,52 @@ Quedó guardado como `mapTiles.filterDarkCandidate`, marcado como no aprobado.
 | Direcciones faltantes | ⚠️ 6 de 7 no están en el bundle |
 | Paleta definitiva | ⚠️ El board la declara provisional |
 | Desktop y dark mode | ⬜ No diseñados |
+
+---
+
+## 9. Síntesis elegida: 1a + 1c
+
+Decidido con el usuario. **El mapa es el home; el feed es una pestaña.** La
+identidad visual es la de 1a, ya aplicada.
+
+1a y 1c chocan en un punto estructural — en 1a el mapa es el home, en 1c lo es
+el feed — así que había que elegir. Se eligió el mapa porque **funciona desde el
+día uno sin masa social**, que es exactamente el riesgo que el board le marca a
+1c (*"sin masa crítica el feed se ve vacío"*). El feed como pestaña de primer
+nivel resuelve, a su vez, el riesgo que el board le marca a 1a (*"comprar algo
+puntual obliga a pasar por la exploración"*).
+
+### Qué se toma de 1a
+
+- Mapa como home, nunca abandonado; búsqueda y producto llegan como sheets.
+- Markers = foto + burbuja de precio colgando; anillo turquesa = amigo.
+- Clusters negros con halo, "Buscar en esta zona", chip "AHORA".
+- Dock flotante de 5 con publicar al centro.
+- Tiles desaturados y cálidos.
+- Paleta, tipografías y radios.
+
+### Qué se trae de 1c
+
+- **Feed como pestaña de primer nivel**, no como destino secundario.
+- **Búsqueda partida en Cosas / Gente / Tiendas / Buscan** — buscás personas
+  igual que objetos. Ya soportado por el backend y pedido por §18.
+- **Prueba social en todas las superficies**: "amiga de Nacho" en cards y
+  detalle. El board lo dice mejor que cualquier justificación nuestra: *"el
+  grafo social es el mecanismo: 'amiga de Nacho' pesa más que cualquier badge de
+  verificado"*. Es §46 — reputación ≠ seguidores.
+- **Comentarios en la publicación**, que funcionan como referencias públicas.
+- La barra de resultados sociales: *"2 personas que seguís tienen una PS5
+  publicada"*.
+
+### Qué se descarta de 1c, y por qué
+
+El producto a pantalla completa estilo red social **pierde la escalera de
+precios sociales** (público / seguidores / amigos) que 1a muestra explícita y
+que es requisito duro de §23. Se conserva el layout de detalle de 1a y se le
+suman el header de vendedor y los comentarios de 1c.
+
+### Riesgo asumido
+
+La prueba social ("amiga de Nacho") exige el grafo poblado para verse. Con el
+mapa como home eso degrada bien: sin amigos, el mapa sigue siendo útil y la
+prueba social simplemente no aparece.
