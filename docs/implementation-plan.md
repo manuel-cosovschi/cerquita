@@ -127,8 +127,11 @@ reproducir el diseño sea reemplazar un archivo y no reescribir pantallas.
 ### Fase 8 — Inteligencia 🟡
 
 - ✅ Adapter de IA con mock **real** (parser en castellano, con tests).
-- ✅ Matching de búsquedas guardadas y de "Busco" en el dominio.
-- ⬜ Job de matching, demanda local agregada, recomendaciones.
+- ✅ Matching de búsquedas guardadas y de "Busco", enganchado a los eventos:
+  una publicación nueva notifica a quien tenga una alerta compatible o un Busco
+  que la satisfaga, y una baja de precio sólo re-notifica a quien recién ahora
+  entra en presupuesto.
+- ⬜ Demanda local agregada (§51), recomendaciones.
 
 ### Fase 9 — Admin 🟡 (backend ✅)
 

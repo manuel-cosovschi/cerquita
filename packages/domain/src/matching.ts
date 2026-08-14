@@ -113,6 +113,40 @@ export interface WantedPost {
 }
 
 /**
+ * Words that frame a "Busco" post rather than describe the item.
+ *
+ * A post titled "Busco PlayStation 5" is looking for a PlayStation, not for a
+ * listing that contains the word "busco". Since `textMatches` requires every
+ * term to appear, leaving these in means a wanted post can never match anything.
+ */
+const WANTED_FRAMING_WORDS = new Set([
+  'busco',
+  'buscando',
+  'necesito',
+  'quiero',
+  'compro',
+  'wtb',
+  'se',
+  'me',
+  'urgente',
+]);
+
+/**
+ * The searchable part of a wanted post's title.
+ *
+ * Exported so callers can show the user what is actually being matched on.
+ */
+export function wantedSearchText(title: string): string {
+  const terms = normalizeForMatch(title)
+    .split(/\s+/)
+    .filter((term) => term.length > 0 && !WANTED_FRAMING_WORDS.has(term));
+
+  // If the title was nothing but framing, fall back to the original rather than
+  // matching everything.
+  return terms.length > 0 ? terms.join(' ') : title;
+}
+
+/**
  * Whether a new sale listing satisfies a Busco post, so the wanted poster can be
  * told "alguien publicó lo que buscás".
  */
@@ -136,7 +170,7 @@ export function matchesWantedPost(wanted: WantedPost, listing: MatchableListing)
 
   if (distanceMeters(wanted.center, listing.location) > wanted.radiusMeters) return false;
 
-  return textMatches(wanted.title, listing);
+  return textMatches(wantedSearchText(wanted.title), listing);
 }
 
 /**
