@@ -28,11 +28,29 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Prices and countdowns use tabular figures so digits stop shifting width. */
+/*
+ * Prices and headline counts use the display face at weight 800, tracked in —
+ * that pairing is the design's main typographic device, so it gets a class
+ * rather than being re-specified per component.
+ */
+.display {
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--letter-spacing-tighter);
+}
+
+/* Countdowns use tabular figures so digits stop shifting width. */
 .numeric {
-  font-family: var(--font-family-numeric);
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
+}
+
+/* Prices are display type AND tabular. */
+.price {
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--letter-spacing-tight);
+  font-variant-numeric: tabular-nums;
 }
 
 a {

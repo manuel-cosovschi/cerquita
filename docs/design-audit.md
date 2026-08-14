@@ -1,170 +1,174 @@
 # Auditoría de diseño
 
-Estado: **bloqueado parcialmente**. Última actualización: 2026-08-14.
+Estado: **export recibido y tokens aplicados**. Última actualización: 2026-08-14.
+
+Fuente: `design-reference/mobile-app-design/` (handoff bundle de Claude Design,
+entregado por el usuario). El bundle original se conserva sin modificar, como
+pide la spec §112.
 
 ---
 
-## 1. Qué se pidió auditar
+## 1. Qué contiene el bundle
 
-La instrucción fue importar el proyecto de Claude Design:
-
-```
-https://claude.ai/design/p/0a2c2b56-7620-4c18-bfde-5c170f3b5d2e
-  ?file=Cerquita+-+Design+Exploration+Board.dc.html
-```
-
-con estos archivos como foco:
-
-- `Cerquita - Design Exploration Board.dc.html` (las 3 pantallas: Map/Home, Search, Product Detail)
-- `support.js`
-
-## 2. Qué se encontró en el repositorio
-
-**Nada.** El repositorio estaba completamente vacío: sólo `.git`, sin ningún commit.
-
-```
-$ ls -la
-.git/
-$ git log
-fatal: your current branch does not have any commits yet
-```
-
-No había HTML exportado, ni assets, ni `support.js`, ni tokens, ni código generado.
-
-## 3. Por qué el diseño no pudo leerse
-
-Se intentaron, en orden, todas las vías disponibles:
-
-| Vía | Resultado |
+| Archivo | Qué es |
 |---|---|
-| MCP `claude_design` → `get_project` / `list_files` | `DesignSync needs design-system authorization` — requiere `/design-login`, que necesita una terminal interactiva |
-| `WebFetch` sobre la URL del proyecto | HTTP 503 |
-| `curl` a `claude.ai/design/p/<id>` | HTTP 403 |
-| `curl` a `api.anthropic.com/v1/design/mcp` | HTTP 405 (endpoint vivo, pero requiere POST autenticado) |
+| `Cerquita - Design Exploration Board.dc.html` | El diseño. 40 KB, leído completo. |
+| `support.js` | Runtime del canvas de Claude Design. Generado, "do not edit". |
+| `tile-test.html` | Experimento de filtros sobre tiles de OpenStreetMap. |
+| `.thumbnail` | Miniatura del board. |
 
-La sesión es no interactiva, así que el flujo OAuth de `/design-login` no puede
-ejecutarse acá.
+**`support.js` no se usó.** Es el runtime del visor (`GENERATED from
+dc-runtime/src/*.ts`), exactamente lo que la spec §1 anticipaba. No hay ninguna
+dependencia hacia él.
 
-**Conclusión: la fuente visual de verdad no estuvo disponible en ningún momento.**
+## 2. El hallazgo más importante
 
-### Cómo desbloquearlo
+El board se titula **"Siete direcciones para la misma app"**, pero **contiene una
+sola**: `1a · Map first`. Las otras seis no están en el archivo.
 
-Cualquiera de estas dos opciones alcanza:
+Además, el board declara explícitamente que su branding es descartable:
 
-1. En Claude Design, usar **"Send to Claude Code Web"**, que copia los archivos
-   del proyecto al workspace. Después, `docs/design-audit.md` se reescribe con la
-   auditoría real y se reemplaza un solo archivo de código (ver §6).
-2. Copiar manualmente el `.dc.html` exportado y sus assets a `/design-reference/`
-   y avisar.
+> *"Sorteé paleta, tipografía y radio por dirección a propósito, para que ninguna
+> herede mis defaults. Es branding provisional y descartable: primero UX, después
+> identidad."*
 
-## 4. Decisión tomada frente al bloqueo
+Y cierra proponiendo: *"llevá 1a a las 5 pantallas"*, *"mezclá el mapa de 1a con
+la navegación de otra"*.
 
-La especificación es explícita en dos puntos que acá entran en tensión:
+**Lectura:** esto es una ronda de exploración, no un diseño cerrado. Lo que sí es
+intención real de diseño es el **layout y la interacción** de 1a. Los **hues
+específicos** son deliberadamente arbitrarios y están pensados para reemplazarse
+cuando se elija dirección.
 
-- §1 — «El diseño exportado es la fuente visual de verdad. NO rediseñes
-  arbitrariamente esas pantallas.»
-- §134 — «No vuelvas a preguntarme si quiero implementar únicamente las 3
-  pantallas existentes. Implementá toda Cerquita progresivamente.»
+Por eso los tokens se aplicaron tal cual el export, pero `primitives.ts` lleva
+esa advertencia escrita arriba: el layout es definitivo, la paleta no.
 
-Detenerse a esperar el diseño habría violado §134 y dejado cero entregable.
-Inventar una identidad visual y presentarla como si fuera la exportada habría
-violado §1 y §125.
+## 3. Dirección 1a — "Map first"
 
-La decisión fue **separar estrictamente lo que depende del diseño de lo que no**,
-y avanzar a fondo con lo segundo:
+Tres pantallas, 390×844: **Mapa**, **Búsqueda "PS5"**, **Producto**.
 
-- **No depende del diseño** (implementado): dominio, base de datos, API,
-  geolocalización, concurrencia, pagos, subastas, precios sociales, búsqueda,
-  seguridad, tests, infraestructura. Es la mayor parte del sistema y **nada de
-  esto cambia** cuando llegue el diseño.
-- **Depende del diseño** (aislado en un solo lugar): colores, tipografías,
-  espaciados, radios, sombras y geometría de markers.
+### Navegación
 
-## 5. Design tokens detectados
+Dock **flotante** de 5 (Mapa · Feed · **+** · Chats · Perfil), no una barra fija:
+inset 14px de los bordes, 34px del fondo, alto 70, radio 34, con `backdrop-filter:
+blur(14px)`. Publicar es el FAB naranja del centro, 58×58.
 
-**Ninguno.** No se pudo extraer ni un solo valor del diseño exportado.
+El mapa **nunca se abandona**: búsqueda y producto llegan como bottom sheets que
+lo tapan parcialmente.
 
-Lo que existe hoy en `packages/design-tokens/src/primitives.ts` es un set
-**PROVISIONAL**, marcado como tal en el propio archivo. No pretende parecerse al
-diseño de Claude Design, porque no hay forma de saber cómo es. Es un andamio
-coherente para que la app sea usable y para que la arquitectura de tokens quede
-probada.
+### Mapa
 
-Lo que **sí** es una decisión de arquitectura sólida y no cambia:
+- Tiles reales de OSM (Mar del Plata) **desaturados y cálidos**:
+  `saturate(.55) contrast(.96) brightness(1.04)`, más un lavado naranja al 7%.
+- **Markers = foto + burbuja de precio colgando**, no pills de texto. Miniatura
+  62×62 radio 24, con anillo blanco de 3px; la burbuja de precio solapa 9px hacia
+  arriba; el caption (distancia o etiqueta) va debajo.
+- **Relación por anillo**: amigo = anillo turquesa. Subasta = burbuja naranja con
+  timer. "Busca" = pill blanca con avatar `?` y contorno turquesa.
+- **Clusters** = círculos negros con número y halo translúcido (52 y 40 px).
+- Ubicación propia = punto azul con pulso de 2,4 s.
+- Chip "AHORA · 6" en negro, arriba a la derecha.
+- "Buscar en esta zona" flota sobre el dock.
 
-```
-primitives.ts   ← ÚNICO archivo con valores visuales crudos (el que se reemplaza)
-      ↓
-semantic.ts     ← roles con significado de producto (sale, auction, wanted,
-                   friend, follower, discount, mapCluster…)
-      ↓
-css.ts          ← genera CSS custom properties para web/admin
-      ↓
-componentes     ← nunca leen primitives, sólo roles semánticos
-```
+### Paleta
 
-Los roles semánticos no son decorativos: `auction`, `wanted`, `friend`,
-`follower`, `discount` y `mapCluster` codifican significado de producto. Cuando
-llegue el diseño real, esos roles siguen siendo los mismos; sólo cambian los
-valores detrás.
+| Rol | Valor | Nota |
+|---|---|---|
+| Tinta | `#141210` | Casi negro **cálido**, nunca negro puro |
+| Canvas | `#f6f2ea` | Crema, no blanco |
+| Superficie | `#ffffff` | |
+| Acento | `oklch(.74 .17 55)` → `#fa8927` | Naranja: subastas, urgencia, publicar |
+| Texto sobre acento | `#241403` | **Oscuro**, no blanco |
+| Social | `oklch(.66 .12 190)` → `#00a9a2` | Turquesa: **sólo** relación de amistad |
+| Precio de amigo | `oklch(.42 .1 190)` → `#005d59` | |
+| Info | `oklch(.6 .17 255)` → `#2a80e2` | Ubicación propia y verificado |
 
-## 6. Qué hay que hacer cuando llegue el diseño
+Un detalle que cambia el mapeo: **el botón primario es la tinta, no el naranja**.
+"Comprar ahora" es negro; "Ofertar" es naranja. Así que `brand` = tinta y el
+naranja queda como `accent`.
 
-Es un cambio de **un solo archivo**:
+Otro: la venta directa **no tiene color propio** — es el default de tinta. El
+color está reservado para lo que se desvía: subasta, amigo, busca.
 
-1. Abrir el `.dc.html` exportado y extraer: paleta, tipografías, escala de
-   espaciado, radios, sombras, tamaños de marker.
-2. Reemplazar los valores de `packages/design-tokens/src/primitives.ts`.
-3. Revisar el mapeo de `semantic.ts` (qué color de la paleta corresponde a
-   `auction`, a `friend`, etc.).
-4. Correr `pnpm build` y comparar contra el export (spec §116).
+### Tipografía
 
-Ningún componente, pantalla ni app necesita tocarse. Eso es exactamente lo que
-esta separación compra.
+Dos familias con trabajos distintos, y mezclarlas es el recurso principal:
 
-## 7. Componentes deducidos
+- **Bricolage Grotesque 800** — wordmark, precios, contadores ("37 cerca tuyo").
+- **Archivo 400/500/600/700** — todo lo demás.
+- Monospace — timers y captions técnicos.
 
-De la especificación (§66) y del modelo de datos ya implementado, el inventario
-de componentes que el diseño va a tener que vestir:
+### Radios
 
-**Mapa** — `ProductMarker`, `StoreMarker`, `WantedMarker`, `AuctionMarker`,
-`ClusterBubble`, `MapLayerChips`, `SearchThisAreaButton`, `MapBottomSheet`.
+"Radio 28 · burbujas y pills". Nada es cuadrado: pills y botones 28, cards 26,
+sheets y dock 34, miniatura de marker 24, thumb de card 20, burbuja de precio 14.
 
-**Comercio** — `Price`, `SocialPrice` (público/seguidor/amigo), `Countdown`,
-`ProductCard`, `ListingCard`, `StoreCard`, `OfferCard`, `BidCard`,
-`PriceHistoryChart`.
+### Sombras
 
-**Base** — `Button`, `IconButton`, `Avatar`, `Badge`, `Chip`, `FilterChip`,
-`SearchBar`, `Tabs`, `SegmentedControl`, `BottomSheet`, `Modal`, `Toast`,
-`Skeleton`, `EmptyState`, `ErrorState`, `Rating`, `UserRow`, `ChatBubble`,
-`NotificationRow`.
+Grandes, suaves y de **spread negativo** — leen como elevación, no como borde.
+Los markers además llevan un **anillo sólido**, que es lo que los separa del mapa.
 
-## 8. Sobre `support.js`
+## 4. Qué se cambió en el código
 
-No se pudo leer (mismo bloqueo). Independientemente de su contenido, la
-especificación (§1) es clara en que pertenece al runtime del canvas de diseño y
-**no** debe usarse como arquitectura de la aplicación. No se usó, y no hay
-ninguna dependencia hacia él.
+Un solo archivo de valores, como estaba prometido:
 
-## 9. Modo oscuro
+- `packages/design-tokens/src/primitives.ts` — reescrito con los valores reales.
+  Suma escalas que el export exige y antes no existían: `ring`, `layout`,
+  `mapTiles`.
+- `packages/design-tokens/src/semantic.ts` — remapeo de roles. Los cambios de
+  fondo: `brand` pasó de verde a tinta, `sale` dejó de tener color propio,
+  `auction` es el naranja y `friend` el turquesa.
+- `packages/design-tokens/src/css.ts` — emite las escalas nuevas.
+- `apps/web` — carga las dos tipografías y usa la display para precios.
 
-La spec (§69) pide implementarlo sólo si el diseño lo contempla, y **no**
-inventarlo si todavía no fue diseñado.
+**Ningún componente ni pantalla se tocó.** Eso era exactamente lo que la
+separación primitives/semantic compraba.
 
-Como el diseño no pudo leerse, se hizo lo intermedio: `semantic.ts` define un
-esquema oscuro estructuralmente completo, marcado explícitamente como **no
-verificado**, y `css.ts` emite los tres estados de tema correctamente
-(`:root`, `prefers-color-scheme`, `[data-theme]`). El modo oscuro queda a un
-cambio de valores de distancia, sin refactor. No se activa por defecto.
+## 5. Diferencias con lo ya construido
 
-## 10. Resumen
+La web actual **no** implementa 1a todavía. Lo que difiere:
+
+| | Construido | Diseño 1a |
+|---|---|---|
+| Markers | Pill con texto | Foto + burbuja de precio colgando |
+| Navegación | Header web | Dock flotante de 5 con FAB central |
+| Layout | Split desktop | Mobile, sheets sobre el mapa |
+| Tiles | Grilla de referencia | OSM desaturado y cálido |
+
+Los tokens ya son correctos; falta rehacer los componentes sobre ellos.
+
+## 6. Ambigüedades que conviene resolver antes de seguir
+
+1. **¿1a es la dirección elegida?** Es la única del bundle, pero el board se
+   presenta como ronda de exploración de siete. Si faltan las otras seis,
+   conviene verlas antes de reconstruir pantallas.
+2. **¿La paleta se congela?** El propio board la declara descartable. Está
+   aplicada, pero si va a cambiar, conviene que cambie antes de la UI.
+3. **Desktop no está diseñado.** 1a es mobile (390×844). La spec §60 pide un
+   desktop que no sea mobile ampliado, y eso no está en el export.
+4. **Faltan pantallas.** El board dice que feed y crear-publicación se harían
+   "sobre las 2 o 3 finalistas".
+5. **Dark mode no existe.** El bundle sólo trae un experimento de tiles oscuros
+   (`tile-test.html`), no pantallas. Los tokens oscuros están listos pero
+   marcados como **no verificados**.
+6. **Fotos.** El board las marca como placeholders rayados: *"si me pasás fotos
+   reales las cambio"*.
+
+## 7. Modo oscuro
+
+`tile-test.html` prueba `invert(1) hue-rotate(180deg) saturate(.55)
+brightness(.9) contrast(1.05)` sobre los tiles — un candidato de mapa oscuro.
+Quedó guardado como `mapTiles.filterDarkCandidate`, marcado como no aprobado.
+
+## 8. Resumen
 
 | | Estado |
 |---|---|
-| Diseño exportado accesible | ❌ Bloqueado (requiere login interactivo) |
-| Assets / tipografías / imágenes | ❌ No disponibles |
-| Tokens extraídos del diseño | ❌ Ninguno |
-| Arquitectura de tokens | ✅ Implementada y probada |
-| Roles semánticos de producto | ✅ Definidos |
-| Backend / dominio / datos | ✅ Implementado (no depende del diseño) |
-| Superficie a cambiar cuando llegue el diseño | 1 archivo |
+| Export accesible | ✅ Recibido |
+| Leído completo | ✅ Board + support.js + tile-test |
+| Tokens extraídos | ✅ Color, tipografía, radios, sombras, geometría de markers |
+| Aplicados al código | ✅ 1 archivo de valores + remapeo semántico |
+| Pantallas reconstruidas sobre 1a | ⬜ Pendiente |
+| Direcciones faltantes | ⚠️ 6 de 7 no están en el bundle |
+| Paleta definitiva | ⚠️ El board la declara provisional |
+| Desktop y dark mode | ⬜ No diseñados |
