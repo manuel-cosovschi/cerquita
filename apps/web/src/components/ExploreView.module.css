@@ -128,7 +128,16 @@
 @media (max-width: 1023px) {
   .body {
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr auto;
+    /*
+     * The sheet is capped, not `auto`.
+     *
+     * With `auto` the results row sized itself to its content, so as soon as a
+     * search returned anything the sheet grew and squeezed the map to zero
+     * height — the map vanished exactly when it finally had something to show.
+     * Capping it makes the list scroll inside the sheet, which is what a sheet
+     * is, and leaves the map its half of the screen.
+     */
+    grid-template-rows: minmax(0, 1fr) minmax(0, 52vh);
   }
 
   .mapPane {

@@ -79,6 +79,26 @@ export function MapSurface({
     return () => observer.disconnect();
   }, []);
 
+  /*
+   * Tell the parent the moment we know how big we are.
+   *
+   * Everything above needs pixel dimensions to turn a centre and a zoom into a
+   * bounding box, and until this fires the parent's viewport is 0×0 — so a
+   * screen that waits to know its own viewport before loading never loads at
+   * all. The map came up showing "no hay publicaciones en esta zona" until you
+   * happened to drag it, which is a bad first impression for a map-first app.
+   *
+   * Once only: after this, viewports come from panning and zooming, and the
+   * parent tells those apart from this one.
+   */
+  const reportedInitialSize = useRef(false);
+
+  useEffect(() => {
+    if (reportedInitialSize.current || size.width === 0 || size.height === 0) return;
+    reportedInitialSize.current = true;
+    onViewportChange({ center, zoom, width: size.width, height: size.height });
+  }, [size.width, size.height, center, zoom, onViewportChange]);
+
   const viewport: Viewport = { center, zoom, width: size.width, height: size.height };
 
   const commitViewport = useCallback(

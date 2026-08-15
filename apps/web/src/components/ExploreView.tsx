@@ -121,12 +121,25 @@ export function ExploreView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layer, submittedQuery]);
 
+  /*
+   * Read through a ref because the callback below has to stay stable — it is
+   * handed to the map on every render — while still seeing the current value.
+   */
+  const hasLoadedRef = useRef(false);
+  useEffect(() => {
+    hasLoadedRef.current = searchedBounds !== null;
+  }, [searchedBounds]);
+
   const handleViewportChange = useCallback((next: ViewportState) => {
     setViewport(next);
     const bounds = boundsOf(next);
     // Arm the prompt rather than refetching: results shifting mid-pan is
     // disorienting, and every pan would be a wasted query.
-    if (bounds) setPendingBounds(bounds);
+    //
+    // But only once something has actually been loaded. The map's first report
+    // is it measuring itself, not somebody moving it, and offering to "buscar
+    // en esta zona" before the first search has even run is nonsense.
+    if (bounds && hasLoadedRef.current) setPendingBounds(bounds);
   }, []);
 
   const searchThisArea = () => {
