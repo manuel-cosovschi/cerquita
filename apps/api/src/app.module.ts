@@ -1,5 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/jwt-auth.guard';
@@ -14,6 +15,7 @@ import { SearchModule } from './modules/search/search.module';
 import { SocialModule } from './modules/social/social.module';
 import { OffersModule } from './modules/offers/offers.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { UserAwareThrottlerGuard } from './common/throttler';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { FavoritesModule } from './modules/favorites/favorites.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
@@ -44,6 +46,21 @@ import { RequestIdMiddleware } from './common/request-id.middleware';
  */
 @Module({
   imports: [
+    /*
+     * Rate limiting (spec §95). Three windows rather than one: a burst of
+     * clicks is normal, a steady stream for a minute is a script, and an hour
+     * of it is abuse. The strictest one that a caller trips is the one that
+     * stops them.
+     *
+     * Storage is in-process. Behind more than one API instance each would
+     * count separately, so a distributed store is the change to make when the
+     * monolith is first replicated — not a reason to skip limiting now.
+     */
+    ThrottlerModule.forRoot([
+      { name: 'short', ttl: 1_000, limit: 20 },
+      { name: 'medium', ttl: 60_000, limit: 200 },
+      { name: 'long', ttl: 3_600_000, limit: 3_000 },
+    ]),
     PrismaModule,
     EventsModule,
     PlatformConfigModule,
@@ -72,7 +89,13 @@ import { RequestIdMiddleware } from './common/request-id.middleware';
     ChatModule,
   ],
   controllers: [HealthController],
-  providers: [{ provide: APP_GUARD, useClass: JwtAuthGuard }],
+  providers: [
+    // Order matters: the throttler runs BEFORE authentication so an unauthenticated
+    // flood is rejected without touching the database, and `getTracker` still sees
+    // `request.user` on routes the JWT guard has already resolved in a prior request.
+    { provide: APP_GUARD, useClass: UserAwareThrottlerGuard },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {

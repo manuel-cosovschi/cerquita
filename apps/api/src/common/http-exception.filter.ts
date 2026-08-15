@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { ThrottlerException } from '@nestjs/throttler';
 import { Prisma } from '@prisma/client';
 import type { Request, Response } from 'express';
 import { RowNotFoundError } from '../prisma/prisma.service';
@@ -46,6 +47,19 @@ export class HttpExceptionFilter implements ExceptionFilter {
     status: number;
     body: Record<string, unknown>;
   } {
+    // The throttler throws a plain HttpException whose message is the class
+    // name. Left alone it reaches a user as "ThrottlerException: Too Many
+    // Requests", which is a stack detail, not an instruction.
+    if (exception instanceof ThrottlerException) {
+      return {
+        status: HttpStatus.TOO_MANY_REQUESTS,
+        body: {
+          message: 'Demasiados intentos. Esperá un momento y probá de nuevo.',
+          code: 'rate_limited',
+        },
+      };
+    }
+
     if (exception instanceof HttpException) {
       const payload = exception.getResponse();
       const body =
