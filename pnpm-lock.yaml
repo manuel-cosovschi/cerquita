@@ -33,6 +33,43 @@ importers:
         specifier: ^3.0.4
         version: 3.2.7(@types/node@22.20.1)(jiti@2.7.0)(terser@5.50.0)(tsx@4.23.12)
 
+  apps/admin:
+    dependencies:
+      '@cerquita/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
+      '@cerquita/design-tokens':
+        specifier: workspace:*
+        version: link:../../packages/design-tokens
+      '@cerquita/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@cerquita/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      next:
+        specifier: ^15.1.6
+        version: 15.5.23(@babel/core@7.29.7)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.8
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.7
+        version: 22.20.1
+      '@types/react':
+        specifier: ^19.0.7
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: ^19.0.3
+        version: 19.2.4(@types/react@19.2.18)
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
   apps/api:
     dependencies:
       '@cerquita/domain':

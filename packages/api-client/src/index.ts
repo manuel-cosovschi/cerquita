@@ -15,6 +15,7 @@ import type {
   ListingSummary,
   MapMarker,
   Message,
+  MoneyDto,
   NotificationItem,
   Offer,
   Order,
@@ -168,6 +169,60 @@ export interface FriendRequest {
   from: { id: string; username: string; displayName: string; avatarUrl?: string; verified: boolean };
   createdAt: string;
 }
+
+/* ── admin ────────────────────────────────────────────────────────────────── */
+
+export interface AdminDashboard {
+  users: { total: number; newLast30Days: number; suspended: number };
+  listings: { active: number; sold: number; removed: number };
+  commerce: {
+    orders: number;
+    gmv: MoneyDto;
+    fees: MoneyDto;
+    averageTicket: MoneyDto;
+  };
+  queue: { openReports: number; openDisputes: number; liveAuctions: number };
+}
+
+export interface AdminReport {
+  id: string;
+  targetType: 'listing' | 'user' | 'store' | 'message' | 'review';
+  targetId: string;
+  category: string;
+  detail?: string | null;
+  status: string;
+  createdAt: string;
+  reporter: { id: string; username: string };
+}
+
+export interface AdminDispute {
+  id: string;
+  orderId: string;
+  status: string;
+  reason: string;
+  openedBy: string;
+  createdAt: string;
+  order?: { reference: string; total: number; currency: MoneyDto['currency'] };
+  evidence?: Array<{ id: string; url: string; note?: string | null }>;
+}
+
+export interface AuditEntry {
+  id: string;
+  action: string;
+  targetType: string;
+  targetId: string;
+  reason: string;
+  createdAt: string;
+  admin: { username: string };
+}
+
+/** The moderation actions an admin can take. `reason` goes into the audit log. */
+export type ModerationAction =
+  | 'remove_listing'
+  | 'restore_listing'
+  | 'warn_user'
+  | 'suspend_user'
+  | 'ban_user';
 
 export interface SearchQuery {
   q?: string;
@@ -445,6 +500,32 @@ export function createClient(options: ClientOptions) {
       unreadCount: () => request<{ count: number }>('/notifications/unread-count'),
       markRead: (id: string) => post<unknown>(`/notifications/${id}/read`, {}),
       markAllRead: () => post<unknown>('/notifications/read-all', {}),
+    },
+
+    admin: {
+      dashboard: () => request<AdminDashboard>('/admin/dashboard'),
+      reports: (status = 'open') => request<AdminReport[]>('/admin/reports', { query: { status } }),
+      resolveReport: (id: string, resolution: 'actioned' | 'dismissed') =>
+        post<unknown>(`/admin/reports/${id}/resolve`, { resolution }),
+      /**
+       * `reason` is required by the API, not optional politeness: the action and
+       * its audit entry are written in one transaction, so there is no path that
+       * suspends somebody without recording why.
+       */
+      moderate: (body: {
+        action: ModerationAction;
+        targetId: string;
+        reason: string;
+        durationHours?: number;
+      }) => post<unknown>('/admin/moderate', body),
+      disputes: () => request<AdminDispute[]>('/admin/disputes'),
+      resolveDispute: (id: string, body: Record<string, unknown>) =>
+        post<unknown>(`/admin/disputes/${id}/resolve`, body),
+      auditLog: (targetId?: string) =>
+        request<AuditEntry[]>('/admin/audit-log', { query: { targetId } }),
+      flags: () => request<Record<string, boolean>>('/admin/config/flags'),
+      updateConfig: (body: Record<string, unknown>) =>
+        request<unknown>('/admin/config', { method: 'PATCH', body: JSON.stringify(body) }),
     },
 
     social: {
