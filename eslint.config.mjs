@@ -20,6 +20,7 @@ export default tseslint.config(
       '**/build/**',
       '**/coverage/**',
       'design-reference/**',
+      'e2e/.results/**',
       '**/*.d.ts',
     ],
   },
@@ -81,7 +82,7 @@ export default tseslint.config(
   },
 
   {
-    files: ['apps/api/**/*.ts', 'packages/**/*.ts', '**/prisma/**/*.ts'],
+    files: ['apps/api/**/*.ts', 'packages/**/*.ts', '**/prisma/**/*.ts', 'e2e/**/*.ts'],
     languageOptions: { globals: globals.node },
   },
 

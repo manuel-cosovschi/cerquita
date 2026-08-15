@@ -146,6 +146,34 @@ export class ListingsService {
         });
       }
 
+      /*
+       * An auction listing is not an auction until this row exists.
+       *
+       * In the same transaction as the listing on purpose: a listing that says
+       * "Subasta" with no auction behind it can never be bid on, and there is
+       * no state in which that is a useful thing to have created.
+       *
+       * `startsAt` defaults to now, which the scheduler reads as "open it on
+       * the next pass". It is stored as `scheduled` rather than `live` so that
+       * opening an auction goes through one code path, whether it starts in ten
+       * seconds or next Tuesday.
+       */
+      if (input.kind === 'auction') {
+        await tx.auction.create({
+          data: {
+            listingId: created.id,
+            status: 'scheduled',
+            startsAt: input.startsAt ?? new Date(),
+            endsAt: input.endsAt,
+            currency: input.startingPrice.currency,
+            startingPriceAmount: input.startingPrice.amount,
+            minimumIncrementAmount: input.minimumIncrement.amount,
+            reservePriceAmount: input.reservePrice?.amount ?? null,
+            buyNowPriceAmount: input.buyNowPrice?.amount ?? null,
+          },
+        });
+      }
+
       return created;
     });
 

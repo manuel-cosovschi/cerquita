@@ -175,7 +175,11 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
 - ✅ CI: instala, genera el cliente de Prisma, lint, formato, typecheck, tests,
   aplica las migraciones desde cero contra PostGIS, siembra y compila las tres
   apps que tienen build.
-- ⬜ Tests e2e, pasada de accesibilidad.
+- ✅ Tests e2e (Playwright, 27) contra el stack real, sin mocks: precios
+  sociales resueltos en el servidor, ubicación exacta que nunca sale, checkout
+  que rechaza un total manipulado, dos pujas simultáneas con un solo ganador,
+  y demanda local que reporta patrones sin nombrar personas.
+- ⬜ Pasada de accesibilidad.
 
 ---
 
@@ -195,15 +199,15 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
 | Demanda local sólo agregada, con umbral de 2            | Una categoría con un solo pedido identifica a quien lo pidió. El pedido ya es público en el mapa; una lista rankeada de "cerca de esta esquina quieren X" es otro objeto, y uno que conviene no construir.         |
 | Rate limit de credenciales por `email + IP`             | Con la clave por IP sola, un NAT compartido (un edificio, una oficina) se bloquea entero porque una sola persona erró la contraseña. Se descubrió agotando el presupuesto del navegador desde curl.                |
 | Sin `packages/ui` ni `packages/config`                  | Ver arriba: no había nada real que compartir en ninguno de los dos.                                                                                                                                                |
+| E2E contra el stack real, sin mocks                     | Lo que estos tests protegen sólo se rompe con las piezas conectadas. Un mock del servidor de precios convierte "el precio lo resuelve el servidor" en una tautología.                                              |
+| E2E con un solo worker                                  | Los límites de rate son reales en estos tests, a propósito. Workers en paralelo contra una sola IP producen 429 que parecen bugs del producto.                                                                     |
+| Cada test e2e publica lo que compra                     | Comprar algo del seed funciona exactamente una vez; a la segunda corrida está vendido. Una suite que sólo pasa con la base recién sembrada es una suite que nadie corre dos veces.                                 |
 
 ## Próximos pasos
 
 Lo funcional está cerrado: el bucle de §131 (buscar → ver → hablar → comprar →
 reseñar) corre entero en web, y mobile cubre mapa, detalle y chat contra la
-misma API. Queda infraestructura alrededor del producto:
+misma API. CI y e2e ya corren. Queda:
 
-1. **CI** — typecheck, lint y tests en cada push.
-2. **Tests e2e** — los recorridos que hoy se verifican a mano contra el stack
-   levantado, escritos para que corran solos.
-3. **Pasada de accesibilidad** — foco visible, orden de tabulación y contraste
+1. **Pasada de accesibilidad** — foco visible, orden de tabulación y contraste
    revisados pantalla por pantalla, no sólo en los componentes nuevos.

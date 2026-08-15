@@ -54,6 +54,26 @@ Para ver los precios sociales en acción, entrá con `santiago@cerquita.dev`
 (seguidor) y con `fran@cerquita.dev` (amigo) a la misma PS5 — contraseña
 `cerquita-demo-2026`.
 
+## Tests end-to-end
+
+```bash
+pnpm e2e            # levanta api y web si no están corriendo
+pnpm e2e:ui         # el modo interactivo de Playwright
+```
+
+Corren contra el stack de verdad: Postgres con PostGIS, la API con sus guards y
+sus límites de rate, el build de Next. No hay mocks, porque lo que vale la pena
+probar acá es justamente lo que sólo se rompe con las piezas conectadas — que el
+precio lo resuelve el servidor, que la ubicación exacta nunca sale, que dos
+pujas simultáneas dejan un solo ganador.
+
+Necesitan la base sembrada (`pnpm db:seed`): el grafo social del seed es lo que
+define los tres precios. Cada test publica lo que compra, así que se pueden
+correr las veces que haga falta; lo que crean queda retirado al terminar.
+
+Si ya tenés la API y la web levantadas y no querés que Playwright arranque las
+suyas, usá `E2E_NO_SERVER=1 pnpm e2e`.
+
 ## Problemas frecuentes
 
 **`type "geography" does not exist`** — la base no tiene PostGIS. Con Docker,

@@ -19,3 +19,7 @@ pnpm-debug.log*
 
 # Local object storage used by the `local` storage provider
 .storage/
+
+# Playwright: traces, screenshots and the HTML report from an e2e run
+e2e/.results/
+playwright-report/

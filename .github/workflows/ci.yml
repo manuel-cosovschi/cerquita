@@ -97,3 +97,23 @@ jobs:
           pnpm --filter @cerquita/api build
           pnpm --filter @cerquita/web build
           pnpm --filter @cerquita/admin build
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Runs against the API and web builds produced above, on the database
+      # seeded above — the whole stack, no mocks. Playwright starts both
+      # servers itself (see playwright.config.ts).
+      - name: End-to-end tests
+        run: pnpm e2e
+        env:
+          # The suite drives real sign-ins, so the API needs the same secret it
+          # was started with. Everything else comes from the job env above.
+          JWT_SECRET: ci-only-secret-value-at-least-32-characters-long
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: e2e/.results/
+          retention-days: 7
