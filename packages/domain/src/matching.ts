@@ -147,6 +147,35 @@ export function wantedSearchText(title: string): string {
 }
 
 /**
+ * The same title with its leading framing removed, for display.
+ *
+ * Different job from `wantedSearchText`, which lowercases and strips accents so
+ * two spellings can be compared. Here the words have to survive exactly as the
+ * author typed them — this feeds sentences like "Fran busca una bici", and
+ * "Fran busca Busco una bici" is what happens without it.
+ *
+ * Only LEADING framing is removed: "busco" in the middle of a title is part of
+ * what they wrote.
+ */
+export function stripWantedFraming(title: string): string {
+  const words = title.trim().split(/\s+/);
+  let start = 0;
+
+  while (start < words.length) {
+    const word = words[start];
+    if (!word) break;
+    const bare = normalizeForMatch(word);
+    if (!bare || !WANTED_FRAMING_WORDS.has(bare)) break;
+    start += 1;
+  }
+
+  const remainder = words.slice(start).join(' ');
+  // A title that was nothing but framing keeps its original text; an empty
+  // headline would be worse than a redundant one.
+  return remainder.length > 0 ? remainder : title;
+}
+
+/**
  * Whether a new sale listing satisfies a Busco post, so the wanted poster can be
  * told "alguien publicó lo que buscás".
  */

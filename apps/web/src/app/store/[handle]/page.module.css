@@ -1,0 +1,201 @@
+/*
+ * A storefront.
+ *
+ * Stores get a cover and a logo where a person gets an avatar — the export
+ * treats a business as a place, not a profile. What follows is the same shape
+ * as a user profile so the two never feel like different products: identity,
+ * actions, numbers, catalogue.
+ */
+
+.cover {
+  height: 132px;
+  margin: 0 calc(var(--space-7) * -1);
+  background: var(--color-surface-sunken);
+  object-fit: cover;
+  width: calc(100% + var(--space-7) * 2);
+  display: block;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+  padding: var(--space-5) 0 var(--space-6);
+}
+
+.logo {
+  width: 64px;
+  height: 64px;
+  flex: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-brand-subtle);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-black);
+  color: var(--color-text-primary);
+  object-fit: cover;
+}
+
+.identity {
+  min-width: 0;
+  flex: 1;
+}
+
+.name {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text-primary);
+}
+
+.handle {
+  margin: 2px 0 0;
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+}
+
+/* Open right now is the single most useful fact about a shop. */
+.openNow,
+.closedNow {
+  display: inline-block;
+  margin-top: var(--space-3);
+  padding: 2px var(--space-4);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.openNow {
+  background: var(--color-success-subtle);
+  color: var(--color-success);
+}
+
+.closedNow {
+  background: var(--color-surface-sunken);
+  color: var(--color-text-secondary);
+}
+
+.description {
+  margin: var(--space-4) 0 0;
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
+.address {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text-tertiary);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  padding-bottom: var(--space-6);
+}
+
+.action {
+  flex: 1;
+  min-height: var(--touch-target-comfortable);
+  border: none;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionPrimary {
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
+}
+
+.actionDone {
+  background: var(--color-surface-sunken);
+  color: var(--color-text-secondary);
+}
+
+.action:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-6) 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.stat {
+  text-align: center;
+}
+
+.statValue {
+  display: block;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+
+.statLabel {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.hours {
+  padding: var(--space-6) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.hoursTitle {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.hoursList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.hoursRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-5);
+  padding: var(--space-6) 0 var(--space-8);
+}
+
+.state {
+  padding: var(--space-9) 0;
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-md);
+}

@@ -4,6 +4,7 @@ import {
   matchesSavedSearch,
   matchesWantedPost,
   priceDropNewlyQualifies,
+  stripWantedFraming,
   wantedSearchText,
   type MatchableListing,
   type WantedPost,
@@ -142,5 +143,34 @@ describe('priceDropNewlyQualifies', () => {
         ceiling: ARS(600_000),
       }),
     ).toBe(false);
+  });
+});
+
+describe('stripWantedFraming', () => {
+  it('drops the leading framing so a headline does not stutter', () => {
+    // The feed renders "Fran busca …" around this; without it the row reads
+    // "Fran busca Busco una bici".
+    expect(stripWantedFraming('Busco bicicleta para niño')).toBe('bicicleta para niño');
+    expect(stripWantedFraming('Necesito urgente una heladera')).toBe('una heladera');
+  });
+
+  it('keeps the author\'s casing and accents, unlike the search variant', () => {
+    expect(stripWantedFraming('Busco MacBook Air M2')).toBe('MacBook Air M2');
+    expect(wantedSearchText('Busco MacBook Air M2')).toBe('macbook air m2');
+  });
+
+  it('only strips framing at the start', () => {
+    // "busco" here is part of what they wrote, not a prefix to remove.
+    expect(stripWantedFraming('Mesa como la que busco hace meses')).toBe(
+      'Mesa como la que busco hace meses',
+    );
+  });
+
+  it('falls back to the original when the title is nothing but framing', () => {
+    expect(stripWantedFraming('Busco')).toBe('Busco');
+  });
+
+  it('leaves an ordinary title alone', () => {
+    expect(stripWantedFraming('Bicicleta rodado 29')).toBe('Bicicleta rodado 29');
   });
 });

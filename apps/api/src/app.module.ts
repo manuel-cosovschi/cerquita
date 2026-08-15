@@ -26,6 +26,7 @@ import { MatchingModule } from './modules/matching/matching.module';
 import { CommentsModule } from './modules/comments/comments.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { FeedModule } from './modules/feed/feed.module';
 import { HealthController } from './modules/health/health.controller';
 import { RequestIdMiddleware } from './common/request-id.middleware';
 
@@ -64,6 +65,7 @@ import { RequestIdMiddleware } from './common/request-id.middleware';
     CommentsModule,
     UploadsModule,
     CategoriesModule,
+    FeedModule,
     ReviewsModule,
     FavoritesModule,
     NotificationsModule,

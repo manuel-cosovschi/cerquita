@@ -10,6 +10,7 @@ import type {
   Cart,
   Category,
   Conversation,
+  FeedItem,
   Listing,
   ListingSummary,
   MapMarker,
@@ -259,6 +260,15 @@ export function createClient(options: ClientOptions) {
       list: () => request<Category[]>('/categories'),
     },
 
+    feed: {
+      /**
+       * Position is optional: without it the feed is the social one only, with
+       * no "cerca tuyo" rows. Sending a coordinate is the viewer's choice.
+       */
+      list: (query: { lat?: number; lng?: number; limit?: number } = {}) =>
+        request<FeedItem[]>('/feed', { query: { ...query } }),
+    },
+
     uploads: {
       /**
        * Multipart, so `Content-Type` is left unset: the browser has to add the
@@ -380,7 +390,14 @@ export function createClient(options: ClientOptions) {
 
     stores: {
       get: (handle: string) => request<Store>(`/stores/${handle}`),
-      products: (storeId: string) => request<ListingSummary[]>(`/stores/${storeId}/products`),
+      /**
+       * A storefront's listings come from search rather than /products: search
+       * resolves prices for the viewer, and `/stores/:id/products` returns
+       * catalogue entries, which are a different thing (spec §15).
+       */
+      listings: (storeId: string, cursor?: string) =>
+        post<Paginated<ListingSummary>>('/search', { storeId, sort: 'newest', cursor, limit: 24 }),
+      follow: (storeId: string) => post<unknown>(`/stores/${storeId}/follow`, {}),
     },
 
     favorites: {
