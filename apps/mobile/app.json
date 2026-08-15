@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Cerquita",
+    "slug": "cerquita",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "cerquita",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#f6f2ea"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.cerquita.client",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Cerquita usa tu ubicación para mostrarte lo que hay cerca tuyo."
+      }
+    },
+    "android": {
+      "package": "app.cerquita.client",
+      "adaptiveIcon": { "backgroundColor": "#fa8927" },
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"]
+    },
+    "web": { "bundler": "metro", "output": "static" },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Cerquita usa tu ubicación para mostrarte lo que hay cerca tuyo."
+        }
+      ]
+    ],
+    "experiments": { "typedRoutes": false }
+  }
+}

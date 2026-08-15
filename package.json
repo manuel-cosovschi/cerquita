@@ -2,7 +2,7 @@
   "name": "cerquita",
   "private": true,
   "version": "0.1.0",
-  "description": "Cerquita — hyperlocal social marketplace",
+  "description": "Cerquita \u2014 hyperlocal social marketplace",
   "packageManager": "pnpm@10.33.0",
   "engines": {
     "node": ">=22"

@@ -54,9 +54,13 @@ export default tseslint.config(
   },
 
   {
-    // Browser code. The hooks rules are worth running for real: a wrong
-    // dependency array is a genuine bug class, not a style preference.
-    files: ['apps/web/**/*.{ts,tsx}', 'apps/admin/**/*.{ts,tsx}'],
+    // Browser and device code. The hooks rules are worth running for real: a
+    // wrong dependency array is a genuine bug class, not a style preference.
+    files: [
+      'apps/web/**/*.{ts,tsx}',
+      'apps/admin/**/*.{ts,tsx}',
+      'apps/mobile/**/*.{ts,tsx}',
+    ],
     plugins: { 'react-hooks': reactHooks },
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },
@@ -69,9 +73,15 @@ export default tseslint.config(
   },
 
   {
-    // Config files run in Node.
-    files: ['**/*.config.{js,mjs,ts}', '**/next.config.mjs'],
-    languageOptions: { globals: globals.node },
+    // Config files run in Node. Metro and Babel load theirs with `require`
+    // before any transform runs, so CommonJS is the only thing that works
+    // there — the rule is off for config files rather than worked around.
+    files: ['**/*.config.{js,mjs,cjs,ts}', '**/next.config.mjs'],
+    languageOptions: {
+      globals: globals.node,
+      sourceType: 'commonjs',
+    },
+    rules: { '@typescript-eslint/no-require-imports': 'off' },
   },
 
   {
