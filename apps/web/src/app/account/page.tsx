@@ -144,6 +144,12 @@ export default function AccountPage() {
           </Link>
         </li>
         <li>
+          <Link className={styles.menuItem} href="/store/manage">
+            Mi tienda
+            <span className={styles.menuNote}>Métricas y promociones</span>
+          </Link>
+        </li>
+        <li>
           <Link className={styles.menuItem} href="/alerts">
             Alertas
             <span className={styles.menuNote}>Avisos de lo que buscás</span>

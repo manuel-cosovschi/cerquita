@@ -20,6 +20,7 @@ import type {
   Offer,
   Order,
   Paginated,
+  Promotion,
   Store,
   UserProfile,
 } from '@cerquita/types';
@@ -234,6 +235,21 @@ export interface SavedSearch {
   radiusMeters?: number | null;
   notify: boolean;
   createdAt: string;
+}
+
+/** What a store's own dashboard reports (spec §50). */
+export interface StoreDashboard {
+  orders: number;
+  revenue: MoneyDto;
+  buyers: number;
+  averageTicket: MoneyDto;
+  activeListings: number;
+  soldListings: number;
+  views: number;
+  favorites: number;
+  followers: number;
+  /** Views to orders, as a percentage. Null when there are no views to divide by. */
+  conversionRate: number | null;
 }
 
 export interface SearchQuery {
@@ -467,6 +483,28 @@ export function createClient(options: ClientOptions) {
 
     stores: {
       get: (handle: string) => request<Store>(`/stores/${handle}`),
+      create: (body: {
+        name: string;
+        handle: string;
+        description?: string;
+        categories?: string[];
+        hasPhysicalLocation: boolean;
+        location?: { lat: number; lng: number };
+        address?: string;
+        deliveryMethods: string[];
+      }) => post<Store>('/stores', body),
+      update: (storeId: string, body: Record<string, unknown>) =>
+        request<Store>(`/stores/${storeId}`, { method: 'PATCH', body: JSON.stringify(body) }),
+      dashboard: (storeId: string) => request<StoreDashboard>(`/stores/${storeId}/dashboard`),
+      setHours: (storeId: string, hours: Array<{ weekday: number; opensAt: number; closesAt: number }>) =>
+        post<unknown>(`/stores/${storeId}/hours`, { hours }),
+
+      promotions: (storeId: string) => request<Promotion[]>(`/stores/${storeId}/promotions`),
+      createPromotion: (storeId: string, body: Record<string, unknown>) =>
+        post<Promotion>(`/stores/${storeId}/promotions`, body),
+      /** Ends it rather than deleting: orders reference what they were charged. */
+      endPromotion: (storeId: string, promotionId: string) =>
+        request<unknown>(`/stores/${storeId}/promotions/${promotionId}`, { method: 'DELETE' }),
       /**
        * A storefront's listings come from search rather than /products: search
        * resolves prices for the viewer, and `/stores/:id/products` returns

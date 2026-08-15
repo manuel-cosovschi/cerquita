@@ -13,11 +13,14 @@ import type { Store } from '@cerquita/types';
 import {
   addStoreMemberSchema,
   createProductSchema,
+  createPromotionSchema,
   createStoreSchema,
   updateStoreSchema,
+  type CreatePromotionInput,
 } from '@cerquita/validation';
 import { StoresService } from './stores.service';
 import { ProductsService, type CreateProductInput } from './products.service';
+import { PromotionsService } from './promotions.service';
 import { zodBody } from '../../common/zod-validation.pipe';
 import { CurrentUser, type AuthenticatedUser } from '../../common/current-user.decorator';
 import { OptionalAuth } from '../auth/jwt-auth.guard';
@@ -49,6 +52,7 @@ export class StoresController {
   constructor(
     private readonly stores: StoresService,
     private readonly products: ProductsService,
+    private readonly promotions: PromotionsService,
   ) {}
 
   @Post()
@@ -121,6 +125,32 @@ export class StoresController {
   @Get(':id/dashboard')
   dashboard(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.stores.dashboard(id, user);
+  }
+
+  /* ── promotions (spec §55) ─────────────────────────────────────────────── */
+
+  @Get(':id/promotions')
+  listPromotions(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.promotions.listForStore(id, user);
+  }
+
+  @Post(':id/promotions')
+  createPromotion(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(zodBody(createPromotionSchema)) body: CreatePromotionInput,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.promotions.create(id, body, user);
+  }
+
+  /** Ends it rather than deleting: orders reference what they were charged. */
+  @Delete(':id/promotions/:promotionId')
+  endPromotion(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('promotionId', ParseUUIDPipe) promotionId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.promotions.deactivate(id, promotionId, user);
   }
 
   @Get(':id/products')

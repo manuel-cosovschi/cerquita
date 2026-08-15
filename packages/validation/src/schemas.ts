@@ -450,3 +450,4 @@ export type SearchQueryInput = z.infer<typeof searchQuerySchema>;
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 export type PlaceBidInput = z.infer<typeof placeBidSchema>;
 export type CreateOfferInput = z.infer<typeof createOfferSchema>;
+export type CreatePromotionInput = z.infer<typeof createPromotionSchema>;
