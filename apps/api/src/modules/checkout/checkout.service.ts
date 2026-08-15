@@ -305,6 +305,22 @@ export class CheckoutService {
         `;
       }
 
+      /*
+       * The seller's sales count, which is the number the profile shows next to
+       * their reviews.
+       *
+       * Once per order rather than per item: a cart holds one seller (§40), and
+       * "3 ventas" reading as three people who bought from you is the useful
+       * meaning — not three objects that left the house in one transaction.
+       *
+       * In this transaction and behind the `pending_payment` guard above, so a
+       * retried webhook cannot inflate it.
+       */
+      await tx.user.update({
+        where: { id: order.sellerId },
+        data: { salesCount: { increment: 1 } },
+      });
+
       return order;
     });
 

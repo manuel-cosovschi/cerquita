@@ -181,7 +181,7 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
   una versión y además hay `packageManager` en el `package.json`. Se sacó la
   versión del workflow; la del `package.json` es la que vale para todos.
 
-- ✅ Tests e2e (Playwright, 45) contra el stack real, sin mocks: precios
+- ✅ Tests e2e (Playwright, 46) contra el stack real, sin mocks: precios
   sociales resueltos en el servidor, ubicación exacta que nunca sale, checkout
   que rechaza un total manipulado, dos pujas simultáneas con un solo ganador,
   y demanda local que reporta patrones sin nombrar personas.

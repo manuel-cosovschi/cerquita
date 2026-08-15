@@ -187,7 +187,15 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  /*
+   * 280, not 150.
+   *
+   * `ListingCard` is `112px 1fr` — a fixed thumbnail plus everything else — so
+   * in a 150px column the text got about 38px and every title, price and seller
+   * name came out clipped. The minimum has to be a width the card can actually
+   * live in; below that, one column is the right answer.
+   */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: var(--space-5);
   padding-bottom: var(--space-8);
 }

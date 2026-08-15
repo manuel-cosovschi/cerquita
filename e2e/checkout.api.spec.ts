@@ -142,6 +142,34 @@ test.describe('checkout recalculates instead of trusting the client', () => {
     expect(sold.status).toBe('sold');
   });
 
+  test("a completed sale counts towards the seller's profile", async ({ request }) => {
+    // "0 ventas" next to a five-star review is the kind of number that makes a
+    // marketplace look broken. The counter was read in two places and written
+    // in none, so it sat at zero however much anybody sold.
+    const seller = await login(request, AS.seller);
+    const buyer = await login(request, AS.stranger);
+    await clearCarts(request, buyer);
+
+    const before = await request.get('/api/users/manuel');
+    const { salesCount: salesBefore } = (await before.json()) as { salesCount: number };
+
+    const listing = await publishListing(request, seller, { amount: PRICE });
+    const cart = await cartFor(request, buyer, listing.id);
+
+    const response = await request.post('/api/checkout', {
+      headers: buyer.headers,
+      data: { cartId: cart.id, deliveryMethod: 'pickup', quotedTotal: cart.total },
+    });
+    expect(response.ok()).toBe(true);
+
+    const after = await request.get('/api/users/manuel');
+    const { salesCount: salesAfter } = (await after.json()) as { salesCount: number };
+
+    // Once per order, not per item: a cart holds one seller, and "3 ventas"
+    // should mean three people who bought rather than three objects.
+    expect(salesAfter).toBe(salesBefore + 1);
+  });
+
   test('somebody else cannot read the order', async ({ request }) => {
     const seller = await login(request, AS.seller);
     const buyer = await login(request, AS.stranger);
