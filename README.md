@@ -101,6 +101,7 @@ packages/
 | `pnpm dev:infra`  | Levanta PostGIS y Redis                   |
 | `pnpm build`      | Compila los packages compartidos          |
 | `pnpm test`       | Corre los tests unitarios (desde la raíz) |
+| `pnpm e2e`        | Tests end-to-end contra el stack real     |
 | `pnpm typecheck`  | Typecheck de todo el monorepo             |
 | `pnpm lint`       | ESLint                                    |
 | `pnpm db:migrate` | Aplica migraciones                        |
