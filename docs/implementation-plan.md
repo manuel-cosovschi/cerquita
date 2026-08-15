@@ -173,8 +173,14 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
   se limitan por `email + IP`, para que un NAT compartido no deje afuera a un
   barrio entero.
 - ✅ CI: instala, genera el cliente de Prisma, lint, formato, typecheck, tests,
-  aplica las migraciones desde cero contra PostGIS, siembra y compila las tres
-  apps que tienen build.
+  aplica las migraciones desde cero contra PostGIS, siembra, compila las tres
+  apps que tienen build y corre la suite e2e contra todo eso.
+
+  El workflow existía desde antes pero **nunca había llegado a correr**: moría
+  en el primer paso porque `pnpm/action-setup` se niega a arrancar si se le da
+  una versión y además hay `packageManager` en el `package.json`. Se sacó la
+  versión del workflow; la del `package.json` es la que vale para todos.
+
 - ✅ Tests e2e (Playwright, 27) contra el stack real, sin mocks: precios
   sociales resueltos en el servidor, ubicación exacta que nunca sale, checkout
   que rechaza un total manipulado, dos pujas simultáneas con un solo ganador,
