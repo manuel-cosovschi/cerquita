@@ -20,6 +20,9 @@ export default function AccountPage() {
   const { user, loading, logout } = useSession();
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  // Shown on the Actividad row so the account screen says whether anything is
+  // waiting, instead of making the user open it to find out.
+  const [pending, setPending] = useState(0);
 
   useEffect(() => {
     if (!user) {
@@ -38,6 +41,22 @@ export default function AccountPage() {
         // back to the username we already have from the token.
         if (!cancelled) setProfile(null);
       });
+
+    // Offers and friend requests are the two things somebody is waiting on.
+    // Failures are silent: the count is a convenience, not the screen.
+    Promise.allSettled([api.offers.list(), api.social.pendingFriendRequests()])
+      .then(([offers, requests]) => {
+        if (cancelled) return;
+        const openOffers =
+          offers.status === 'fulfilled'
+            ? offers.value.filter(
+                (offer) => offer.status === 'pending' && offer.toUser.id === user.userId,
+              ).length
+            : 0;
+        const openRequests = requests.status === 'fulfilled' ? requests.value.length : 0;
+        setPending(openOffers + openRequests);
+      })
+      .catch(() => undefined);
 
     return () => {
       cancelled = true;
@@ -100,6 +119,14 @@ export default function AccountPage() {
       )}
 
       <ul className={styles.menu}>
+        <li>
+          <Link className={styles.menuItem} href="/activity">
+            Actividad
+            <span className={styles.menuNote}>
+              {pending > 0 ? `${pending} sin responder` : 'Ofertas, solicitudes y avisos'}
+            </span>
+          </Link>
+        </li>
         <li>
           <Link className={styles.menuItem} href={`/user/${user.username}`}>
             Ver mi perfil público

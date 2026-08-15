@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import type { Offer } from '@cerquita/types';
 import { createOfferSchema, respondToOfferSchema } from '@cerquita/validation';
 import { money } from '@cerquita/utils';
 import { OffersService } from './offers.service';
@@ -18,6 +19,12 @@ type RespondBody =
 @Controller('offers')
 export class OffersController {
   constructor(private readonly offers: OffersService) {}
+
+  /** Everything the viewer is a party to, in both directions. */
+  @Get()
+  list(@CurrentUser() user: AuthenticatedUser): Promise<Offer[]> {
+    return this.offers.listForUser(user.userId);
+  }
 
   @Post()
   create(

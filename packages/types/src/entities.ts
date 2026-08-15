@@ -234,6 +234,8 @@ export interface BidSummary {
 export interface Offer {
   readonly id: UUID;
   readonly listingId: UUID;
+  /** Resolved for the viewer, so an offer inbox can show what it is about. */
+  readonly listing?: ListingSummary;
   readonly status: OfferStatus;
   readonly amount: MoneyDto;
   readonly fromUser: UserSummary;

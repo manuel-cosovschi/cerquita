@@ -1,8 +1,16 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import type { FriendshipStatus } from '@cerquita/types';
+import type { FriendshipStatus, UserSummary } from '@cerquita/types';
 import { canRespondToRequest, friendshipKey, isParticipant } from '@cerquita/domain';
 import { PrismaService } from '../../prisma/prisma.service';
+import { UserSerializer, USER_SUMMARY_SELECT } from '../users/user.serializer';
 import { EventBus } from '../events/event-bus.service';
+
+/** A friend request the viewer can answer. */
+export interface FriendRequest {
+  readonly id: string;
+  readonly from: UserSummary;
+  readonly createdAt: string;
+}
 
 /**
  * Follows and friendships (spec §8).
@@ -16,6 +24,7 @@ export class SocialService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly events: EventBus,
+    private readonly users: UserSerializer,
   ) {}
 
   async follow(followerId: string, followeeId: string): Promise<{ following: true }> {
@@ -45,6 +54,39 @@ export class SocialService {
       .delete({ where: { followerId_followeeId: { followerId, followeeId } } })
       .catch(() => undefined);
     return { following: false };
+  }
+
+  /**
+   * Friend requests waiting on the viewer.
+   *
+   * Only INCOMING ones: `requesterId` is who sent it, so a row where the viewer
+   * is the requester is their own pending request, which they can cancel but
+   * cannot answer. An inbox that mixed the two would offer accept/reject on a
+   * request the viewer sent themselves.
+   */
+  async pendingFriendRequests(viewerId: string): Promise<FriendRequest[]> {
+    const rows = await this.prisma.friendship.findMany({
+      where: {
+        status: 'pending',
+        requesterId: { not: viewerId },
+        OR: [{ userAId: viewerId }, { userBId: viewerId }],
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      include: {
+        userA: { select: USER_SUMMARY_SELECT },
+        userB: { select: USER_SUMMARY_SELECT },
+      },
+    });
+
+    // `requesterId` is a plain column with no relation of its own — the row is
+    // keyed by the canonical (userA, userB) ordering, so who asked is whichever
+    // of the two ids it matches.
+    return rows.map((row) => ({
+      id: row.id,
+      from: this.users.toSummary(row.userA.id === row.requesterId ? row.userA : row.userB),
+      createdAt: row.createdAt.toISOString(),
+    }));
   }
 
   async requestFriendship(requesterId: string, addresseeId: string): Promise<{ status: FriendshipStatus }> {

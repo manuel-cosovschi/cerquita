@@ -16,6 +16,7 @@ import type {
   MapMarker,
   Message,
   NotificationItem,
+  Offer,
   Order,
   Paginated,
   Store,
@@ -158,6 +159,13 @@ export interface ProfileReview {
   rating: number;
   body?: string;
   author: { id: string; username: string; displayName: string; avatarUrl?: string };
+  createdAt: string;
+}
+
+/** A friend request the viewer can accept or reject. */
+export interface FriendRequest {
+  id: string;
+  from: { id: string; username: string; displayName: string; avatarUrl?: string; verified: boolean };
   createdAt: string;
 }
 
@@ -323,6 +331,8 @@ export function createClient(options: ClientOptions) {
     },
 
     offers: {
+      /** Everything the viewer is a party to, both directions. */
+      list: () => request<Offer[]>('/offers'),
       create: (body: {
         listingId: string;
         amount: { amount: number; currency: string };
@@ -441,6 +451,8 @@ export function createClient(options: ClientOptions) {
       follow: (userId: string) => post<unknown>(`/users/${userId}/follow`, {}),
       unfollow: (userId: string) => request(`/users/${userId}/follow`, { method: 'DELETE' }),
       requestFriendship: (userId: string) => post<unknown>(`/users/${userId}/friend-request`, {}),
+      /** Requests waiting on the viewer — never their own outgoing ones. */
+      pendingFriendRequests: () => request<FriendRequest[]>('/friendships/pending'),
       respondToFriendship: (id: string, decision: 'accepted' | 'rejected') =>
         post<unknown>(`/friendships/${id}/respond`, { decision }),
       block: (userId: string) => post<unknown>(`/users/${userId}/block`, {}),

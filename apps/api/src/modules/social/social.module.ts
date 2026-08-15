@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { SocialService } from './social.service';
 import { SocialController } from './social.controller';
 import { SocialProofService } from './social-proof.service';
+import { UserSerializer } from '../users/user.serializer';
 
 /**
  * The social graph, and the one thing every other module wants from it.
@@ -13,7 +14,7 @@ import { SocialProofService } from './social-proof.service';
  */
 @Module({
   controllers: [SocialController],
-  providers: [SocialService, SocialProofService],
+  providers: [SocialService, SocialProofService, UserSerializer],
   exports: [SocialService, SocialProofService],
 })
 export class SocialModule {}

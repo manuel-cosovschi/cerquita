@@ -1,6 +1,6 @@
-import { Body, Controller, Delete, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
 import { z } from 'zod';
-import { SocialService } from './social.service';
+import { SocialService, type FriendRequest } from './social.service';
 import { zodBody } from '../../common/zod-validation.pipe';
 import { CurrentUser, type AuthenticatedUser } from '../../common/current-user.decorator';
 
@@ -26,6 +26,15 @@ export class SocialController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.social.requestFriendship(user.userId, id);
+  }
+
+  /**
+   * Requests waiting on the viewer. Declared before `:id` routes so the literal
+   * segment is not swallowed by a parameter.
+   */
+  @Get('friendships/pending')
+  pendingFriendRequests(@CurrentUser() user: AuthenticatedUser): Promise<FriendRequest[]> {
+    return this.social.pendingFriendRequests(user.userId);
   }
 
   @Post('friendships/:id/respond')

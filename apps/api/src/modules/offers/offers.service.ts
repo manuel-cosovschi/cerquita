@@ -7,10 +7,12 @@ import {
   resolvePrice,
   type OfferState,
 } from '@cerquita/domain';
-import { addMinutes, money, type Money } from '@cerquita/utils';
+import type { Offer } from '@cerquita/types';
+import { addMinutes, money, type Currency, type Money } from '@cerquita/utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EventBus } from '../events/event-bus.service';
 import { ListingsService } from '../listings/listings.service';
+import { UserSerializer, USER_SUMMARY_SELECT } from '../users/user.serializer';
 
 const REJECTIONS: Record<string, string> = {
   listing_not_available: 'La publicación ya no está disponible',
@@ -29,6 +31,7 @@ export class OffersService {
     private readonly prisma: PrismaService,
     private readonly events: EventBus,
     private readonly listings: ListingsService,
+    private readonly users: UserSerializer,
   ) {}
 
   async create(
@@ -215,6 +218,55 @@ export class OffersService {
       data: { status: 'expired' },
     });
     return result.count;
+  }
+
+  /**
+   * Every offer the viewer is a party to, in both directions.
+   *
+   * One list rather than two endpoints: a seller who counter-offered is now the
+   * sender of the live offer, and splitting "recibidas" from "enviadas" at the
+   * API would put the two halves of one negotiation on different screens. The
+   * client decides how to group them; the server decides what you may see.
+   *
+   * Expired and cancelled offers are excluded — an offer nobody can act on any
+   * more is history, and the inbox is for things that need an answer.
+   */
+  async listForUser(viewerId: string): Promise<Offer[]> {
+    const rows = await this.prisma.offer.findMany({
+      where: {
+        OR: [{ fromUserId: viewerId }, { toUserId: viewerId }],
+        status: { in: ['pending', 'accepted', 'countered'] },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      include: {
+        fromUser: { select: USER_SUMMARY_SELECT },
+        toUser: { select: USER_SUMMARY_SELECT },
+      },
+    });
+
+    // Listings are resolved for the viewer in one batch so the inbox can show
+    // what the offer is actually about.
+    const listings = await this.listings.summariesByIds(
+      rows.map((row) => row.listingId),
+      viewerId,
+    );
+
+    return rows.map((row) => ({
+      id: row.id,
+      listingId: row.listingId,
+      listing: listings.get(row.listingId),
+      status: row.status as Offer['status'],
+      // The column is plain text and the wire type is a closed union, so it
+      // goes through `money`, which validates rather than casts.
+      amount: money(row.amount, row.currency as Currency),
+      fromUser: this.users.toSummary(row.fromUser),
+      toUser: this.users.toSummary(row.toUser),
+      message: row.message ?? undefined,
+      expiresAt: row.expiresAt?.toISOString(),
+      counterOfOfferId: row.counterOfOfferId ?? undefined,
+      createdAt: row.createdAt.toISOString(),
+    }));
   }
 
   private toState(row: {
