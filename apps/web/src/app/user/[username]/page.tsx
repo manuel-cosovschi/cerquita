@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import type { ListingSummary, UserProfile } from '@cerquita/types';
-import { ApiError, type ProfileTab } from '@cerquita/api-client';
+import { ApiError, type ProfileReview, type ProfileTab } from '@cerquita/api-client';
 import { AppScreen } from '@/components/AppScreen';
 import { ListingCard } from '@/components/ListingCard';
 import { api } from '@/lib/api';
@@ -37,6 +37,7 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<ProfileTab>('selling');
   const [listings, setListings] = useState<ListingSummary[] | null>(null);
+  const [reviews, setReviews] = useState<ProfileReview[]>([]);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
@@ -52,6 +53,24 @@ export default function ProfilePage() {
   useEffect(() => {
     void load();
   }, [load, user?.userId]);
+
+  // Reviews are loaded once per profile: they are the same for every viewer,
+  // so unlike the listings they do not need to follow the session.
+  useEffect(() => {
+    let cancelled = false;
+    api.users
+      .reviews(username)
+      .then((page) => {
+        if (!cancelled) setReviews(page.items);
+      })
+      .catch(() => {
+        if (!cancelled) setReviews([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [username]);
 
   useEffect(() => {
     let cancelled = false;
@@ -199,6 +218,28 @@ export default function ProfilePage() {
           </button>
         ))}
       </div>
+
+      {reviews.length > 0 && (
+        <section className={styles.reviews} aria-label="Reseñas">
+          <h3 className={styles.reviewsTitle}>
+            Lo que dicen ({profile.reviewCount})
+          </h3>
+          <ul className={styles.reviewList}>
+            {reviews.map((review) => (
+              <li key={review.id} className={styles.review}>
+                <div className={styles.reviewHead}>
+                  <span className={styles.reviewStars} aria-label={`${review.rating} de 5`}>
+                    {'★'.repeat(review.rating)}
+                    <span className={styles.reviewStarsOff}>{'★'.repeat(5 - review.rating)}</span>
+                  </span>
+                  <span className={styles.reviewAuthor}>{review.author.displayName}</span>
+                </div>
+                {review.body && <p className={styles.reviewBody}>{review.body}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {listings === null ? (
         <p className={styles.state}>Cargando…</p>

@@ -198,3 +198,55 @@
   color: var(--color-text-tertiary);
   font-size: var(--font-size-md);
 }
+
+/* ── reviews ──────────────────────────────────────────────────────────────── */
+
+.reviews {
+  padding: var(--space-6) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.reviewsTitle {
+  margin: 0 0 var(--space-4);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.reviewList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-5);
+}
+
+.reviewHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.reviewStars {
+  font-size: var(--font-size-base);
+  color: var(--color-auction);
+  letter-spacing: 1px;
+}
+
+/* The unearned stars, drawn so the rating reads out of five at a glance. */
+.reviewStarsOff {
+  color: var(--color-border-strong);
+}
+
+.reviewAuthor {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.reviewBody {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}

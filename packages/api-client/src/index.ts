@@ -224,6 +224,18 @@ export type ModerationAction =
   | 'suspend_user'
   | 'ban_user';
 
+/** A saved search, optionally notifying when something new matches. */
+export interface SavedSearch {
+  id: string;
+  name: string;
+  text?: string | null;
+  minPrice?: number | null;
+  maxPrice?: number | null;
+  radiusMeters?: number | null;
+  notify: boolean;
+  createdAt: string;
+}
+
 export interface SearchQuery {
   q?: string;
   kind?: 'sale' | 'wanted' | 'auction';
@@ -475,6 +487,32 @@ export function createClient(options: ClientOptions) {
       collections: () => request<Array<{ id: string; name: string }>>('/collections'),
       createCollection: (name: string) =>
         post<{ id: string; name: string }>('/collections', { name }),
+    },
+
+    alerts: {
+      /**
+       * Saved searches double as alerts when `notify` is set (spec §32): the
+       * matching engine re-runs them when something new is published nearby.
+       */
+      list: () => request<SavedSearch[]>('/saved-searches'),
+      create: (body: {
+        name: string;
+        text?: string;
+        kinds?: Array<'sale' | 'wanted' | 'auction'>;
+        minPrice?: { amount: number; currency: string };
+        maxPrice?: { amount: number; currency: string };
+        center?: { lat: number; lng: number };
+        radiusMeters?: number;
+        notify: boolean;
+      }) => post<{ id: string }>('/saved-searches', body),
+      remove: (id: string) => request<unknown>(`/saved-searches/${id}`, { method: 'DELETE' }),
+    },
+
+    reviews: {
+      /** Orders the viewer can still review — drives the "calificá" prompt. */
+      pending: () => request<Array<{ orderId: string; reference: string }>>('/reviews/pending'),
+      create: (body: { orderId: string; rating: number; body?: string }) =>
+        post<unknown>('/reviews', body),
     },
 
     chat: {

@@ -27,22 +27,26 @@ export default function ActivityPage() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [reviewable, setReviewable] = useState<Array<{ orderId: string; reference: string }>>([]);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     // Each source is independent: one failing should not blank the other two.
-    const [offerResult, requestResult, notificationResult] = await Promise.allSettled([
-      api.offers.list(),
-      api.social.pendingFriendRequests(),
-      api.notifications.list(),
-    ]);
+    const [offerResult, requestResult, notificationResult, reviewResult] =
+      await Promise.allSettled([
+        api.offers.list(),
+        api.social.pendingFriendRequests(),
+        api.notifications.list(),
+        api.reviews.pending(),
+      ]);
 
     if (offerResult.status === 'fulfilled') setOffers(offerResult.value);
     if (requestResult.status === 'fulfilled') setRequests(requestResult.value);
     if (notificationResult.status === 'fulfilled') {
       setNotifications(notificationResult.value.items);
     }
+    if (reviewResult.status === 'fulfilled') setReviewable(reviewResult.value);
     setReady(true);
   }, []);
 
@@ -84,7 +88,11 @@ export default function ActivityPage() {
   }
 
   const unreadCount = notifications.filter((entry) => !entry.readAt).length;
-  const isEmpty = offers.length === 0 && requests.length === 0 && notifications.length === 0;
+  const isEmpty =
+    offers.length === 0 &&
+    requests.length === 0 &&
+    notifications.length === 0 &&
+    reviewable.length === 0;
 
   async function act(action: () => Promise<unknown>) {
     setError(null);
@@ -110,6 +118,19 @@ export default function ActivityPage() {
             </Link>
           }
         />
+      )}
+
+      {reviewable.length > 0 && (
+        <section className={styles.section} aria-label="Calificaciones pendientes">
+          <h2 className={styles.sectionTitle}>Para calificar</h2>
+          <ul className={styles.list}>
+            {reviewable.map((entry) => (
+              <li key={entry.orderId}>
+                <ReviewCard entry={entry} onAct={act} />
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       {requests.length > 0 && (
@@ -196,6 +217,83 @@ export default function ActivityPage() {
         </section>
       )}
     </AppScreen>
+  );
+}
+
+/**
+ * Rating the other party after an order.
+ *
+ * Stars are the whole form; the comment is optional. A required comment is how
+ * you get an empty review section — most people will rate and very few will
+ * write, and the rating is the part the next buyer needs.
+ */
+function ReviewCard({
+  entry,
+  onAct,
+}: {
+  entry: { orderId: string; reference: string };
+  onAct: (action: () => Promise<unknown>) => Promise<void>;
+}) {
+  const [rating, setRating] = useState(0);
+  const [body, setBody] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  return (
+    <div className={styles.card}>
+      <div className={styles.offerHead}>
+        <span className={styles.who}>¿Cómo fue la operación #{entry.reference}?</span>
+      </div>
+
+      <div className={styles.stars} role="radiogroup" aria-label="Calificación">
+        {[1, 2, 3, 4, 5].map((value) => (
+          <button
+            key={value}
+            type="button"
+            role="radio"
+            aria-checked={rating === value}
+            aria-label={`${value} de 5`}
+            className={`${styles.star} ${value <= rating ? styles.starOn : ''}`}
+            onClick={() => setRating(value)}
+          >
+            ★
+          </button>
+        ))}
+      </div>
+
+      <label className="sr-only" htmlFor={`review-${entry.orderId}`}>
+        Comentario
+      </label>
+      <input
+        id={`review-${entry.orderId}`}
+        className={styles.counterInput}
+        style={{ marginTop: 12, fontWeight: 400 }}
+        value={body}
+        onChange={(event) => setBody(event.target.value)}
+        placeholder="Contá cómo fue (opcional)"
+        maxLength={1000}
+      />
+
+      <div className={styles.actions}>
+        <button
+          type="button"
+          className={styles.primary}
+          disabled={busy || rating === 0}
+          onClick={async () => {
+            setBusy(true);
+            await onAct(() =>
+              api.reviews.create({
+                orderId: entry.orderId,
+                rating,
+                body: body.trim() || undefined,
+              }),
+            );
+            setBusy(false);
+          }}
+        >
+          {busy ? 'Enviando…' : 'Calificar'}
+        </button>
+      </div>
+    </div>
   );
 }
 

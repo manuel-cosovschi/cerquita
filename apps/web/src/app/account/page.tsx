@@ -144,6 +144,12 @@ export default function AccountPage() {
           </Link>
         </li>
         <li>
+          <Link className={styles.menuItem} href="/alerts">
+            Alertas
+            <span className={styles.menuNote}>Avisos de lo que buscás</span>
+          </Link>
+        </li>
+        <li>
           <Link className={styles.menuItem} href="/settings/pricing">
             Precios para amigos y seguidores
             <span className={styles.menuNote}>Tu descuento social</span>
