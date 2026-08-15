@@ -126,6 +126,7 @@ export default function ListingScreen() {
           <Pressable
             style={[styles.primary, busy && styles.disabled]}
             disabled={busy}
+            accessibilityRole="button"
             onPress={() =>
               void act(async () => {
                 const conversation = await api.chat.open({
@@ -142,6 +143,7 @@ export default function ListingScreen() {
           <Pressable
             style={[styles.secondary, busy && styles.disabled]}
             disabled={busy}
+            accessibilityRole="button"
             onPress={() =>
               void act(async () => {
                 if (listing.isFavorite) await api.favorites.remove(listing.id);

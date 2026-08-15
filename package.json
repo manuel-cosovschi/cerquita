@@ -2,7 +2,7 @@
   "name": "cerquita",
   "private": true,
   "version": "0.1.0",
-  "description": "Cerquita \u2014 hyperlocal social marketplace",
+  "description": "Cerquita — hyperlocal social marketplace",
   "packageManager": "pnpm@10.33.0",
   "engines": {
     "node": ">=22"
@@ -28,9 +28,11 @@
     "dev:mobile": "pnpm --filter @cerquita/mobile start"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^9.18.0",
     "@playwright/test": "1.56.1",
     "@types/node": "^22.20.1",
+    "axe-core": "^4.13.0",
     "eslint": "^9.18.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.11.0",

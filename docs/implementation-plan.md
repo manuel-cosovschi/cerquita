@@ -179,7 +179,9 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
   sociales resueltos en el servidor, ubicación exacta que nunca sale, checkout
   que rechaza un total manipulado, dos pujas simultáneas con un solo ganador,
   y demanda local que reporta patrones sin nombrar personas.
-- ⬜ Pasada de accesibilidad.
+- ✅ Pasada de accesibilidad: cero violaciones WCAG 2.1 AA (axe) en las quince
+  pantallas de web y las cinco del admin, con el chequeo incorporado a la suite
+  e2e para que no vuelva en silencio.
 
 ---
 
@@ -202,12 +204,15 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
 | E2E contra el stack real, sin mocks                     | Lo que estos tests protegen sólo se rompe con las piezas conectadas. Un mock del servidor de precios convierte "el precio lo resuelve el servidor" en una tautología.                                              |
 | E2E con un solo worker                                  | Los límites de rate son reales en estos tests, a propósito. Workers en paralelo contra una sola IP producen 429 que parecen bugs del producto.                                                                     |
 | Cada test e2e publica lo que compra                     | Comprar algo del seed funciona exactamente una vez; a la segunda corrida está vendido. Una suite que sólo pasa con la base recién sembrada es una suite que nadie corre dos veces.                                 |
+| Contraste corregido en el token, no en las pantallas    | El texto terciario fallaba en doce pantallas por una sola razón: todas beben del mismo token. Arreglar cada CSS habría dejado el defecto vivo en la próxima pantalla que se escribiera.                            |
+| El dock inactivo al 0.6 y no al 0.4                     | La intención del diseño —los ítems inactivos se retiran en vez de cambiar de color— es correcta; el valor no era legible. Se conservó la intención y se movió el número.                                           |
 
 ## Próximos pasos
 
 Lo funcional está cerrado: el bucle de §131 (buscar → ver → hablar → comprar →
 reseñar) corre entero en web, y mobile cubre mapa, detalle y chat contra la
-misma API. CI y e2e ya corren. Queda:
+misma API. CI, e2e y accesibilidad ya corren.
 
-1. **Pasada de accesibilidad** — foco visible, orden de tabulación y contraste
-   revisados pantalla por pantalla, no sólo en los componentes nuevos.
+Nada bloqueante. Lo que queda es trabajo de operación, no de construcción:
+observabilidad en producción, presupuesto de performance, y el proveedor de
+tiles del mapa (hoy la grilla es el fallback declarado).

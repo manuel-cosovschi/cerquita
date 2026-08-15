@@ -26,8 +26,16 @@
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  /* Inactive items recede rather than changing colour. */
-  opacity: 0.4;
+  /*
+   * Inactive items recede rather than changing colour.
+   *
+   * 0.6, not 0.4: at 0.4 the ink lands around 2.5:1 against the dock and the
+   * labels of every screen you are not currently on stop being readable —
+   * which, in a nav bar, is most of them. The active item still reads as the
+   * loud one, because it is the only one at full strength and the only one
+   * whose icon is filled.
+   */
+  opacity: 0.6;
   min-width: var(--touch-target-min);
   transition: opacity var(--duration-fast) var(--easing-standard);
 }

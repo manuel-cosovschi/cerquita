@@ -99,8 +99,20 @@ const light: SemanticColors = {
   scrim: 'rgba(20, 18, 16, 0.45)',
 
   textPrimary: palette.neutral[900],
-  textSecondary: 'rgba(20, 18, 16, 0.62)',
-  textTertiary: 'rgba(20, 18, 16, 0.42)',
+  /*
+   * Three levels of quiet, all of them readable.
+   *
+   * The muted ink used to be 0.62 / 0.42, which put tertiary at 2.7:1 against
+   * the cream — under WCAG AA's 4.5:1, and under even the 3:1 allowed for large
+   * text. It failed on twelve of fourteen screens, because tertiary is what
+   * hints, timestamps, empty states and the dock's labels are made of.
+   *
+   * Raised to 0.74 / 0.62, which lands at roughly 7.6:1 and 5.1:1. The step
+   * between the two is still clearly visible, so the hierarchy the design draws
+   * survives; what changes is that its bottom rung is legible.
+   */
+  textSecondary: 'rgba(20, 18, 16, 0.74)',
+  textTertiary: 'rgba(20, 18, 16, 0.62)',
   textInverse: palette.neutral[0],
   // Two different surfaces, two different answers.
   //
@@ -176,8 +188,11 @@ const dark: SemanticColors = {
   scrim: 'rgba(0, 0, 0, 0.6)',
 
   textPrimary: palette.neutral[50],
-  textSecondary: 'rgba(246, 242, 234, 0.62)',
-  textTertiary: 'rgba(246, 242, 234, 0.42)',
+  // Same correction as the light theme, and for the same reason: cream at 0.42
+  // over the raised surface was 3.4:1. The alphas are deliberately identical
+  // across themes so "tertiary" means one thing.
+  textSecondary: 'rgba(246, 242, 234, 0.74)',
+  textTertiary: 'rgba(246, 242, 234, 0.62)',
   textInverse: palette.neutral[900],
   textOnBrand: palette.neutral[900],
   textOnAccent: palette.accent.onAccent,

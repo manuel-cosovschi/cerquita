@@ -39,7 +39,11 @@ export default function AccountScreen() {
         <Text style={styles.note}>
           Ya estás dentro. Vas a ver precios de amigo y las publicaciones de la gente que seguís.
         </Text>
-        <Pressable style={styles.secondary} onPress={() => void logout()}>
+        <Pressable
+          style={styles.secondary}
+          onPress={() => void logout()}
+          accessibilityRole="button"
+        >
           <Text style={styles.secondaryText}>Cerrar sesión</Text>
         </Pressable>
       </View>
@@ -101,13 +105,17 @@ export default function AccountScreen() {
         style={[styles.primary, busy && styles.disabled]}
         disabled={busy}
         onPress={() => void submit()}
+        accessibilityRole="button"
       >
         <Text style={styles.primaryText}>
           {busy ? 'Un segundo…' : isRegister ? 'Crear cuenta' : 'Entrar'}
         </Text>
       </Pressable>
 
-      <Pressable onPress={() => setMode(isRegister ? 'login' : 'register')}>
+      <Pressable
+        onPress={() => setMode(isRegister ? 'login' : 'register')}
+        accessibilityRole="button"
+      >
         <Text style={styles.switch}>
           {isRegister ? '¿Ya tenés cuenta? Entrá' : '¿No tenés cuenta? Creála'}
         </Text>
