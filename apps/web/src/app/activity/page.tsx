@@ -10,6 +10,7 @@ import { api } from '@/lib/api';
 import { useSession } from '@/lib/session';
 import { formatRelativeTime } from '@/lib/time';
 import styles from './page.module.css';
+import { ListingImage } from '@/components/ListingImage';
 
 /**
  * Activity.
@@ -352,11 +353,11 @@ function OfferCard({
 
       {offer.listing && (
         <Link href={`/listing/${offer.listing.id}`} className={styles.subject}>
-          {offer.listing.coverImage ? (
-            <img className={styles.thumb} src={offer.listing.coverImage.url} alt="" />
-          ) : (
-            <span className={styles.thumb} aria-hidden="true" />
-          )}
+          <ListingImage
+            image={offer.listing.coverImage}
+            title={offer.listing.title}
+            className={styles.thumb}
+          />
           <span className={styles.subjectTitle}>{offer.listing.title}</span>
         </Link>
       )}

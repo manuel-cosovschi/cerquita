@@ -5,6 +5,7 @@ import type { ListingSummary } from '@cerquita/types';
 import { formatDistance, formatMoney, money } from '@cerquita/utils';
 import { Price } from './Price';
 import { Countdown } from './Countdown';
+import { ListingImage } from './ListingImage';
 import styles from './ListingCard.module.css';
 
 export interface ListingCardProps {
@@ -41,21 +42,16 @@ export function ListingCard({ listing, hovered, selected, onHover, onSelect }: L
         onClick={() => onSelect?.(listing.id)}
       >
         <div className={styles.media}>
-          {listing.coverImage ? (
-            <img
-              src={listing.coverImage.url}
-              alt={listing.coverImage.alt ?? listing.title}
-              className={styles.image}
-              loading="lazy"
-            />
-          ) : (
-            /* The kind tag below already says "Busco"; the placeholder saying it
-               too read as a stutter on every photo-less wanted post — which is
-               most of them, since you rarely have a picture of what you want. */
-            <div className={styles.imagePlaceholder} aria-hidden="true">
-              Sin foto
-            </div>
-          )}
+          {/* The kind tag below already says "Busco", so the stand-in does not
+              repeat it — that read as a stutter on every photo-less wanted
+              post, which is most of them. */}
+          <ListingImage
+            image={listing.coverImage}
+            title={listing.title}
+            className={styles.image}
+            fallbackClassName={styles.imagePlaceholder}
+            fallbackLabel="Sin foto"
+          />
 
           {listing.isPromoted && <span className={styles.promoted}>Destacado</span>}
           {isAuction && <span className={styles.auctionTag}>Subasta</span>}

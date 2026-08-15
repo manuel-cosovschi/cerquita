@@ -10,6 +10,7 @@ import { api } from '@/lib/api';
 import { useSession } from '@/lib/session';
 import { formatRelativeTime } from '@/lib/time';
 import styles from './page.module.css';
+import { ListingImage } from '@/components/ListingImage';
 
 /** Where the viewer's last known position is remembered between visits. */
 const POSITION_KEY = 'cerquita.position';
@@ -165,13 +166,13 @@ function FeedRow({ item }: { item: FeedItem }) {
 
       {item.listing ? (
         <div className={styles.item}>
-          {item.listing.coverImage ? (
-            <img className={styles.thumb} src={item.listing.coverImage.url} alt="" />
-          ) : (
-            <span className={`${styles.thumb} ${styles.thumbPlaceholder}`} aria-hidden="true">
-              {item.listing.kind === 'wanted' ? 'Busco' : 'Sin foto'}
-            </span>
-          )}
+          <ListingImage
+            image={item.listing.coverImage}
+            title={item.listing.title}
+            className={styles.thumb}
+            fallbackClassName={`${styles.thumb} ${styles.thumbPlaceholder}`}
+            fallbackLabel={item.listing.kind === 'wanted' ? 'Busco' : 'Sin foto'}
+          />
 
           <div className={styles.itemBody}>
             <p className={styles.title}>{item.listing.title}</p>

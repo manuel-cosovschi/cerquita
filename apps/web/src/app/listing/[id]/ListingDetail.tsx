@@ -19,6 +19,7 @@ import { Comments } from '@/components/Comments';
 import { api } from '@/lib/api';
 import { useSession } from '@/lib/session';
 import styles from './page.module.css';
+import { ListingImage } from '@/components/ListingImage';
 
 /**
  * The listing, as this viewer sees it.
@@ -201,13 +202,13 @@ export function ListingDetail({ initial }: { initial: Listing }) {
         <div className={styles.gallery}>
           {listing.images.length > 0 ? (
             listing.images.map((image) => (
-              <img
+              <ListingImage
                 key={image.id}
-                src={image.url}
-                alt={image.alt ?? listing.title}
+                image={image}
+                title={listing.title}
                 className={styles.image}
-                width={image.width}
-                height={image.height}
+                fallbackClassName={styles.imagePlaceholder}
+                fallbackLabel="Sin foto"
               />
             ))
           ) : (

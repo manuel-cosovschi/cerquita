@@ -10,6 +10,7 @@ import { api } from '@/lib/api';
 import { useSession } from '@/lib/session';
 import { formatClockTime, formatDayLabel } from '@/lib/time';
 import styles from './page.module.css';
+import { ListingImage } from '@/components/ListingImage';
 
 /** How often the thread re-checks for messages sent by the other side. */
 const POLL_MS = 8_000;
@@ -197,11 +198,11 @@ export default function ConversationPage() {
 
       {conversation?.listing && (
         <Link href={`/listing/${conversation.listing.id}`} className={styles.contextCard}>
-          {conversation.listing.coverImage ? (
-            <img className={styles.contextImage} src={conversation.listing.coverImage.url} alt="" />
-          ) : (
-            <span className={styles.contextImage} aria-hidden="true" />
-          )}
+          <ListingImage
+            image={conversation.listing.coverImage}
+            title={conversation.listing.title}
+            className={styles.contextImage}
+          />
           <span>
             <span className={styles.contextTitle}>{conversation.listing.title}</span>
             {conversation.listing.price && (
