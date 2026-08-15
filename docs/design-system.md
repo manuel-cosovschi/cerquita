@@ -22,15 +22,15 @@ reemplazar el diseño cambiando un archivo.
 
 No son decorativos: codifican significado de producto.
 
-| Rol | Qué significa |
-|---|---|
-| `sale` | Venta directa |
-| `auction` | Subasta, cuenta regresiva, urgencia |
-| `wanted` | Publicación "Busco" |
-| `store` | Tienda |
-| `friend` / `follower` | Relación social del espectador |
-| `discount` | Baja de precio, promoción |
-| `mapCluster` | Burbuja de cluster |
+| Rol                   | Qué significa                       |
+| --------------------- | ----------------------------------- |
+| `sale`                | Venta directa                       |
+| `auction`             | Subasta, cuenta regresiva, urgencia |
+| `wanted`              | Publicación "Busco"                 |
+| `store`               | Tienda                              |
+| `friend` / `follower` | Relación social del espectador      |
+| `discount`            | Baja de precio, promoción           |
+| `mapCluster`          | Burbuja de cluster                  |
 
 Cuando llegue el diseño real, estos roles siguen siendo los mismos; sólo cambian
 los valores detrás.

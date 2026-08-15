@@ -30,10 +30,7 @@ export interface AiProvider {
   /** Turns "una mountain bike usada por menos de $500.000 a 5 km" into filters. */
   parseSearchQuery(prompt: string): Promise<StructuredSearchQuery>;
   /** Suggests listing fields from photos and any text the seller already typed. */
-  suggestListing(input: {
-    imageUrls: string[];
-    partialTitle?: string;
-  }): Promise<ListingSuggestion>;
+  suggestListing(input: { imageUrls: string[]; partialTitle?: string }): Promise<ListingSuggestion>;
 }
 
 export const AI_PROVIDER = Symbol('AI_PROVIDER');

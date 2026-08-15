@@ -20,7 +20,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!user) return;
-    api.admin.dashboard().then(setData).catch(() => setData(null));
+    api.admin
+      .dashboard()
+      .then(setData)
+      .catch(() => setData(null));
   }, [user]);
 
   return (

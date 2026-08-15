@@ -174,12 +174,14 @@ export default function DemandPage() {
             </section>
           )}
 
-          {demand.categories.length === 0 && demand.terms.length === 0 && demand.wantedTotal > 0 && (
-            <p className={styles.state}>
-              Todavía no hay un patrón: cada persona busca algo distinto. Abajo están los pedidos
-              tal cual los publicaron.
-            </p>
-          )}
+          {demand.categories.length === 0 &&
+            demand.terms.length === 0 &&
+            demand.wantedTotal > 0 && (
+              <p className={styles.state}>
+                Todavía no hay un patrón: cada persona busca algo distinto. Abajo están los pedidos
+                tal cual los publicaron.
+              </p>
+            )}
 
           {wanted.length > 0 && (
             <section className={styles.section} aria-label="Pedidos cerca">

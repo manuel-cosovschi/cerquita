@@ -50,7 +50,10 @@ export class CheckoutService {
     @Inject(PAYMENT_PROVIDER) private readonly payments: PaymentProvider,
   ) {}
 
-  async checkout(input: CheckoutInput, buyerId: string): Promise<{ order: Order; checkoutUrl?: string }> {
+  async checkout(
+    input: CheckoutInput,
+    buyerId: string,
+  ): Promise<{ order: Order; checkoutUrl?: string }> {
     const platformFeeBasisPoints = await this.config.platformFeeBasisPoints();
 
     const created = await this.prisma.$transaction(async (tx) => {
@@ -382,8 +385,28 @@ export class CheckoutService {
       where: { id: orderId },
       include: {
         items: true,
-        buyer: { select: { id: true, username: true, displayName: true, avatarUrl: true, verified: true, ratingSum: true, reviewCount: true } },
-        seller: { select: { id: true, username: true, displayName: true, avatarUrl: true, verified: true, ratingSum: true, reviewCount: true } },
+        buyer: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+            verified: true,
+            ratingSum: true,
+            reviewCount: true,
+          },
+        },
+        seller: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+            verified: true,
+            ratingSum: true,
+            reviewCount: true,
+          },
+        },
       },
     });
 

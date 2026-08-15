@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   canConsumeReservation,
   reservationExpiry,
@@ -46,7 +52,10 @@ export class ReservationsService {
       });
     }
     if (listing.status !== 'active') {
-      throw new BadRequestException({ message: 'La publicación no está disponible', code: 'unavailable' });
+      throw new BadRequestException({
+        message: 'La publicación no está disponible',
+        code: 'unavailable',
+      });
     }
 
     const existing = await this.prisma.reservation.findFirst({
@@ -115,7 +124,9 @@ export class ReservationsService {
     const rows = await this.prisma.reservation.findMany({
       where: { buyerId, status: 'active', expiresAt: { gt: new Date() } },
       orderBy: { expiresAt: 'asc' },
-      include: { listing: { select: { id: true, title: true, priceAmount: true, priceCurrency: true } } },
+      include: {
+        listing: { select: { id: true, title: true, priceAmount: true, priceCurrency: true } },
+      },
     });
 
     return rows.map((row) => ({
@@ -156,7 +167,14 @@ export class ReservationsService {
   async releaseExpired(now = new Date()): Promise<number> {
     const candidates = await this.prisma.reservation.findMany({
       where: { status: 'active', expiresAt: { lte: now } },
-      select: { id: true, listingId: true, quantity: true, status: true, expiresAt: true, buyerId: true },
+      select: {
+        id: true,
+        listingId: true,
+        quantity: true,
+        status: true,
+        expiresAt: true,
+        buyerId: true,
+      },
       take: 200,
     });
 

@@ -111,9 +111,7 @@ export default function NearbyScreen() {
       </View>
 
       {locationDenied && (
-        <Text style={styles.note}>
-          Sin tu ubicación mostramos lo más nuevo, no lo más cercano.
-        </Text>
+        <Text style={styles.note}>Sin tu ubicación mostramos lo más nuevo, no lo más cercano.</Text>
       )}
 
       {error && <Text style={styles.error}>{error}</Text>}

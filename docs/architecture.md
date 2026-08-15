@@ -41,7 +41,7 @@ Esto no es purismo. Tiene dos consecuencias concretas:
    del spec §91 (precios por tier, dos pujas simultáneas, dos compradores por la
    última unidad, autorización cruzada) corren en milisegundos.
 2. **La misma regla corre en más de un lugar sin duplicarse.** `resolvePrice` la
-   usa el serializador de listings *y* el checkout. Si estuvieran duplicadas,
+   usa el serializador de listings _y_ el checkout. Si estuvieran duplicadas,
    eventualmente divergirían — y la divergencia sería que el usuario ve un precio
    y se le cobra otro.
 
@@ -61,11 +61,11 @@ archivo que revisar, no cincuenta handlers.
 Tres caminos necesitan cuidado real, y cada uno usa la herramienta que
 corresponde:
 
-| Camino | Mecanismo | Por qué |
-|---|---|---|
-| Pujas | `READ COMMITTED` + `SELECT … FOR UPDATE` | Las pujas se serializan en el lock. La segunda lee la puja de la primera y se rechaza limpiamente. |
-| Stock | UPDATE condicional (`WHERE disponible >= n`) | Atómico. La segunda transacción reevalúa el WHERE contra la fila nueva y no matchea. |
-| Cierre de subasta | Job + row lock | La subasta cierra a horario, mire alguien o no. Idempotente entre instancias. |
+| Camino            | Mecanismo                                    | Por qué                                                                                            |
+| ----------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Pujas             | `READ COMMITTED` + `SELECT … FOR UPDATE`     | Las pujas se serializan en el lock. La segunda lee la puja de la primera y se rechaza limpiamente. |
+| Stock             | UPDATE condicional (`WHERE disponible >= n`) | Atómico. La segunda transacción reevalúa el WHERE contra la fila nueva y no matchea.               |
+| Cierre de subasta | Job + row lock                               | La subasta cierra a horario, mire alguien o no. Idempotente entre instancias.                      |
 
 **Sobre `SERIALIZABLE`:** se usó primero para las pujas y estaba mal. En
 `SERIALIZABLE` (y en `REPEATABLE READ`) el snapshot queda fijo en la primera

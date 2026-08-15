@@ -144,7 +144,15 @@ function clampBasisPoints(value: number): number {
  */
 const ORDER_TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
   pending_payment: ['paid', 'cancelled'],
-  paid: ['preparing', 'ready_for_pickup', 'shipped', 'completed', 'cancelled', 'refunded', 'disputed'],
+  paid: [
+    'preparing',
+    'ready_for_pickup',
+    'shipped',
+    'completed',
+    'cancelled',
+    'refunded',
+    'disputed',
+  ],
   preparing: ['ready_for_pickup', 'shipped', 'cancelled', 'disputed'],
   ready_for_pickup: ['completed', 'delivered', 'cancelled', 'disputed'],
   shipped: ['delivered', 'disputed', 'refunded'],

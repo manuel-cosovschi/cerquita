@@ -116,9 +116,7 @@ export default function OrderPage() {
               <p className={styles.itemTitle}>{item.titleSnapshot}</p>
               <p className={styles.itemMeta}>
                 {item.quantity} ×{' '}
-                {formatMoney(
-                  money(item.unitPriceSnapshot.amount, item.unitPriceSnapshot.currency),
-                )}
+                {formatMoney(money(item.unitPriceSnapshot.amount, item.unitPriceSnapshot.currency))}
               </p>
             </div>
             <span className={styles.lineTotal}>

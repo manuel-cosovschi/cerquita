@@ -76,7 +76,9 @@
 
 /* Friend: teal ring instead of white. The relationship IS the ring. */
 .friend .thumb {
-  box-shadow: 0 0 0 3px var(--color-friend-ring), var(--shadow-marker);
+  box-shadow:
+    0 0 0 3px var(--color-friend-ring),
+    var(--shadow-marker);
 }
 
 /* ── the price bubble, hanging ────────────────────────────────────────────── */

@@ -58,7 +58,12 @@ export class NotificationsController {
   @Post('preferences')
   setPreference(
     @Body(zodBody(preferenceSchema))
-    body: { type: (typeof NOTIFICATION_TYPES)[number]; push?: boolean; email?: boolean; inApp?: boolean },
+    body: {
+      type: (typeof NOTIFICATION_TYPES)[number];
+      push?: boolean;
+      email?: boolean;
+      inApp?: boolean;
+    },
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ ok: true }> {
     const { type, ...preference } = body;

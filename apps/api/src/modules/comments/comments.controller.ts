@@ -17,10 +17,7 @@ export class CommentsController {
   /** Public: comments are references, so a logged-out visitor should read them. */
   @OptionalAuth()
   @Get('listings/:id/comments')
-  list(
-    @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUser() user: AuthenticatedUser | undefined,
-  ) {
+  list(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser | undefined) {
     return this.comments.list(id, user?.userId);
   }
 

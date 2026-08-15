@@ -111,7 +111,11 @@ function roundToInteger(value: number, mode: RoundingMode): number {
  * Percentages are stored as integers everywhere in Cerquita so a "15% friend
  * discount" is `1500`, never `0.15`. This keeps discount math exact.
  */
-export function percentOf(value: Money, basisPoints: number, mode: RoundingMode = 'half-up'): Money {
+export function percentOf(
+  value: Money,
+  basisPoints: number,
+  mode: RoundingMode = 'half-up',
+): Money {
   if (!Number.isSafeInteger(basisPoints)) {
     throw new MoneyError(`Basis points must be an integer, received ${basisPoints}`);
   }
@@ -222,9 +226,7 @@ export function fromMajorUnits(input: string | number, currency: Currency): Mone
   const paddedFraction = fractionPart.padEnd(exponent, '0');
 
   if (paddedFraction.length > exponent) {
-    throw new MoneyError(
-      `${currency} supports ${exponent} decimal places, received "${text}"`,
-    );
+    throw new MoneyError(`${currency} supports ${exponent} decimal places, received "${text}"`);
   }
 
   const minor = Number(`${wholePart}${paddedFraction}`);

@@ -162,7 +162,11 @@ export default function CartPage() {
         const method = delivery[cart.id] ?? 'meetup';
 
         return (
-          <section key={cart.id} className={styles.cart} aria-label={`Carrito de ${cart.seller.displayName}`}>
+          <section
+            key={cart.id}
+            className={styles.cart}
+            aria-label={`Carrito de ${cart.seller.displayName}`}
+          >
             <div className={styles.sellerRow}>
               <p className={styles.sellerName}>{cart.store?.name ?? cart.seller.displayName}</p>
               <Link className={styles.sellerLink} href={`/user/${cart.seller.username}`}>

@@ -106,9 +106,7 @@ export class OffersService {
         amount: input.amount.amount,
         currency: input.amount.currency,
         message: input.message,
-        expiresAt: input.expiresInMinutes
-          ? addMinutes(new Date(), input.expiresInMinutes)
-          : null,
+        expiresAt: input.expiresInMinutes ? addMinutes(new Date(), input.expiresInMinutes) : null,
       },
     });
 
@@ -206,7 +204,10 @@ export class OffersService {
       throw new NotFoundException({ message: 'Oferta no encontrada', code: 'not_found' });
     }
     if (!canCancel(this.toState(row), actorId, new Date())) {
-      throw new BadRequestException({ message: 'No podés cancelar esta oferta', code: 'forbidden' });
+      throw new BadRequestException({
+        message: 'No podés cancelar esta oferta',
+        code: 'forbidden',
+      });
     }
     return this.prisma.offer.update({ where: { id: offerId }, data: { status: 'cancelled' } });
   }

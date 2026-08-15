@@ -47,14 +47,14 @@ castellano, con tests. Las imágenes se guardan en disco y se sirven desde
 
 Todos con la contraseña `cerquita-demo-2026`:
 
-| Email | Rol en los datos |
-|---|---|
-| `manuel@cerquita.dev` | Vendedor. Da −5% a seguidores y −15% a amigos |
-| `fran@cerquita.dev` | **Amigo** de Manuel → ve el precio de amigo |
-| `santiago@cerquita.dev` | **Sigue** a Manuel → ve el precio de seguidor |
-| `lucia@cerquita.dev` | Sigue a Manuel y tiene amigos en común con él |
-| `bruno@cerquita.dev` | Tienda de tecnología |
-| `admin@cerquita.dev` | `super_admin` — entra en la consola de `:3001` |
+| Email                   | Rol en los datos                               |
+| ----------------------- | ---------------------------------------------- |
+| `manuel@cerquita.dev`   | Vendedor. Da −5% a seguidores y −15% a amigos  |
+| `fran@cerquita.dev`     | **Amigo** de Manuel → ve el precio de amigo    |
+| `santiago@cerquita.dev` | **Sigue** a Manuel → ve el precio de seguidor  |
+| `lucia@cerquita.dev`    | Sigue a Manuel y tiene amigos en común con él  |
+| `bruno@cerquita.dev`    | Tienda de tecnología                           |
+| `admin@cerquita.dev`    | `super_admin` — entra en la consola de `:3001` |
 
 Abrir la misma PS5 con distintas sesiones muestra el precio cambiar:
 **550.000 público · 522.500 seguidor · 467.500 amigo**. Lo decide el servidor, no
@@ -64,7 +64,7 @@ la interfaz: cerrá sesión y el precio vuelve al público.
 
 1. **El mapa** (`/`) con sesión iniciada: los marcadores de amigos tienen anillo
    turquesa y el precio que ves es el tuyo.
-2. **Una publicación** de Manuel como Lucía: dice *“Amigo de Fran”* arriba de la
+2. **Una publicación** de Manuel como Lucía: dice _“Amigo de Fran”_ arriba de la
    reputación. Sin sesión, no dice nada — el grafo se resuelve por espectador y
    nunca se publica.
 3. **Publicar** desde el botón central: el mapa de ubicación dibuja a escala el
@@ -96,15 +96,15 @@ packages/
 
 ## Comandos
 
-| Comando | Qué hace |
-|---|---|
-| `pnpm dev:infra` | Levanta PostGIS y Redis |
-| `pnpm build` | Compila los packages compartidos |
-| `pnpm test` | Corre los tests unitarios (desde la raíz) |
-| `pnpm typecheck` | Typecheck de todo el monorepo |
-| `pnpm lint` | ESLint |
-| `pnpm db:migrate` | Aplica migraciones |
-| `pnpm db:seed` | Carga datos de desarrollo |
+| Comando           | Qué hace                                  |
+| ----------------- | ----------------------------------------- |
+| `pnpm dev:infra`  | Levanta PostGIS y Redis                   |
+| `pnpm build`      | Compila los packages compartidos          |
+| `pnpm test`       | Corre los tests unitarios (desde la raíz) |
+| `pnpm typecheck`  | Typecheck de todo el monorepo             |
+| `pnpm lint`       | ESLint                                    |
+| `pnpm db:migrate` | Aplica migraciones                        |
+| `pnpm db:seed`    | Carga datos de desarrollo                 |
 
 > `pnpm test` corre desde la raíz. Los paquetes no tienen script `test` propio a
 > propósito: sus globs no matcheaban nada y `pnpm -r test` reportaba éxito sin

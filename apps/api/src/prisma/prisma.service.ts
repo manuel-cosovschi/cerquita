@@ -97,11 +97,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
    * Returns true when the row exists. Prefer `withRowLock`, which pairs this
    * with the correct isolation level.
    */
-  async lockRow(
-    tx: Prisma.TransactionClient,
-    table: string,
-    id: string,
-  ): Promise<boolean> {
+  async lockRow(tx: Prisma.TransactionClient, table: string, id: string): Promise<boolean> {
     if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(table)) {
       throw new Error(`Refusing to lock unsafe table name: ${table}`);
     }

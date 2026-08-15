@@ -167,7 +167,13 @@ export interface ProfileReview {
 /** A friend request the viewer can accept or reject. */
 export interface FriendRequest {
   id: string;
-  from: { id: string; username: string; displayName: string; avatarUrl?: string; verified: boolean };
+  from: {
+    id: string;
+    username: string;
+    displayName: string;
+    avatarUrl?: string;
+    verified: boolean;
+  };
   createdAt: string;
 }
 
@@ -219,11 +225,7 @@ export interface AuditEntry {
 
 /** The moderation actions an admin can take. `reason` goes into the audit log. */
 export type ModerationAction =
-  | 'remove_listing'
-  | 'restore_listing'
-  | 'warn_user'
-  | 'suspend_user'
-  | 'ban_user';
+  'remove_listing' | 'restore_listing' | 'warn_user' | 'suspend_user' | 'ban_user';
 
 /** A saved search, optionally notifying when something new matches. */
 export interface SavedSearch {
@@ -520,8 +522,10 @@ export function createClient(options: ClientOptions) {
       update: (storeId: string, body: Record<string, unknown>) =>
         request<Store>(`/stores/${storeId}`, { method: 'PATCH', body: JSON.stringify(body) }),
       dashboard: (storeId: string) => request<StoreDashboard>(`/stores/${storeId}/dashboard`),
-      setHours: (storeId: string, hours: Array<{ weekday: number; opensAt: number; closesAt: number }>) =>
-        post<unknown>(`/stores/${storeId}/hours`, { hours }),
+      setHours: (
+        storeId: string,
+        hours: Array<{ weekday: number; opensAt: number; closesAt: number }>,
+      ) => post<unknown>(`/stores/${storeId}/hours`, { hours }),
 
       promotions: (storeId: string) => request<Promotion[]>(`/stores/${storeId}/promotions`),
       createPromotion: (storeId: string, body: Record<string, unknown>) =>

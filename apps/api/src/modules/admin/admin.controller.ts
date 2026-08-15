@@ -1,6 +1,10 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { z } from 'zod';
-import { moderationActionSchema, resolveDisputeSchema, updateGlobalConfigSchema } from '@cerquita/validation';
+import {
+  moderationActionSchema,
+  resolveDisputeSchema,
+  updateGlobalConfigSchema,
+} from '@cerquita/validation';
 import { AdminService } from './admin.service';
 import { zodBody } from '../../common/zod-validation.pipe';
 import { CurrentUser, type AuthenticatedUser } from '../../common/current-user.decorator';

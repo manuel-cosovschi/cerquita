@@ -205,9 +205,7 @@ function Results({
               <span className={styles.rowBody}>
                 <span className={styles.rowTitle}>{person.displayName}</span>
                 {/* The reason to trust them comes before the metrics. */}
-                {person.socialProof && (
-                  <span className={styles.proof}>{person.socialProof}</span>
-                )}
+                {person.socialProof && <span className={styles.proof}>{person.socialProof}</span>}
                 <span className={styles.rowMeta}>
                   {person.area ? `${person.area} · ` : ''}
                   {person.salesCount} venta{person.salesCount === 1 ? '' : 's'}

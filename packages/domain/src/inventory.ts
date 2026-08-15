@@ -63,10 +63,7 @@ const RESERVATION_TRANSITIONS: Record<ReservationStatus, readonly ReservationSta
   expired: [],
 };
 
-export function canTransitionReservation(
-  from: ReservationStatus,
-  to: ReservationStatus,
-): boolean {
+export function canTransitionReservation(from: ReservationStatus, to: ReservationStatus): boolean {
   return (RESERVATION_TRANSITIONS[from] ?? []).includes(to);
 }
 

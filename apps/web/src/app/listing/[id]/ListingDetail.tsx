@@ -5,7 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { Listing } from '@cerquita/types';
 import { ApiError } from '@cerquita/api-client';
-import { formatDistance, formatMoney, fromMajorUnits, money, toMajorUnitsString } from '@cerquita/utils';
+import {
+  formatDistance,
+  formatMoney,
+  fromMajorUnits,
+  money,
+  toMajorUnitsString,
+} from '@cerquita/utils';
 import { Price } from '@/components/Price';
 import { Countdown } from '@/components/Countdown';
 import { PriceHistory } from '@/components/PriceHistory';
@@ -536,5 +542,7 @@ function suggestedBid(listing: Listing): string {
 
 function placeholderFor(listing: Listing, panel: 'offer' | 'bid'): string {
   if (panel === 'bid') return suggestedBid(listing);
-  return listing.price ? toMajorUnitsString(money(listing.price.effective.amount, listing.price.effective.currency)) : '';
+  return listing.price
+    ? toMajorUnitsString(money(listing.price.effective.amount, listing.price.effective.currency))
+    : '';
 }

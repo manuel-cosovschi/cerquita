@@ -45,7 +45,9 @@ export class MercadoPagoPaymentProvider implements PaymentProvider {
           unit_price: input.amount.amount / 100,
         },
       ],
-      back_urls: input.returnUrl ? { success: input.returnUrl, failure: input.returnUrl } : undefined,
+      back_urls: input.returnUrl
+        ? { success: input.returnUrl, failure: input.returnUrl }
+        : undefined,
       auto_return: input.returnUrl ? 'approved' : undefined,
     };
 
@@ -93,11 +95,9 @@ export class MercadoPagoPaymentProvider implements PaymentProvider {
   }
 
   async refund(input: RefundInput): Promise<RefundResult> {
-    const response = (await this.request(
-      `/v1/payments/${input.providerRef}/refunds`,
-      'POST',
-      { amount: input.amount.amount / 100 },
-    )) as { id: string; status: string };
+    const response = (await this.request(`/v1/payments/${input.providerRef}/refunds`, 'POST', {
+      amount: input.amount.amount / 100,
+    })) as { id: string; status: string };
 
     return {
       id: String(response.id),

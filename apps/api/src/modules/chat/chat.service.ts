@@ -286,7 +286,10 @@ export class ChatService {
   ): Promise<Paginated<Message>> {
     const participants = await this.participantIds(conversationId);
     if (!participants.includes(viewerId)) {
-      throw new ForbiddenException({ message: 'No participás de esta conversación', code: 'forbidden' });
+      throw new ForbiddenException({
+        message: 'No participás de esta conversación',
+        code: 'forbidden',
+      });
     }
 
     const rows = await this.prisma.message.findMany({
@@ -316,7 +319,10 @@ export class ChatService {
     });
 
     if (updated.count === 0) {
-      throw new ForbiddenException({ message: 'No participás de esta conversación', code: 'forbidden' });
+      throw new ForbiddenException({
+        message: 'No participás de esta conversación',
+        code: 'forbidden',
+      });
     }
     return { ok: true };
   }

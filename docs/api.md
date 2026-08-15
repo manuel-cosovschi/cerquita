@@ -13,13 +13,13 @@ Las rutas son privadas por defecto. Las públicas lo declaran explícitamente; l
 que sirven a ambos (`@OptionalAuth`) responden a anónimos con precio público y a
 usuarios autenticados con el precio de su relación.
 
-| Método | Ruta | Auth |
-|---|---|---|
-| POST | `/auth/register` | pública |
-| POST | `/auth/login` | pública |
-| POST | `/auth/refresh` | pública |
-| POST | `/auth/logout` | pública |
-| GET | `/auth/me` | requerida |
+| Método | Ruta             | Auth      |
+| ------ | ---------------- | --------- |
+| POST   | `/auth/register` | pública   |
+| POST   | `/auth/login`    | pública   |
+| POST   | `/auth/refresh`  | pública   |
+| POST   | `/auth/logout`   | pública   |
+| GET    | `/auth/me`       | requerida |
 
 El refresh rota: usar un refresh token lo revoca y devuelve uno nuevo.
 
@@ -52,12 +52,12 @@ cerrar, recién publicado, promociones vigentes), no una copia de ellas.
 
 ## Publicaciones
 
-| Método | Ruta | Notas |
-|---|---|---|
-| POST | `/listings` | `kind`: `sale` \| `wanted` \| `auction` |
-| GET | `/listings/:id` | Auth opcional; el precio depende del espectador |
-| PATCH | `/listings/:id` | Sólo dueño o miembro de la tienda |
-| PATCH | `/listings/:id/status` | `active` \| `paused` \| `removed` |
+| Método | Ruta                   | Notas                                           |
+| ------ | ---------------------- | ----------------------------------------------- |
+| POST   | `/listings`            | `kind`: `sale` \| `wanted` \| `auction`         |
+| GET    | `/listings/:id`        | Auth opcional; el precio depende del espectador |
+| PATCH  | `/listings/:id`        | Sólo dueño o miembro de la tienda               |
+| PATCH  | `/listings/:id/status` | `active` \| `paused` \| `removed`               |
 
 La respuesta trae `location` **aproximada**, con `precisionMeters`. El punto
 exacto no se serializa nunca.
@@ -79,18 +79,18 @@ funciona igual con el parser por reglas.
 
 ## Ofertas
 
-| Método | Ruta |
-|---|---|
-| POST | `/offers` |
-| POST | `/offers/:id/respond` — `accept` \| `reject` \| `counter` |
-| DELETE | `/offers/:id` |
+| Método | Ruta                                                      |
+| ------ | --------------------------------------------------------- |
+| POST   | `/offers`                                                 |
+| POST   | `/offers/:id/respond` — `accept` \| `reject` \| `counter` |
+| DELETE | `/offers/:id`                                             |
 
 ## Subastas
 
-| Método | Ruta |
-|---|---|
-| POST | `/auctions/:id/bids` |
-| POST | `/auctions/:id/buy-now` |
+| Método | Ruta                    |
+| ------ | ----------------------- |
+| POST   | `/auctions/:id/bids`    |
+| POST   | `/auctions/:id/buy-now` |
 
 `expectedMinimum` es opcional: si no coincide con el mínimo real, la puja se
 rechaza con `stale_minimum` en vez de comprometer al usuario a un monto que no
@@ -102,14 +102,14 @@ servidor ya decidió.
 
 ## Carrito y checkout
 
-| Método | Ruta |
-|---|---|
-| GET | `/cart` |
-| POST | `/cart/items` |
-| PATCH | `/cart/items/:itemId` |
+| Método | Ruta                  |
+| ------ | --------------------- |
+| GET    | `/cart`               |
+| POST   | `/cart/items`         |
+| PATCH  | `/cart/items/:itemId` |
 | DELETE | `/cart/items/:itemId` |
-| POST | `/checkout` |
-| GET | `/orders/:id` |
+| POST   | `/checkout`           |
+| GET    | `/orders/:id`         |
 
 `quotedTotal` es opcional y **no se cobra**: sólo se compara. Si difiere, la
 respuesta es `409 price_changed` con el total autoritativo.
@@ -128,9 +128,7 @@ respuesta es `409 price_changed` con el total autoritativo.
 ## Errores
 
 ```json
-{ "message": "Tu puja no alcanza el mínimo requerido",
-  "code": "below_minimum",
-  "requestId": "…" }
+{ "message": "Tu puja no alcanza el mínimo requerido", "code": "below_minimum", "requestId": "…" }
 ```
 
 `message` es accionable y en castellano. `code` es estable para la interfaz.
@@ -142,14 +140,14 @@ Códigos habituales: `validation_error`, `unauthenticated`, `forbidden`,
 
 ## Chat
 
-| Método | Ruta |
-|---|---|
-| GET | `/conversations` |
-| POST | `/conversations` |
-| GET | `/conversations/:id` |
-| GET | `/conversations/:id/messages` |
-| POST | `/conversations/:id/messages` |
-| POST | `/conversations/:id/read` |
+| Método | Ruta                          |
+| ------ | ----------------------------- |
+| GET    | `/conversations`              |
+| POST   | `/conversations`              |
+| GET    | `/conversations/:id`          |
+| GET    | `/conversations/:id/messages` |
+| POST   | `/conversations/:id/messages` |
+| POST   | `/conversations/:id/read`     |
 
 Abrir una conversación que ya existe **reutiliza el hilo** en vez de crear uno
 nuevo. `clientId` hace idempotente el envío: reintentar tras una conexión
@@ -160,14 +158,14 @@ una sala por usuario, así que nadie puede suscribirse a los mensajes de otro.
 
 ## Notificaciones
 
-| Método | Ruta |
-|---|---|
-| GET | `/notifications` |
-| GET | `/notifications/unread-count` |
-| POST | `/notifications/:id/read` |
-| POST | `/notifications/read-all` |
-| POST | `/notifications/devices` |
-| POST | `/notifications/preferences` |
+| Método | Ruta                          |
+| ------ | ----------------------------- |
+| GET    | `/notifications`              |
+| GET    | `/notifications/unread-count` |
+| POST   | `/notifications/:id/read`     |
+| POST   | `/notifications/read-all`     |
+| POST   | `/notifications/devices`      |
+| POST   | `/notifications/preferences`  |
 
 El registro in-app se escribe siempre; el push es best-effort encima. Si el
 proveedor falla, la notificación igual aparece al abrir la app.
@@ -197,17 +195,17 @@ actualiza en la misma transacción que la reseña.
 
 ## Tiendas
 
-| Método | Ruta | Rol mínimo |
-|---|---|---|
-| POST | `/stores` | — (el creador queda `owner`) |
-| GET | `/stores/:handle` | público |
-| PATCH | `/stores/:id` | `admin` |
-| DELETE | `/stores/:id` | `owner` |
-| GET/POST | `/stores/:id/members` | miembro / `admin` |
-| DELETE | `/stores/:id/members/:userId` | `admin` |
-| POST | `/stores/:id/hours` | `admin` |
-| GET | `/stores/:id/dashboard` | `manager` |
-| GET | `/stores/:id/products` | público |
+| Método   | Ruta                          | Rol mínimo                   |
+| -------- | ----------------------------- | ---------------------------- |
+| POST     | `/stores`                     | — (el creador queda `owner`) |
+| GET      | `/stores/:handle`             | público                      |
+| PATCH    | `/stores/:id`                 | `admin`                      |
+| DELETE   | `/stores/:id`                 | `owner`                      |
+| GET/POST | `/stores/:id/members`         | miembro / `admin`            |
+| DELETE   | `/stores/:id/members/:userId` | `admin`                      |
+| POST     | `/stores/:id/hours`           | `admin`                      |
+| GET      | `/stores/:id/dashboard`       | `manager`                    |
+| GET      | `/stores/:id/products`        | público                      |
 
 Una tienda **no es una cuenta**: es una entidad con miembros. Un usuario puede
 pertenecer a varias con distinto rol en cada una. No se puede quitar al último
@@ -215,13 +213,13 @@ dueño.
 
 ## Catálogo
 
-| Método | Ruta | Rol mínimo |
-|---|---|---|
-| POST | `/products` | `seller` |
-| GET | `/products/:id` | público |
-| PATCH | `/products/variants/:variantId/stock` | `seller` |
-| POST | `/products/:id/publish` | `seller` |
-| DELETE | `/products/:id` | `seller` |
+| Método | Ruta                                  | Rol mínimo |
+| ------ | ------------------------------------- | ---------- |
+| POST   | `/products`                           | `seller`   |
+| GET    | `/products/:id`                       | público    |
+| PATCH  | `/products/variants/:variantId/stock` | `seller`   |
+| POST   | `/products/:id/publish`               | `seller`   |
+| DELETE | `/products/:id`                       | `seller`   |
 
 Las variantes se validan contra las opciones del producto: un valor inexistente
 o una combinación repetida se rechazan al crear. El stock no puede bajarse por
@@ -247,18 +245,18 @@ mensaje o reseña. La triage es de moderación.
 
 ## Admin
 
-| Método | Ruta | Rol mínimo |
-|---|---|---|
-| GET | `/admin/dashboard` | `support` |
-| GET | `/admin/reports` | `moderator` |
-| POST | `/admin/reports/:id/resolve` | `moderator` |
-| POST | `/admin/moderate` | `moderator` |
-| GET | `/admin/disputes` | `support` |
-| POST | `/admin/disputes/:id/resolve` | `moderator` |
-| GET | `/admin/users/:id/risk` | `moderator` |
-| GET | `/admin/audit-log` | `support` |
-| GET | `/admin/config/flags` | `support` |
-| PATCH | `/admin/config` | `admin` |
+| Método | Ruta                          | Rol mínimo  |
+| ------ | ----------------------------- | ----------- |
+| GET    | `/admin/dashboard`            | `support`   |
+| GET    | `/admin/reports`              | `moderator` |
+| POST   | `/admin/reports/:id/resolve`  | `moderator` |
+| POST   | `/admin/moderate`             | `moderator` |
+| GET    | `/admin/disputes`             | `support`   |
+| POST   | `/admin/disputes/:id/resolve` | `moderator` |
+| GET    | `/admin/users/:id/risk`       | `moderator` |
+| GET    | `/admin/audit-log`            | `support`   |
+| GET    | `/admin/config/flags`         | `support`   |
+| PATCH  | `/admin/config`               | `admin`     |
 
 `reason` es **obligatorio** en toda acción de moderación, y la acción y su
 entrada de auditoría se escriben en la misma transacción: no existe forma de

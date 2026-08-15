@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { createHash, randomBytes } from 'node:crypto';
@@ -206,9 +202,7 @@ export class AuthService {
     const accessToken = this.jwt.sign({ sub: userId, username });
 
     const refreshToken = randomBytes(48).toString('base64url');
-    const expiresAt = new Date(
-      Date.now() + this.config.JWT_REFRESH_TTL_DAYS * 24 * 60 * 60 * 1000,
-    );
+    const expiresAt = new Date(Date.now() + this.config.JWT_REFRESH_TTL_DAYS * 24 * 60 * 60 * 1000);
 
     await this.prisma.session.create({
       data: {

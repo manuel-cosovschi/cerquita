@@ -110,9 +110,7 @@ export default function ListingScreen() {
       )}
 
       <View style={styles.seller}>
-        <Text style={styles.sellerName}>
-          {listing.store?.name ?? listing.seller.displayName}
-        </Text>
+        <Text style={styles.sellerName}>{listing.store?.name ?? listing.seller.displayName}</Text>
         {/* The reference above the rating, same as the web: it answers "can I
             trust this person" better than a star average. */}
         {listing.socialProof && <Text style={styles.proof}>{listing.socialProof}</Text>}
@@ -170,7 +168,9 @@ export default function ListingScreen() {
       <Text style={styles.body}>
         {[listing.location.neighborhood, listing.location.city].filter(Boolean).join(', ') ||
           'Zona aproximada'}
-        {listing.distanceMeters !== undefined ? ` · a ${formatDistance(listing.distanceMeters)}` : ''}
+        {listing.distanceMeters !== undefined
+          ? ` · a ${formatDistance(listing.distanceMeters)}`
+          : ''}
       </Text>
       {/* Spec §10, §47: the exact point is never sent, and the screen says so. */}
       <Text style={styles.fineprint}>

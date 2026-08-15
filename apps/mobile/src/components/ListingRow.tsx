@@ -11,13 +11,7 @@ import { theme } from '@/lib/theme';
  * friend price is the reason to look twice and hiding it behind a tap would
  * waste the mechanism the whole product is built on.
  */
-export function ListingRow({
-  listing,
-  onPress,
-}: {
-  listing: ListingSummary;
-  onPress: () => void;
-}) {
+export function ListingRow({ listing, onPress }: { listing: ListingSummary; onPress: () => void }) {
   const isWanted = listing.kind === 'wanted';
 
   return (

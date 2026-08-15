@@ -11,9 +11,9 @@ de un precio. El rango representable llega a ~90 billones de pesos.
 
 **2. Ubicación.** Cada fila localizable guarda dos puntos:
 
-| Columna | Quién la ve |
-|---|---|
-| `exactLocation` | Sólo el servidor. Distancias, radios, matching. |
+| Columna          | Quién la ve                                             |
+| ---------------- | ------------------------------------------------------- |
+| `exactLocation`  | Sólo el servidor. Distancias, radios, matching.         |
 | `publicLocation` | Lo que reciben los clientes. Difuminado determinístico. |
 
 El difuminado es determinístico por id: si el punto cambiara en cada request,
@@ -36,17 +36,17 @@ publicación — todo en una transacción.
 La aplicación ya valida estas reglas. La base las repite para que ni un bug ni
 una sesión manual puedan romperlas:
 
-| Constraint | Qué impide |
-|---|---|
-| `listing_stock_non_negative` | Stock negativo / sobreventa |
-| `listing_published_requires_location` | Publicación visible sin ubicación |
-| `listing_discount_bps_range` | Descuentos fuera de 0–100% |
-| `auction_amounts_coherent` | Reserva menor al precio inicial, fin antes del comienzo |
-| `friendship_canonical_order` | Amistades duplicadas (A,B) y (B,A) |
-| `follow_not_self` | Seguirse a uno mismo |
-| `review_rating_range` | Puntajes fuera de 1–5 |
-| `UNIQUE(orderId, authorId)` en `Review` | Dos reseñas del mismo autor por orden |
-| `UNIQUE(auctionId, amount)` en `Bid` | Dos pujas ganadoras idénticas |
+| Constraint                              | Qué impide                                              |
+| --------------------------------------- | ------------------------------------------------------- |
+| `listing_stock_non_negative`            | Stock negativo / sobreventa                             |
+| `listing_published_requires_location`   | Publicación visible sin ubicación                       |
+| `listing_discount_bps_range`            | Descuentos fuera de 0–100%                              |
+| `auction_amounts_coherent`              | Reserva menor al precio inicial, fin antes del comienzo |
+| `friendship_canonical_order`            | Amistades duplicadas (A,B) y (B,A)                      |
+| `follow_not_self`                       | Seguirse a uno mismo                                    |
+| `review_rating_range`                   | Puntajes fuera de 1–5                                   |
+| `UNIQUE(orderId, authorId)` en `Review` | Dos reseñas del mismo autor por orden                   |
+| `UNIQUE(auctionId, amount)` en `Bid`    | Dos pujas ganadoras idénticas                           |
 
 ## Índices
 

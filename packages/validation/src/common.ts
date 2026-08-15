@@ -40,28 +40,26 @@ export const coordinatesSchema = z.object({
 });
 
 /** `minLng,minLat,maxLng,maxLat`, validated for ordering as well as shape. */
-export const bboxSchema = z
-  .string()
-  .transform((value, ctx) => {
-    const parts = value.split(',').map((part) => Number(part.trim()));
-    if (parts.length !== 4 || parts.some((part) => !Number.isFinite(part))) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'bbox debe tener el formato minLng,minLat,maxLng,maxLat',
-      });
-      return z.NEVER;
-    }
-    const [minLng, minLat, maxLng, maxLat] = parts as [number, number, number, number];
-    if (minLat > maxLat || minLng > maxLng) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'bbox invertido' });
-      return z.NEVER;
-    }
-    if (minLat < -90 || maxLat > 90 || minLng < -180 || maxLng > 180) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'bbox fuera de rango' });
-      return z.NEVER;
-    }
-    return { minLng, minLat, maxLng, maxLat };
-  });
+export const bboxSchema = z.string().transform((value, ctx) => {
+  const parts = value.split(',').map((part) => Number(part.trim()));
+  if (parts.length !== 4 || parts.some((part) => !Number.isFinite(part))) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'bbox debe tener el formato minLng,minLat,maxLng,maxLat',
+    });
+    return z.NEVER;
+  }
+  const [minLng, minLat, maxLng, maxLat] = parts as [number, number, number, number];
+  if (minLat > maxLat || minLng > maxLng) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'bbox invertido' });
+    return z.NEVER;
+  }
+  if (minLat < -90 || maxLat > 90 || minLng < -180 || maxLng > 180) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'bbox fuera de rango' });
+    return z.NEVER;
+  }
+  return { minLng, minLat, maxLng, maxLat };
+});
 
 /** Percentages are integers in basis points everywhere. */
 export const basisPointsSchema = z.number().int().min(0).max(10_000);

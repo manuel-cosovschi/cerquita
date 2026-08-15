@@ -182,11 +182,7 @@ export type BuyNowOutcome =
  * Buy-now is withdrawn once bidding has passed it — otherwise a bidder who bid
  * above the buy-now price would be undercut by someone paying less.
  */
-export function canBuyNow(input: {
-  state: AuctionState;
-  buyerId: UUID;
-  now: Date;
-}): BuyNowOutcome {
+export function canBuyNow(input: { state: AuctionState; buyerId: UUID; now: Date }): BuyNowOutcome {
   const { state, buyerId, now } = input;
 
   if (!state.buyNowPrice) return { allowed: false, reason: 'buy_now_unavailable' };
@@ -279,7 +275,10 @@ export function validateAuctionSetup(input: {
     issues.push({ field: 'startingPrice', message: 'El precio inicial debe ser mayor a cero' });
   }
   if (input.minimumIncrement.amount <= 0) {
-    issues.push({ field: 'minimumIncrement', message: 'El incremento mínimo debe ser mayor a cero' });
+    issues.push({
+      field: 'minimumIncrement',
+      message: 'El incremento mínimo debe ser mayor a cero',
+    });
   }
 
   const duration = input.endsAt.getTime() - input.startsAt.getTime();

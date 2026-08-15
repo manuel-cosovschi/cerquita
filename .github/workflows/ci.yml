@@ -70,6 +70,12 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      # Formatting is checked, not applied: a repo with a `format` script whose
+      # output nobody runs drifts until the next person's editor reformats a
+      # file and buries their change in whitespace.
+      - name: Format
+        run: pnpm format:check
+
       - name: Typecheck
         run: pnpm typecheck
 
@@ -84,7 +90,10 @@ jobs:
       - name: Seed
         run: pnpm db:seed
 
+      # All three that have a build. Mobile is bundled by Metro at run time and
+      # has no build step, so typecheck above is what covers it.
       - name: Build apps
         run: |
           pnpm --filter @cerquita/api build
           pnpm --filter @cerquita/web build
+          pnpm --filter @cerquita/admin build

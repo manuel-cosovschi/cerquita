@@ -257,10 +257,7 @@ export class FeedService {
   }
 
   /** Promotions from stores the viewer follows. */
-  private async promotionsFromStoresYouFollow(
-    viewerId: string,
-    since: Date,
-  ): Promise<FeedItem[]> {
+  private async promotionsFromStoresYouFollow(viewerId: string, since: Date): Promise<FeedItem[]> {
     const promotions = await this.prisma.promotion.findMany({
       where: {
         active: true,

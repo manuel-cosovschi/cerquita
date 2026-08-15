@@ -682,8 +682,10 @@ function placeholderImage(label: string, width: number, height: number): string 
 }
 
 function escapeXml(value: string): string {
-  return value.replace(/[<>&'"]/g, (char) =>
-    ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' })[char] ?? char,
+  return value.replace(
+    /[<>&'"]/g,
+    (char) =>
+      ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' })[char] ?? char,
   );
 }
 

@@ -21,13 +21,13 @@ Checklist:
 
 ## Componentes
 
-| Componente | Requisito |
-|---|---|
-| API | Node 22, sin estado, escalable horizontalmente |
-| PostgreSQL | 16+ con PostGIS 3.4+ |
-| Redis | 7+ |
-| web / admin | Node 22 o export estático + funciones |
-| Storage | Bucket compatible con S3 |
+| Componente  | Requisito                                      |
+| ----------- | ---------------------------------------------- |
+| API         | Node 22, sin estado, escalable horizontalmente |
+| PostgreSQL  | 16+ con PostGIS 3.4+                           |
+| Redis       | 7+                                             |
+| web / admin | Node 22 o export estático + funciones          |
+| Storage     | Bucket compatible con S3                       |
 
 ## Escalado horizontal
 

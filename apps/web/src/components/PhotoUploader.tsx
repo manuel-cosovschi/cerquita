@@ -52,9 +52,7 @@ export function PhotoUploader({
       try {
         uploaded.push(await api.uploads.image(file));
       } catch (cause) {
-        setError(
-          cause instanceof ApiError ? cause.message : 'No pudimos subir una de las fotos.',
-        );
+        setError(cause instanceof ApiError ? cause.message : 'No pudimos subir una de las fotos.');
         break;
       } finally {
         setUploading((current) => current - 1);

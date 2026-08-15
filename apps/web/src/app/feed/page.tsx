@@ -50,13 +50,10 @@ export default function FeedPage() {
     }
   }, []);
 
-  const load = useCallback(
-    async (where: { lat: number; lng: number } | null) => {
-      const result = await api.feed.list(where ? { lat: where.lat, lng: where.lng } : {});
-      setItems(result);
-    },
-    [],
-  );
+  const load = useCallback(async (where: { lat: number; lng: number } | null) => {
+    const result = await api.feed.list(where ? { lat: where.lat, lng: where.lng } : {});
+    setItems(result);
+  }, []);
 
   useEffect(() => {
     void load(position).catch(() => setItems([]));
@@ -164,9 +161,7 @@ function FeedRow({ item }: { item: FeedItem }) {
         <span className={styles.when}>{formatRelativeTime(item.createdAt)}</span>
       </div>
 
-      {badge && (
-        <span className={`${styles.badge} ${styles[badge.className]}`}>{badge.label}</span>
-      )}
+      {badge && <span className={`${styles.badge} ${styles[badge.className]}`}>{badge.label}</span>}
 
       {item.listing ? (
         <div className={styles.item}>
@@ -188,9 +183,7 @@ function FeedRow({ item }: { item: FeedItem }) {
             ) : item.listing.maxBudget ? (
               <p className={styles.budget}>
                 Hasta{' '}
-                {formatMoney(
-                  money(item.listing.maxBudget.amount, item.listing.maxBudget.currency),
-                )}
+                {formatMoney(money(item.listing.maxBudget.amount, item.listing.maxBudget.currency))}
               </p>
             ) : null}
 

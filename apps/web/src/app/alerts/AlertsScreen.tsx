@@ -195,9 +195,7 @@ export function AlertsScreen() {
                   aria-pressed={active}
                   onClick={() =>
                     setKinds((current) =>
-                      active
-                        ? current.filter((id) => id !== entry.id)
-                        : [...current, entry.id],
+                      active ? current.filter((id) => id !== entry.id) : [...current, entry.id],
                     )
                   }
                 >

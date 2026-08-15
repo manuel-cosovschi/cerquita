@@ -109,7 +109,10 @@ export function validateListingForPublish(draft: ListingDraft): ListingValidatio
     }
     const radius = draft.wantedRadiusMeters;
     if (radius !== undefined && (radius < 500 || radius > 100_000)) {
-      issues.push({ field: 'wantedRadiusMeters', message: 'El radio debe estar entre 0,5 y 100 km' });
+      issues.push({
+        field: 'wantedRadiusMeters',
+        message: 'El radio debe estar entre 0,5 y 100 km',
+      });
     }
   }
 

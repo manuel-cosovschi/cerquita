@@ -26,8 +26,7 @@ import {
   fontFamily,
 } from './primitives.js';
 
-const kebab = (value: string): string =>
-  value.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+const kebab = (value: string): string => value.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
 
 function colorVars(scheme: SemanticColors): string[] {
   return Object.entries(scheme).map(([name, value]) => `  --color-${kebab(name)}: ${value};`);

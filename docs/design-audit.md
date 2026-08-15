@@ -10,12 +10,12 @@ pide la spec §112.
 
 ## 1. Qué contiene el bundle
 
-| Archivo | Qué es |
-|---|---|
-| `Cerquita - Design Exploration Board.dc.html` | El diseño. 40 KB, leído completo. |
-| `support.js` | Runtime del canvas de Claude Design. Generado, "do not edit". |
-| `tile-test.html` | Experimento de filtros sobre tiles de OpenStreetMap. |
-| `.thumbnail` | Miniatura del board. |
+| Archivo                                       | Qué es                                                        |
+| --------------------------------------------- | ------------------------------------------------------------- |
+| `Cerquita - Design Exploration Board.dc.html` | El diseño. 40 KB, leído completo.                             |
+| `support.js`                                  | Runtime del canvas de Claude Design. Generado, "do not edit". |
+| `tile-test.html`                              | Experimento de filtros sobre tiles de OpenStreetMap.          |
+| `.thumbnail`                                  | Miniatura del board.                                          |
 
 **`support.js` no se usó.** Es el runtime del visor (`GENERATED from
 dc-runtime/src/*.ts`), exactamente lo que la spec §1 anticipaba. No hay ninguna
@@ -25,26 +25,26 @@ dependencia hacia él.
 
 El segundo bundle (182 KB, vs 37 KB del primero) sí trae las siete:
 
-| | Dirección | Idea |
-|---|---|---|
-| 1a | Map first | El mapa es la app, todo lo demás flota encima |
-| 1b | Marketplace + mapa | Grilla primero, el mapa es una vista más |
-| 1c | Social commerce | Personas antes que objetos, feed a pantalla completa |
-| 1d | Minimal / premium | Editorial, mucho aire, tipografía haciendo el trabajo |
-| 1e | Cámara first | Apuntás el teléfono a la calle y ves qué se vende |
-| 1f | Búsqueda conversacional | Escribís lo que necesitás y el mapa se reconfigura |
-| 1g | "Ahora" | Feed de tiempo real: subastas, bajas, gente buscando |
+|     | Dirección               | Idea                                                  |
+| --- | ----------------------- | ----------------------------------------------------- |
+| 1a  | Map first               | El mapa es la app, todo lo demás flota encima         |
+| 1b  | Marketplace + mapa      | Grilla primero, el mapa es una vista más              |
+| 1c  | Social commerce         | Personas antes que objetos, feed a pantalla completa  |
+| 1d  | Minimal / premium       | Editorial, mucho aire, tipografía haciendo el trabajo |
+| 1e  | Cámara first            | Apuntás el teléfono a la calle y ves qué se vende     |
+| 1f  | Búsqueda conversacional | Escribís lo que necesitás y el mapa se reconfigura    |
+| 1g  | "Ahora"                 | Feed de tiempo real: subastas, bajas, gente buscando  |
 
 El usuario pidió una mezcla de **1a + 1c**. La propuesta de síntesis está en §9.
 
 Además, el board declara explícitamente que su branding es descartable:
 
-> *"Sorteé paleta, tipografía y radio por dirección a propósito, para que ninguna
+> _"Sorteé paleta, tipografía y radio por dirección a propósito, para que ninguna
 > herede mis defaults. Es branding provisional y descartable: primero UX, después
-> identidad."*
+> identidad."_
 
-Y cierra proponiendo: *"llevá 1a a las 5 pantallas"*, *"mezclá el mapa de 1a con
-la navegación de otra"*.
+Y cierra proponiendo: _"llevá 1a a las 5 pantallas"_, _"mezclá el mapa de 1a con
+la navegación de otra"_.
 
 **Lectura:** esto es una ronda de exploración, no un diseño cerrado. Lo que sí es
 intención real de diseño es el **layout y la interacción** de 1a. Los **hues
@@ -83,16 +83,16 @@ lo tapan parcialmente.
 
 ### Paleta
 
-| Rol | Valor | Nota |
-|---|---|---|
-| Tinta | `#141210` | Casi negro **cálido**, nunca negro puro |
-| Canvas | `#f6f2ea` | Crema, no blanco |
-| Superficie | `#ffffff` | |
-| Acento | `oklch(.74 .17 55)` → `#fa8927` | Naranja: subastas, urgencia, publicar |
-| Texto sobre acento | `#241403` | **Oscuro**, no blanco |
-| Social | `oklch(.66 .12 190)` → `#00a9a2` | Turquesa: **sólo** relación de amistad |
-| Precio de amigo | `oklch(.42 .1 190)` → `#005d59` | |
-| Info | `oklch(.6 .17 255)` → `#2a80e2` | Ubicación propia y verificado |
+| Rol                | Valor                            | Nota                                    |
+| ------------------ | -------------------------------- | --------------------------------------- |
+| Tinta              | `#141210`                        | Casi negro **cálido**, nunca negro puro |
+| Canvas             | `#f6f2ea`                        | Crema, no blanco                        |
+| Superficie         | `#ffffff`                        |                                         |
+| Acento             | `oklch(.74 .17 55)` → `#fa8927`  | Naranja: subastas, urgencia, publicar   |
+| Texto sobre acento | `#241403`                        | **Oscuro**, no blanco                   |
+| Social             | `oklch(.66 .12 190)` → `#00a9a2` | Turquesa: **sólo** relación de amistad  |
+| Precio de amigo    | `oklch(.42 .1 190)` → `#005d59`  |                                         |
+| Info               | `oklch(.6 .17 255)` → `#2a80e2`  | Ubicación propia y verificado           |
 
 Un detalle que cambia el mapeo: **el botón primario es la tinta, no el naranja**.
 "Comprar ahora" es negro; "Ofertar" es naranja. Así que `brand` = tinta y el
@@ -139,12 +139,12 @@ separación primitives/semantic compraba.
 
 La web actual **no** implementa 1a todavía. Lo que difiere:
 
-| | Construido | Diseño 1a |
-|---|---|---|
-| Markers | Pill con texto | Foto + burbuja de precio colgando |
-| Navegación | Header web | Dock flotante de 5 con FAB central |
-| Layout | Split desktop | Mobile, sheets sobre el mapa |
-| Tiles | Grilla de referencia | OSM desaturado y cálido |
+|            | Construido           | Diseño 1a                          |
+| ---------- | -------------------- | ---------------------------------- |
+| Markers    | Pill con texto       | Foto + burbuja de precio colgando  |
+| Navegación | Header web           | Dock flotante de 5 con FAB central |
+| Layout     | Split desktop        | Mobile, sheets sobre el mapa       |
+| Tiles      | Grilla de referencia | OSM desaturado y cálido            |
 
 Los tokens ya son correctos; falta rehacer los componentes sobre ellos.
 
@@ -162,8 +162,8 @@ Los tokens ya son correctos; falta rehacer los componentes sobre ellos.
 5. **Dark mode no existe.** El bundle sólo trae un experimento de tiles oscuros
    (`tile-test.html`), no pantallas. Los tokens oscuros están listos pero
    marcados como **no verificados**.
-6. **Fotos.** El board las marca como placeholders rayados: *"si me pasás fotos
-   reales las cambio"*.
+6. **Fotos.** El board las marca como placeholders rayados: _"si me pasás fotos
+   reales las cambio"_.
 
 ## 7. Modo oscuro
 
@@ -173,16 +173,16 @@ Quedó guardado como `mapTiles.filterDarkCandidate`, marcado como no aprobado.
 
 ## 8. Resumen
 
-| | Estado |
-|---|---|
-| Export accesible | ✅ Recibido |
-| Leído completo | ✅ Board + support.js + tile-test |
-| Tokens extraídos | ✅ Color, tipografía, radios, sombras, geometría de markers |
-| Aplicados al código | ✅ 1 archivo de valores + remapeo semántico |
-| Pantallas reconstruidas sobre 1a | ⬜ Pendiente |
-| Direcciones faltantes | ⚠️ 6 de 7 no están en el bundle |
-| Paleta definitiva | ⚠️ El board la declara provisional |
-| Desktop y dark mode | ⬜ No diseñados |
+|                                  | Estado                                                      |
+| -------------------------------- | ----------------------------------------------------------- |
+| Export accesible                 | ✅ Recibido                                                 |
+| Leído completo                   | ✅ Board + support.js + tile-test                           |
+| Tokens extraídos                 | ✅ Color, tipografía, radios, sombras, geometría de markers |
+| Aplicados al código              | ✅ 1 archivo de valores + remapeo semántico                 |
+| Pantallas reconstruidas sobre 1a | ⬜ Pendiente                                                |
+| Direcciones faltantes            | ⚠️ 6 de 7 no están en el bundle                             |
+| Paleta definitiva                | ⚠️ El board la declara provisional                          |
+| Desktop y dark mode              | ⬜ No diseñados                                             |
 
 ---
 
@@ -194,9 +194,9 @@ identidad visual es la de 1a, ya aplicada.
 1a y 1c chocan en un punto estructural — en 1a el mapa es el home, en 1c lo es
 el feed — así que había que elegir. Se eligió el mapa porque **funciona desde el
 día uno sin masa social**, que es exactamente el riesgo que el board le marca a
-1c (*"sin masa crítica el feed se ve vacío"*). El feed como pestaña de primer
-nivel resuelve, a su vez, el riesgo que el board le marca a 1a (*"comprar algo
-puntual obliga a pasar por la exploración"*).
+1c (_"sin masa crítica el feed se ve vacío"_). El feed como pestaña de primer
+nivel resuelve, a su vez, el riesgo que el board le marca a 1a (_"comprar algo
+puntual obliga a pasar por la exploración"_).
 
 ### Qué se toma de 1a
 
@@ -213,12 +213,12 @@ puntual obliga a pasar por la exploración"*).
 - **Búsqueda partida en Cosas / Gente / Tiendas / Buscan** — buscás personas
   igual que objetos. Ya soportado por el backend y pedido por §18.
 - **Prueba social en todas las superficies**: "amiga de Nacho" en cards y
-  detalle. El board lo dice mejor que cualquier justificación nuestra: *"el
+  detalle. El board lo dice mejor que cualquier justificación nuestra: _"el
   grafo social es el mecanismo: 'amiga de Nacho' pesa más que cualquier badge de
-  verificado"*. Es §46 — reputación ≠ seguidores.
+  verificado"_. Es §46 — reputación ≠ seguidores.
 - **Comentarios en la publicación**, que funcionan como referencias públicas.
-- La barra de resultados sociales: *"2 personas que seguís tienen una PS5
-  publicada"*.
+- La barra de resultados sociales: _"2 personas que seguís tienen una PS5
+  publicada"_.
 
 ### Qué se descarta de 1c, y por qué
 

@@ -20,13 +20,7 @@ export const LISTING_STATUSES = [
 ] as const;
 export type ListingStatus = (typeof LISTING_STATUSES)[number];
 
-export const ITEM_CONDITIONS = [
-  'new',
-  'like_new',
-  'good',
-  'fair',
-  'for_parts',
-] as const;
+export const ITEM_CONDITIONS = ['new', 'like_new', 'good', 'fair', 'for_parts'] as const;
 export type ItemCondition = (typeof ITEM_CONDITIONS)[number];
 
 export const DELIVERY_METHODS = [
@@ -80,12 +74,7 @@ export const PAYMENT_STATUSES = [
 ] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 
-export const RESERVATION_STATUSES = [
-  'active',
-  'consumed',
-  'released',
-  'expired',
-] as const;
+export const RESERVATION_STATUSES = ['active', 'consumed', 'released', 'expired'] as const;
 export type ReservationStatus = (typeof RESERVATION_STATUSES)[number];
 
 export const FRIENDSHIP_STATUSES = ['pending', 'accepted', 'rejected', 'blocked'] as const;
@@ -101,13 +90,7 @@ export type AudienceTier = (typeof AUDIENCE_TIERS)[number];
 export const STORE_ROLES = ['owner', 'admin', 'manager', 'seller', 'support'] as const;
 export type StoreRole = (typeof STORE_ROLES)[number];
 
-export const ADMIN_ROLES = [
-  'super_admin',
-  'admin',
-  'moderator',
-  'support',
-  'finance',
-] as const;
+export const ADMIN_ROLES = ['super_admin', 'admin', 'moderator', 'support', 'finance'] as const;
 export type AdminRole = (typeof ADMIN_ROLES)[number];
 
 export const PROMOTION_KINDS = [
@@ -131,13 +114,7 @@ export const DISPUTE_STATUSES = [
 ] as const;
 export type DisputeStatus = (typeof DISPUTE_STATUSES)[number];
 
-export const REPORT_TARGET_TYPES = [
-  'listing',
-  'user',
-  'store',
-  'message',
-  'review',
-] as const;
+export const REPORT_TARGET_TYPES = ['listing', 'user', 'store', 'message', 'review'] as const;
 export type ReportTargetType = (typeof REPORT_TARGET_TYPES)[number];
 
 export const REPORT_STATUSES = ['open', 'reviewing', 'actioned', 'dismissed'] as const;

@@ -67,9 +67,15 @@ export class MockAiProvider implements AiProvider {
       // 3. Condition words.
       .replace(/\b(nuev[oa]s?|usad[oa]s?|seminuev[oa]s?|impecables?|sin uso|a estrenar)\b/gi, ' ')
       // 4. Locality words — they express proximity, not the item.
-      .replace(/\b(cerca|cerquita|cercanas?|cercanos?|mío|mio|acá|aca|aquí|aqui|zona|barrio)\b/gi, ' ')
+      .replace(
+        /\b(cerca|cerquita|cercanas?|cercanos?|mío|mio|acá|aca|aquí|aqui|zona|barrio)\b/gi,
+        ' ',
+      )
       // 5. Whatever intent words remain.
-      .replace(/\b(quiero|busco|necesito|comprar|vender|una|un|el|la|los|las|de|del|por|a)\b/gi, ' ')
+      .replace(
+        /\b(quiero|busco|necesito|comprar|vender|una|un|el|la|los|las|de|del|por|a)\b/gi,
+        ' ',
+      )
       // 6. Orphaned units left behind by the phrase removals above.
       .replace(/\b(km|kilómetros|kilometros|mts?|metros|pesos)\b/gi, ' ')
       .replace(/[$]/g, ' ')

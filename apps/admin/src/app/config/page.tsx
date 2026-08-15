@@ -81,7 +81,10 @@ export default function ConfigPage() {
     <Console title="Configuración" subtitle="Parámetros globales y feature flags">
       {error && <p className={styles.error}>{error}</p>}
       {saved && !error && (
-        <p className={styles.error} style={{ background: 'var(--color-success-subtle)', color: 'var(--color-success)' }}>
+        <p
+          className={styles.error}
+          style={{ background: 'var(--color-success-subtle)', color: 'var(--color-success)' }}
+        >
           Guardado.
         </p>
       )}
@@ -174,7 +177,10 @@ function NumberField({
 }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <label htmlFor={id} style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 4 }}>
+      <label
+        htmlFor={id}
+        style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 4 }}
+      >
         {label}
       </label>
       <div className={styles.actions}>

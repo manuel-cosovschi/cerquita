@@ -60,12 +60,7 @@
   right: 0;
   height: 3px;
   z-index: var(--z-overlay-controls);
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--color-brand),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, var(--color-brand), transparent);
   background-size: 40% 100%;
   background-repeat: no-repeat;
   animation: sweep 1.1s var(--easing-standard) infinite;

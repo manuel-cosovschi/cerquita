@@ -50,9 +50,7 @@ export class AdminService {
                COUNT(*) FILTER (WHERE "status" = 'removed') AS removed
         FROM "Listing"
       `,
-      this.prisma.$queryRaw<
-        Array<{ orders: bigint; gmv: bigint | null; fees: bigint | null }>
-      >`
+      this.prisma.$queryRaw<Array<{ orders: bigint; gmv: bigint | null; fees: bigint | null }>>`
         SELECT COUNT(*)                       AS orders,
                COALESCE(SUM("total"), 0)      AS gmv,
                COALESCE(SUM("platformFee"),0) AS fees
@@ -148,7 +146,10 @@ export class AdminService {
             select: { status: true },
           });
           if (!listing) {
-            throw new NotFoundException({ message: 'Publicación no encontrada', code: 'not_found' });
+            throw new NotFoundException({
+              message: 'Publicación no encontrada',
+              code: 'not_found',
+            });
           }
           const status = input.action === 'remove_listing' ? 'removed' : 'active';
           await tx.listing.update({ where: { id: input.targetId }, data: { status } });
@@ -374,7 +375,10 @@ export class AdminService {
     actor: AuthenticatedUser,
   ): Promise<{ ok: true }> {
     if (!canChangeGlobalConfiguration({ userId: actor.userId, adminRole: actor.adminRole })) {
-      throw new ForbiddenException({ message: 'No podés cambiar la configuración', code: 'forbidden' });
+      throw new ForbiddenException({
+        message: 'No podés cambiar la configuración',
+        code: 'forbidden',
+      });
     }
 
     // Only the known settings are forwarded; anything else in the payload is
@@ -435,7 +439,10 @@ export class AdminService {
 
   private assertModerator(actor: AuthenticatedUser): void {
     if (!canModerate({ userId: actor.userId, adminRole: actor.adminRole })) {
-      throw new ForbiddenException({ message: 'Requiere permisos de moderación', code: 'forbidden' });
+      throw new ForbiddenException({
+        message: 'Requiere permisos de moderación',
+        code: 'forbidden',
+      });
     }
   }
 

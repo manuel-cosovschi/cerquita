@@ -65,9 +65,9 @@ describe('order visibility', () => {
   });
 
   it('lets store support see it', () => {
-    expect(
-      canViewOrder({ userId: 'agent', storeRoles: { 'store-1': 'support' } }, order),
-    ).toBe(true);
+    expect(canViewOrder({ userId: 'agent', storeRoles: { 'store-1': 'support' } }, order)).toBe(
+      true,
+    );
   });
 
   it('lets platform support see it', () => {

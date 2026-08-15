@@ -166,7 +166,11 @@ export default function StoreManagePage() {
   }
 
   return (
-    <AppScreen title={store?.name ?? 'Mi tienda'} subtitle="Métricas y promociones" active="profile">
+    <AppScreen
+      title={store?.name ?? 'Mi tienda'}
+      subtitle="Métricas y promociones"
+      active="profile"
+    >
       {stores.length > 1 && (
         <div className={styles.storePicker}>
           {stores.map((entry) => (
@@ -292,7 +296,10 @@ export default function StoreManagePage() {
                   value={percent}
                   onChange={(event) => setPercent(event.target.value)}
                 />
-                <p className={styles.hint}>En porcentaje. Se guarda como {Math.round(Number(percent) * 100) || 0} basis points.</p>
+                <p className={styles.hint}>
+                  En porcentaje. Se guarda como {Math.round(Number(percent) * 100) || 0} basis
+                  points.
+                </p>
               </div>
             ) : (
               <div>

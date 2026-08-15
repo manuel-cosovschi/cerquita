@@ -122,6 +122,9 @@ export function canManageAdmins(actor: ActorContext): boolean {
   return actor.adminRole === 'super_admin';
 }
 
-export function canAccessConversation(actor: ActorContext, participantIds: readonly UUID[]): boolean {
+export function canAccessConversation(
+  actor: ActorContext,
+  participantIds: readonly UUID[],
+): boolean {
   return participantIds.includes(actor.userId);
 }

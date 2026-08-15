@@ -89,9 +89,7 @@ function DisputeCard({
         resolution,
         reason: reason.trim(),
         // Typed in pesos, sent in minor units — the same rule as everywhere else.
-        refundAmount: needsAmount
-          ? fromMajorUnits(refund.replace(',', '.'), currency)
-          : undefined,
+        refundAmount: needsAmount ? fromMajorUnits(refund.replace(',', '.'), currency) : undefined,
       });
       await onDone();
     } catch (cause) {

@@ -62,10 +62,7 @@ export class ChatGateway implements OnGatewayConnection {
 
   /** Lets a client signal it is looking at a thread, for typing indicators. */
   @SubscribeMessage('typing')
-  typing(
-    @MessageBody() conversationId: string,
-    @ConnectedSocket() client: Socket,
-  ): void {
+  typing(@MessageBody() conversationId: string, @ConnectedSocket() client: Socket): void {
     const userId = client.data.userId as string | undefined;
     if (!userId || typeof conversationId !== 'string') return;
 

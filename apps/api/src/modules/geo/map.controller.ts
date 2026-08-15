@@ -25,8 +25,7 @@ export class MapController {
   ): Promise<MapResponse> {
     const lat = Number(viewerLat);
     const lng = Number(viewerLng);
-    const viewerLocation =
-      Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : undefined;
+    const viewerLocation = Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : undefined;
 
     return this.map.query(query, { viewerId: user?.userId, viewerLocation });
   }

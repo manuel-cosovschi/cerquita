@@ -66,7 +66,8 @@ export class FavoritesController {
 
   @Post('saved-searches')
   createSavedSearch(
-    @Body(zodBody(createSavedSearchSchema)) body: Parameters<FavoritesService['createSavedSearch']>[1],
+    @Body(zodBody(createSavedSearchSchema))
+    body: Parameters<FavoritesService['createSavedSearch']>[1],
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.favorites.createSavedSearch(user.userId, body);

@@ -323,9 +323,7 @@ export class MapService {
     }
 
     if (input.categoryIds?.length) {
-      clauses.push(
-        Prisma.sql`AND l."categoryId" = ANY(${input.categoryIds}::uuid[])`,
-      );
+      clauses.push(Prisma.sql`AND l."categoryId" = ANY(${input.categoryIds}::uuid[])`);
     }
     if (input.condition) {
       clauses.push(Prisma.sql`AND l."condition" = ${input.condition}::"ItemCondition"`);

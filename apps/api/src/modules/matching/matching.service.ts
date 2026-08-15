@@ -134,9 +134,7 @@ export class MatchingService implements OnModuleInit {
         userId: candidate.userId,
         type: 'saved_search_match',
         title: `Apareció algo para "${candidate.name}"`,
-        body: listing.price
-          ? `${listing.title} — ${formatMoney(listing.price)}`
-          : listing.title,
+        body: listing.price ? `${listing.title} — ${formatMoney(listing.price)}` : listing.title,
         deepLink: `cerquita://listing/${listing.id}`,
       });
 
@@ -215,9 +213,7 @@ export class MatchingService implements OnModuleInit {
         userId: candidate.sellerId,
         type: 'wanted_match',
         title: 'Alguien publicó lo que buscás',
-        body: listing.price
-          ? `${listing.title} — ${formatMoney(listing.price)}`
-          : listing.title,
+        body: listing.price ? `${listing.title} — ${formatMoney(listing.price)}` : listing.title,
         deepLink: `cerquita://listing/${listing.id}`,
       });
 
@@ -306,9 +302,7 @@ export class MatchingService implements OnModuleInit {
       categoryId: row.categoryId,
       condition: (row.condition as MatchableListing['condition']) ?? undefined,
       price:
-        row.priceAmount === null
-          ? undefined
-          : money(row.priceAmount, row.priceCurrency as 'ARS'),
+        row.priceAmount === null ? undefined : money(row.priceAmount, row.priceCurrency as 'ARS'),
       // Matching runs server-side, so it uses the exact location, not the fuzzed
       // one — a 350 m offset would make radius matching wrong at close range.
       location: { lat: row.lat, lng: row.lng },

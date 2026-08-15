@@ -33,13 +33,14 @@ export default function ActivityPage() {
 
   const load = useCallback(async () => {
     // Each source is independent: one failing should not blank the other two.
-    const [offerResult, requestResult, notificationResult, reviewResult] =
-      await Promise.allSettled([
+    const [offerResult, requestResult, notificationResult, reviewResult] = await Promise.allSettled(
+      [
         api.offers.list(),
         api.social.pendingFriendRequests(),
         api.notifications.list(),
         api.reviews.pending(),
-      ]);
+      ],
+    );
 
     if (offerResult.status === 'fulfilled') setOffers(offerResult.value);
     if (requestResult.status === 'fulfilled') setRequests(requestResult.value);
@@ -210,7 +211,10 @@ export default function ActivityPage() {
           <ul className={styles.list}>
             {notifications.map((entry) => (
               <li key={entry.id}>
-                <NotificationRow entry={entry} onRead={() => void act(() => api.notifications.markRead(entry.id))} />
+                <NotificationRow
+                  entry={entry}
+                  onRead={() => void act(() => api.notifications.markRead(entry.id))}
+                />
               </li>
             ))}
           </ul>
@@ -339,7 +343,9 @@ function OfferCard({
           </span>
         )}
         <Link href={`/user/${counterpart.username}`} className={styles.who}>
-          {mine ? `Le ofreciste a ${counterpart.displayName}` : `${counterpart.displayName} te ofreció`}
+          {mine
+            ? `Le ofreciste a ${counterpart.displayName}`
+            : `${counterpart.displayName} te ofreció`}
         </Link>
         <span className={styles.when}>{formatRelativeTime(offer.createdAt)}</span>
       </div>
@@ -364,9 +370,7 @@ function OfferCard({
         {offer.listing?.price && (
           <span className={styles.asking}>
             precio{' '}
-            {formatMoney(
-              money(offer.listing.price.list.amount, offer.listing.price.list.currency),
-            )}
+            {formatMoney(money(offer.listing.price.list.amount, offer.listing.price.list.currency))}
           </span>
         )}
       </div>
@@ -464,13 +468,7 @@ function OfferCard({
   );
 }
 
-function NotificationRow({
-  entry,
-  onRead,
-}: {
-  entry: NotificationItem;
-  onRead: () => void;
-}) {
+function NotificationRow({ entry, onRead }: { entry: NotificationItem; onRead: () => void }) {
   const unread = !entry.readAt;
   // Deep links are `cerquita://listing/<id>` for the mobile app; on the web the
   // scheme is rewritten to a path rather than followed.

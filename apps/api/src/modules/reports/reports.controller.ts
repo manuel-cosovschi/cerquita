@@ -12,7 +12,12 @@ export class ReportsController {
   @Post()
   async create(
     @Body(zodBody(createReportSchema))
-    body: { targetType: 'listing' | 'user' | 'store' | 'message' | 'review'; targetId: string; category: string; detail?: string },
+    body: {
+      targetType: 'listing' | 'user' | 'store' | 'message' | 'review';
+      targetId: string;
+      category: string;
+      detail?: string;
+    },
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ ok: true }> {
     await this.prisma.report.create({

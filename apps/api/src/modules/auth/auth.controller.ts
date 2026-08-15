@@ -1,9 +1,5 @@
 import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
-import {
-  loginSchema,
-  refreshSchema,
-  registerSchema,
-} from '@cerquita/validation';
+import { loginSchema, refreshSchema, registerSchema } from '@cerquita/validation';
 import { AuthService, type AuthTokens } from './auth.service';
 import { zodBody } from '../../common/zod-validation.pipe';
 import { CurrentUser, type AuthenticatedUser } from '../../common/current-user.decorator';

@@ -61,8 +61,7 @@ export function distanceMeters(a: Coordinates, b: Coordinates): number {
   const lat1 = toRadians(a.lat);
   const lat2 = toRadians(b.lat);
 
-  const h =
-    Math.sin(dLat / 2) ** 2 + Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+  const h = Math.sin(dLat / 2) ** 2 + Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
   return 2 * EARTH_RADIUS_M * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
@@ -136,10 +135,7 @@ export function containsPoint(box: BoundingBox, point: Coordinates): boolean {
 
 /** Approximate diagonal of the viewport, used to pick a default search radius. */
 export function boundingBoxDiagonalMeters(box: BoundingBox): number {
-  return distanceMeters(
-    { lat: box.minLat, lng: box.minLng },
-    { lat: box.maxLat, lng: box.maxLng },
-  );
+  return distanceMeters({ lat: box.minLat, lng: box.minLng }, { lat: box.maxLat, lng: box.maxLng });
 }
 
 /** Grows a bbox by a ratio on each side. Used to prefetch just past the viewport. */
@@ -184,11 +180,7 @@ export function boundingBoxAround(center: Coordinates, radiusMeters: number): Bo
  * This is obfuscation, not anonymity: exact coordinates simply must never leave
  * the server, which is enforced in the listing serializers.
  */
-export function fuzzCoordinates(
-  exact: Coordinates,
-  seed: string,
-  radiusMeters = 350,
-): Coordinates {
+export function fuzzCoordinates(exact: Coordinates, seed: string, radiusMeters = 350): Coordinates {
   const hash = fnv1a(seed);
   // Two independent unit values from separate halves of the hash.
   const u1 = (hash % 100_003) / 100_003;

@@ -168,7 +168,9 @@ export const mapQuerySchema = z.object({
     .union([z.string(), z.array(z.string())])
     .optional()
     .transform((value) =>
-      value === undefined ? undefined : (Array.isArray(value) ? value : value.split(',')).filter(Boolean),
+      value === undefined
+        ? undefined
+        : (Array.isArray(value) ? value : value.split(',')).filter(Boolean),
     ),
   minPrice: z.coerce.number().int().min(0).optional(),
   maxPrice: z.coerce.number().int().min(0).optional(),
@@ -265,9 +267,7 @@ export const checkoutSchema = z.object({
   /** Set when the purchase is backed by an accepted offer. */
   offerId: uuidSchema.optional(),
   reservationId: uuidSchema.optional(),
-  meetingPoint: z
-    .object({ label: z.string().max(120), point: coordinatesSchema })
-    .optional(),
+  meetingPoint: z.object({ label: z.string().max(120), point: coordinatesSchema }).optional(),
   shippingAddressId: uuidSchema.optional(),
   /**
    * What the client displayed. Used ONLY to detect that the price moved between
@@ -360,18 +360,17 @@ export const createReportSchema = z.object({
 
 /* ── chat ─────────────────────────────────────────────────────────────────── */
 
-export const sendMessageSchema = z.object({
-  body: z.string().max(2000).optional(),
-  imageUrl: z.string().url().max(1000).optional(),
-  meetingPoint: z
-    .object({ label: z.string().max(120), point: coordinatesSchema })
-    .optional(),
-  /** Idempotency key so a retried send does not duplicate the message. */
-  clientId: z.string().max(64).optional(),
-}).refine(
-  (value) => Boolean(value.body?.trim() || value.imageUrl || value.meetingPoint),
-  { message: 'El mensaje no puede estar vacío' },
-);
+export const sendMessageSchema = z
+  .object({
+    body: z.string().max(2000).optional(),
+    imageUrl: z.string().url().max(1000).optional(),
+    meetingPoint: z.object({ label: z.string().max(120), point: coordinatesSchema }).optional(),
+    /** Idempotency key so a retried send does not duplicate the message. */
+    clientId: z.string().max(64).optional(),
+  })
+  .refine((value) => Boolean(value.body?.trim() || value.imageUrl || value.meetingPoint), {
+    message: 'El mensaje no puede estar vacío',
+  });
 
 export const startConversationSchema = z.object({
   recipientId: uuidSchema,
@@ -415,10 +414,10 @@ export const createPromotionSchema = z
   .refine((value) => value.basisPoints !== undefined || value.fixedPrice !== undefined, {
     message: 'Definí un porcentaje o un precio fijo',
   })
-  .refine(
-    (value) => !value.startsAt || !value.endsAt || value.startsAt < value.endsAt,
-    { message: 'La promoción debe terminar después de empezar', path: ['endsAt'] },
-  );
+  .refine((value) => !value.startsAt || !value.endsAt || value.startsAt < value.endsAt, {
+    message: 'La promoción debe terminar después de empezar',
+    path: ['endsAt'],
+  });
 
 /* ── admin ────────────────────────────────────────────────────────────────── */
 

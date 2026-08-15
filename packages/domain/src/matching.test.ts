@@ -154,7 +154,7 @@ describe('stripWantedFraming', () => {
     expect(stripWantedFraming('Necesito urgente una heladera')).toBe('una heladera');
   });
 
-  it('keeps the author\'s casing and accents, unlike the search variant', () => {
+  it("keeps the author's casing and accents, unlike the search variant", () => {
     expect(stripWantedFraming('Busco MacBook Air M2')).toBe('MacBook Air M2');
     expect(wantedSearchText('Busco MacBook Air M2')).toBe('macbook air m2');
   });

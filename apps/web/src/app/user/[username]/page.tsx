@@ -221,9 +221,7 @@ export default function ProfilePage() {
 
       {reviews.length > 0 && (
         <section className={styles.reviews} aria-label="Reseñas">
-          <h3 className={styles.reviewsTitle}>
-            Lo que dicen ({profile.reviewCount})
-          </h3>
+          <h3 className={styles.reviewsTitle}>Lo que dicen ({profile.reviewCount})</h3>
           <ul className={styles.reviewList}>
             {reviews.map((review) => (
               <li key={review.id} className={styles.review}>

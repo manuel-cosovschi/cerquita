@@ -56,11 +56,7 @@ export default tseslint.config(
   {
     // Browser and device code. The hooks rules are worth running for real: a
     // wrong dependency array is a genuine bug class, not a style preference.
-    files: [
-      'apps/web/**/*.{ts,tsx}',
-      'apps/admin/**/*.{ts,tsx}',
-      'apps/mobile/**/*.{ts,tsx}',
-    ],
+    files: ['apps/web/**/*.{ts,tsx}', 'apps/admin/**/*.{ts,tsx}', 'apps/mobile/**/*.{ts,tsx}'],
     plugins: { 'react-hooks': reactHooks },
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },

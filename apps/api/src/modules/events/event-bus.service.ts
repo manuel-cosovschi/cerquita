@@ -28,7 +28,10 @@ export class EventBus {
   on<T extends DomainEventType>(type: T, handler: Handler<T>): void {
     this.emitter.on(type, (event: DomainEventOf<T>) => {
       void Promise.resolve(handler(event)).catch((error) => {
-        this.logger.error(`Handler for ${type} failed`, error instanceof Error ? error.stack : error);
+        this.logger.error(
+          `Handler for ${type} failed`,
+          error instanceof Error ? error.stack : error,
+        );
       });
     });
   }

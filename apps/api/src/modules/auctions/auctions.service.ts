@@ -345,9 +345,7 @@ export class AuctionsService {
           ? undefined
           : money(auction.reservePriceAmount, currency),
       buyNowPrice:
-        auction.buyNowPriceAmount === null
-          ? undefined
-          : money(auction.buyNowPriceAmount, currency),
+        auction.buyNowPriceAmount === null ? undefined : money(auction.buyNowPriceAmount, currency),
       highestBid:
         auction.highestBidAmount === null || auction.highestBidderId === null
           ? undefined

@@ -1,7 +1,7 @@
 # Reglas de producto
 
 Las reglas viven en `packages/domain` como funciones puras. Este documento
-explica el *por qué*; el código es la definición.
+explica el _por qué_; el código es la definición.
 
 ## Un solo tipo de usuario
 
@@ -35,7 +35,7 @@ Reglas:
 
 **Seguir** es unilateral. **La amistad** es bilateral y requiere aceptación.
 
-Sólo una amistad *aceptada* cuenta como `friend`, y sólo que el espectador siga
+Sólo una amistad _aceptada_ cuenta como `friend`, y sólo que el espectador siga
 al vendedor cuenta como `follower` — que el vendedor te siga a vos no da nada, o
 cualquiera se auto-promocionaría a un descuento.
 
@@ -56,7 +56,7 @@ La reputación son las operaciones y las reseñas, no los seguidores.
 
 ## Ofertas
 
-- Se ofrece por debajo del precio que *ese comprador* pagaría (no del público:
+- Se ofrece por debajo del precio que _ese comprador_ pagaría (no del público:
   un amigo con descuento no debería quedar bloqueado por "superar" el precio).
 - Contraofertar **cierra** la oferta original y abre una nueva en sentido
   contrario, preservando el historial para eventuales disputas.

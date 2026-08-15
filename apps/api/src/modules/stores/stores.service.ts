@@ -320,9 +320,7 @@ export class StoresService {
     }
 
     const [totals, listings, followers] = await Promise.all([
-      this.prisma.$queryRaw<
-        Array<{ orders: bigint; revenue: bigint | null; buyers: bigint }>
-      >`
+      this.prisma.$queryRaw<Array<{ orders: bigint; revenue: bigint | null; buyers: bigint }>>`
         SELECT COUNT(*)                                  AS orders,
                COALESCE(SUM("total"), 0)                 AS revenue,
                COUNT(DISTINCT "buyerId")                 AS buyers

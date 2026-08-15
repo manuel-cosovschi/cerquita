@@ -24,10 +24,7 @@ const FRIENDSHIP_TRANSITIONS: Record<FriendshipStatus, readonly FriendshipStatus
   blocked: [],
 };
 
-export function canTransitionFriendship(
-  from: FriendshipStatus,
-  to: FriendshipStatus,
-): boolean {
+export function canTransitionFriendship(from: FriendshipStatus, to: FriendshipStatus): boolean {
   return (FRIENDSHIP_TRANSITIONS[from] ?? []).includes(to);
 }
 

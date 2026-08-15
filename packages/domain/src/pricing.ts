@@ -13,7 +13,13 @@
  */
 
 import type { AudienceTier, MoneyDto, ResolvedPrice, UUID } from '@cerquita/types';
-import { applyDiscount, discountBasisPoints, isGreaterThan, money, type Money } from '@cerquita/utils';
+import {
+  applyDiscount,
+  discountBasisPoints,
+  isGreaterThan,
+  money,
+  type Money,
+} from '@cerquita/utils';
 
 /** Privilege ordering. A friend qualifies for anything a follower qualifies for. */
 const TIER_RANK: Record<AudienceTier, number> = {

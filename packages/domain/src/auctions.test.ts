@@ -53,12 +53,12 @@ describe('bidding', () => {
     const state = auction({ highestBid: { bidderId: 'buyer-1', amount: ARS(500_000) } });
     expect(nextMinimumBid(state)).toEqual(ARS(510_000));
 
-    expect(
-      placeBid({ state, bidderId: 'buyer-2', amount: ARS(505_000), now: NOW }).accepted,
-    ).toBe(false);
-    expect(
-      placeBid({ state, bidderId: 'buyer-2', amount: ARS(510_000), now: NOW }).accepted,
-    ).toBe(true);
+    expect(placeBid({ state, bidderId: 'buyer-2', amount: ARS(505_000), now: NOW }).accepted).toBe(
+      false,
+    );
+    expect(placeBid({ state, bidderId: 'buyer-2', amount: ARS(510_000), now: NOW }).accepted).toBe(
+      true,
+    );
   });
 
   /**
@@ -161,7 +161,12 @@ describe('anti-sniping', () => {
       antiSnipeExtensionMs: 600_000,
       maxEndsAt: new Date('2026-08-14T12:01:00.000Z'),
     });
-    const outcome = placeBid({ state: capped, bidderId: 'buyer-1', amount: ARS(500_000), now: NOW });
+    const outcome = placeBid({
+      state: capped,
+      bidderId: 'buyer-1',
+      amount: ARS(500_000),
+      now: NOW,
+    });
     expect(outcome.accepted).toBe(true);
     if (!outcome.accepted) return;
     expect(outcome.newEndsAt).toEqual(new Date('2026-08-14T12:01:00.000Z'));

@@ -34,10 +34,7 @@ export class JwtAuthGuard implements CanActivate {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, targets);
     if (isPublic) return true;
 
-    const allowAnonymous = this.reflector.getAllAndOverride<boolean>(
-      ALLOW_ANONYMOUS_KEY,
-      targets,
-    );
+    const allowAnonymous = this.reflector.getAllAndOverride<boolean>(ALLOW_ANONYMOUS_KEY, targets);
 
     const request = context.switchToHttp().getRequest<Request & { user?: AuthenticatedUser }>();
     const token = extractBearerToken(request);

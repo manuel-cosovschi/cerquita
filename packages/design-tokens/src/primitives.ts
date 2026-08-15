@@ -344,8 +344,7 @@ export const mapTiles = {
    * Dark-mode candidate from the bundle's `tile-test.html`. NOT yet approved —
    * see `docs/design-audit.md` before shipping it.
    */
-  filterDarkCandidate:
-    'invert(1) hue-rotate(180deg) saturate(0.55) brightness(0.9) contrast(1.05)',
+  filterDarkCandidate: 'invert(1) hue-rotate(180deg) saturate(0.55) brightness(0.9) contrast(1.05)',
 } as const;
 
 /** Minimum interactive target, in px. */

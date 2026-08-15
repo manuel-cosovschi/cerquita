@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { countTerms } from './demand.service';
 
 /** The shape the caller reads: term first, count second, sorted by count. */
-const terms = (titles: string[]) => countTerms(titles).map((entry) => `${entry.term}:${entry.count}`);
+const terms = (titles: string[]) =>
+  countTerms(titles).map((entry) => `${entry.term}:${entry.count}`);
 
 describe('countTerms', () => {
   it('reports a word only once it repeats across posts', () => {

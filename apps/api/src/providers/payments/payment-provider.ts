@@ -24,12 +24,7 @@ export interface PaymentIntent {
 }
 
 export type PaymentIntentStatus =
-  | 'requires_action'
-  | 'pending'
-  | 'authorized'
-  | 'captured'
-  | 'failed'
-  | 'cancelled';
+  'requires_action' | 'pending' | 'authorized' | 'captured' | 'failed' | 'cancelled';
 
 export interface CreatePaymentInput {
   readonly orderId: string;

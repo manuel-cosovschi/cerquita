@@ -25,7 +25,8 @@ export class CheckoutController {
 
   @Post('cart/items')
   add(
-    @Body(zodBody(addToCartSchema)) body: { listingId: string; variantId?: string; quantity: number },
+    @Body(zodBody(addToCartSchema))
+    body: { listingId: string; variantId?: string; quantity: number },
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<Cart> {
     return this.cart.add(body, user.userId);

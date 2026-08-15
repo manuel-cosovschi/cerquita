@@ -97,7 +97,11 @@ export default function AccountScreen() {
       />
       <Field label="Contraseña" value={password} onChange={setPassword} secure />
 
-      <Pressable style={[styles.primary, busy && styles.disabled]} disabled={busy} onPress={() => void submit()}>
+      <Pressable
+        style={[styles.primary, busy && styles.disabled]}
+        disabled={busy}
+        onPress={() => void submit()}
+      >
         <Text style={styles.primaryText}>
           {busy ? 'Un segundo…' : isRegister ? 'Crear cuenta' : 'Entrar'}
         </Text>

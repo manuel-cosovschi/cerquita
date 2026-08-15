@@ -71,8 +71,7 @@ export type OfferRejectionReason =
   | 'duplicate_pending_offer';
 
 export type CreateOfferOutcome =
-  | { readonly ok: true }
-  | { readonly ok: false; readonly reason: OfferRejectionReason };
+  { readonly ok: true } | { readonly ok: false; readonly reason: OfferRejectionReason };
 
 export interface CreateOfferInput {
   readonly listingId: UUID;
@@ -157,6 +156,7 @@ export function selectExpiredOffers(
   now: Date,
 ): readonly OfferState[] {
   return offers.filter(
-    (offer) => offer.status === 'pending' && offer.expiresAt !== undefined && isPast(offer.expiresAt, now),
+    (offer) =>
+      offer.status === 'pending' && offer.expiresAt !== undefined && isPast(offer.expiresAt, now),
   );
 }

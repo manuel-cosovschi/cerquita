@@ -29,7 +29,10 @@ export class SocialService {
 
   async follow(followerId: string, followeeId: string): Promise<{ following: true }> {
     if (followerId === followeeId) {
-      throw new BadRequestException({ message: 'No podés seguirte a vos mismo', code: 'self_follow' });
+      throw new BadRequestException({
+        message: 'No podés seguirte a vos mismo',
+        code: 'self_follow',
+      });
     }
 
     await this.prisma.follow.upsert({
@@ -89,7 +92,10 @@ export class SocialService {
     }));
   }
 
-  async requestFriendship(requesterId: string, addresseeId: string): Promise<{ status: FriendshipStatus }> {
+  async requestFriendship(
+    requesterId: string,
+    addresseeId: string,
+  ): Promise<{ status: FriendshipStatus }> {
     if (requesterId === addresseeId) {
       throw new BadRequestException({
         message: 'No podés enviarte una solicitud',
@@ -184,7 +190,10 @@ export class SocialService {
     };
 
     if (!isParticipant(state, actorId)) {
-      throw new BadRequestException({ message: 'No formás parte de esta amistad', code: 'forbidden' });
+      throw new BadRequestException({
+        message: 'No formás parte de esta amistad',
+        code: 'forbidden',
+      });
     }
 
     await this.prisma.friendship.delete({ where: { id: friendshipId } });

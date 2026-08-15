@@ -166,8 +166,16 @@ function tilesFor(center: Coordinates, size: { width: number; height: number }) 
 
   const tiles: Array<{ key: string; x: number; y: number; left: number; top: number }> = [];
 
-  for (let x = Math.floor((centerPx.x - size.width / 2) / 256); x <= Math.floor((centerPx.x + size.width / 2) / 256); x += 1) {
-    for (let y = Math.floor((centerPx.y - size.height / 2) / 256); y <= Math.floor((centerPx.y + size.height / 2) / 256); y += 1) {
+  for (
+    let x = Math.floor((centerPx.x - size.width / 2) / 256);
+    x <= Math.floor((centerPx.x + size.width / 2) / 256);
+    x += 1
+  ) {
+    for (
+      let y = Math.floor((centerPx.y - size.height / 2) / 256);
+      y <= Math.floor((centerPx.y + size.height / 2) / 256);
+      y += 1
+    ) {
       if (y < 0 || y > maxTile) continue;
       tiles.push({
         key: `${x}/${y}`,

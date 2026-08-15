@@ -48,7 +48,10 @@ export class CartService {
       });
     }
     if (listing.status !== 'active') {
-      throw new BadRequestException({ message: 'La publicación no está disponible', code: 'unavailable' });
+      throw new BadRequestException({
+        message: 'La publicación no está disponible',
+        code: 'unavailable',
+      });
     }
     if (listing.kind !== 'sale') {
       throw new BadRequestException({
@@ -232,8 +235,7 @@ export class CartService {
         quantity: item.quantity,
         unitPrice: toResolvedPriceDto(resolution),
         lineTotal: { amount: lineTotal.amount, currency },
-        availableQuantity:
-          item.listing.quantity - item.listing.reserved - item.listing.sold,
+        availableQuantity: item.listing.quantity - item.listing.reserved - item.listing.sold,
       };
     });
 
