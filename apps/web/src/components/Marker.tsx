@@ -159,7 +159,10 @@ function markerLabel(marker: MapMarker): string {
     return `${marker.count} publicaciones en esta zona. Activar para acercar.`;
   }
   if (marker.type === 'store') {
-    return `Tienda ${marker.name}, ${marker.activeListingCount} productos activos`;
+    // A shop with exactly one thing for sale is an ordinary state, and the
+    // screen reader is the one place nobody proof-reads.
+    const products = marker.activeListingCount === 1 ? 'producto activo' : 'productos activos';
+    return `Tienda ${marker.name}, ${marker.activeListingCount} ${products}`;
   }
 
   const kind =

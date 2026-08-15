@@ -473,7 +473,9 @@ export function ListingDetail({ initial }: { initial: Listing }) {
               {listing.socialProof && <p className={styles.socialProof}>{listing.socialProof}</p>}
               <p className={styles.sellerMeta}>
                 {listing.seller.rating !== undefined
-                  ? `${listing.seller.rating.toFixed(1)} ★ · ${listing.seller.reviewCount} reseñas`
+                  ? `${listing.seller.rating.toFixed(1)} ★ · ${listing.seller.reviewCount} ${
+                      listing.seller.reviewCount === 1 ? 'reseña' : 'reseñas'
+                    }`
                   : 'Sin reseñas todavía'}
               </p>
             </div>
