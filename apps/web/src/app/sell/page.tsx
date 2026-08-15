@@ -49,6 +49,13 @@ export default function SellPage() {
         ))}
       </ul>
 
+      <Link href="/demand" className={styles.demand}>
+        <span>¿No sabés qué publicar? Mirá qué está buscando la gente de tu zona.</span>
+        <span className={styles.demandArrow} aria-hidden="true">
+          →
+        </span>
+      </Link>
+
       <p className={styles.note}>
         <Link href="/" className={appScreenStyles.secondary}>
           Volver al mapa

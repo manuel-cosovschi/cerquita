@@ -252,6 +252,21 @@ export interface StoreDashboard {
   conversionRate: number | null;
 }
 
+/** Aggregate demand around a point (spec §51). */
+export interface LocalDemand {
+  radiusMeters: number;
+  categories: Array<{
+    categoryId: string;
+    name: string;
+    wantedCount: number;
+    supplyCount: number;
+    /** Wanted per active listing. Null when there is no supply to divide by. */
+    ratio: number | null;
+  }>;
+  terms: Array<{ term: string; count: number }>;
+  wantedTotal: number;
+}
+
 export interface SearchQuery {
   q?: string;
   kind?: 'sale' | 'wanted' | 'auction';
@@ -349,6 +364,15 @@ export function createClient(options: ClientOptions) {
     categories: {
       /** The whole tree in one call — it is a few dozen rows. */
       list: () => request<Category[]>('/categories'),
+    },
+
+    demand: {
+      /**
+       * What people nearby are asking for (spec §51). Aggregate only: counts
+       * per category and repeated words, never who asked.
+       */
+      near: (query: { lat: number; lng: number; radius?: number }) =>
+        request<LocalDemand>('/demand', { query: { ...query } }),
     },
 
     feed: {

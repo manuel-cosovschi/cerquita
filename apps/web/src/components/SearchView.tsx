@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import type { ListingSummary } from '@cerquita/types';
 import type { PersonResult, SocialHint, StoreResult } from '@cerquita/api-client';
 import { api } from '@/lib/api';
@@ -27,8 +28,15 @@ const TABS: Array<{ id: Tab; label: string }> = [
  * rather than interleaving four result shapes into one ranked list.
  */
 export function SearchView() {
-  const [query, setQuery] = useState('');
-  const [submitted, setSubmitted] = useState('');
+  /*
+   * `?q=` runs the search on arrival, so anything in the app can link straight
+   * to results: the demand screen's repeated terms, a category, a shared link.
+   * Read once as the initial value rather than watched — after that the input
+   * is the source of truth, and re-syncing would fight the person typing.
+   */
+  const initialQuery = useSearchParams().get('q')?.trim() ?? '';
+  const [query, setQuery] = useState(initialQuery);
+  const [submitted, setSubmitted] = useState(initialQuery);
   const [tab, setTab] = useState<Tab>('things');
 
   const [things, setThings] = useState<ListingSummary[]>([]);

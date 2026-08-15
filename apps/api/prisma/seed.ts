@@ -504,6 +504,63 @@ const LISTINGS: ListingSpec[] = [
     tags: ['bicicleta', 'niño', 'rodado 20'],
     wantedRadiusMeters: 3000,
   },
+  /*
+   * The rest of the "busco" posts exist so local demand (§51) has a real
+   * pattern to report rather than one post per category, which never crosses
+   * the threshold and leaves that screen permanently empty.
+   *
+   * Two shapes on purpose: bicicletas has three people asking against one bike
+   * on sale ("falta oferta"), and electrodomésticos has two asking with nothing
+   * on sale at all ("nadie vende") — the two verdicts the screen can give.
+   */
+  {
+    key: 'busco-bici-ruta',
+    kind: 'wanted',
+    title: 'Busco bicicleta de ruta talle M',
+    description: 'Arranco a entrenar y no quiero gastar en una nueva. Talle M o 54.',
+    category: 'bicicletas',
+    seller: 'santiago',
+    maxBudget: ars(400_000),
+    offset: [1120, 380],
+    tags: ['bicicleta', 'ruta', 'busco'],
+    wantedRadiusMeters: 6000,
+  },
+  {
+    key: 'busco-bici-fija',
+    kind: 'wanted',
+    title: 'Busco bicicleta fija para casa',
+    description: 'Para el invierno. Que ande bien, no me importa la estética.',
+    category: 'bicicletas',
+    seller: 'manuel',
+    maxBudget: ars(180_000),
+    offset: [-260, 1080],
+    tags: ['bicicleta', 'fija', 'busco'],
+    wantedRadiusMeters: 4000,
+  },
+  {
+    key: 'busco-heladera',
+    kind: 'wanted',
+    title: 'Busco heladera con freezer',
+    description: 'Me mudo el mes que viene y necesito heladera. Retiro con flete.',
+    category: 'electrodomesticos',
+    seller: 'fran',
+    maxBudget: ars(350_000),
+    offset: [640, -1180],
+    tags: ['heladera', 'freezer', 'busco'],
+    wantedRadiusMeters: 7000,
+  },
+  {
+    key: 'busco-heladera-chica',
+    kind: 'wanted',
+    title: 'Busco heladera chica para oficina',
+    description: 'Una heladera bajo mesada para la oficina. Puede ser usada.',
+    category: 'electrodomesticos',
+    seller: 'lucia',
+    maxBudget: ars(150_000),
+    offset: [-940, -520],
+    tags: ['heladera', 'oficina', 'busco'],
+    wantedRadiusMeters: 5000,
+  },
   {
     key: 'auction-iphone',
     kind: 'auction',

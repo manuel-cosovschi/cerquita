@@ -49,8 +49,11 @@ export function ListingCard({ listing, hovered, selected, onHover, onSelect }: L
               loading="lazy"
             />
           ) : (
+            /* The kind tag below already says "Busco"; the placeholder saying it
+               too read as a stutter on every photo-less wanted post — which is
+               most of them, since you rarely have a picture of what you want. */
             <div className={styles.imagePlaceholder} aria-hidden="true">
-              {isWanted ? 'Busco' : 'Sin foto'}
+              Sin foto
             </div>
           )}
 

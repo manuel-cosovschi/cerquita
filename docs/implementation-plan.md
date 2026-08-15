@@ -1,6 +1,6 @@
 # Plan de implementación
 
-Última actualización: 2026-08-14.
+Última actualización: 2026-08-15.
 
 Leyenda: ✅ hecho y verificado · 🟡 parcial · ⬜ pendiente
 
@@ -12,29 +12,36 @@ Leyenda: ✅ hecho y verificado · 🟡 parcial · ⬜ pendiente
 cerquita/
   apps/
     api/          NestJS · monolito modular · Prisma + PostGIS     ✅
-    web/          Next.js · mapa + resultados + detalle            🟡
-    admin/        Next.js · panel de administración                ⬜
-    mobile/       Expo · React Native                              ⬜
+    web/          Next.js · mapa + resultados + detalle            ✅
+    admin/        Next.js · panel de administración                ✅
+    mobile/       Expo · React Native                              ✅
   packages/
     design-tokens/  primitives → semantic → CSS vars               ✅
     types/          enums, entidades de red, eventos de dominio    ✅
     validation/     esquemas Zod compartidos                       ✅
     domain/         reglas puras y testeables                      ✅
     utils/          Money, geo, clustering, tiempo, slugs          ✅
-    api-client/     cliente tipado compartido                      🟡
-    ui/             librería de componentes                        ⬜
-    config/         config compartida de tooling                   ⬜
-  docs/                                                            🟡
-  design-reference/  export original (cuando esté disponible)      ⬜
+    api-client/     cliente tipado compartido                      ✅
+  docs/                                                            ✅
+  design-reference/  concepto original, sin modificar (§112)       ✅
 ```
+
+Dos paquetes que estaban planificados **no existen, a propósito**:
+
+- `packages/config` — `tsconfig.base.json` en la raíz y `eslint.config.mjs`
+  (flat config, que ya alcanza a todo el workspace) hacen ese trabajo. Un
+  paquete envolviéndolos era una capa sin contenido.
+- `packages/ui` — web y mobile no pueden compartir componentes (DOM contra
+  React Native), y admin comparte con web tres archivos de tabla. Lo que sí se
+  comparte es lo que está en `design-tokens`, del lado correcto de la frontera.
+
+Se prefirió borrar los directorios vacíos antes que dejar un `⬜` permanente:
+§125 pide que no queden andamios sin implementar.
 
 ## Archivos existentes
 
 El repositorio estaba **vacío** (ver `docs/design-audit.md`). No hubo nada que
 conservar, transformar ni borrar. Todo el contenido es nuevo.
-
-Cuando llegue el export de Claude Design se guarda **sin modificar** en
-`/design-reference/`, como pide §112.
 
 ---
 
@@ -60,30 +67,38 @@ Cuando llegue el export de Claude Design se guarda **sin modificar** en
 - Base de datos: schema Prisma completo, migración con índices GiST, búsqueda
   full-text en español y constraints de integridad.
 - Auth: registro, login, refresh con rotación, sesiones, argon2id.
-- Seed con datos ricos.
-- 124 tests unitarios.
+- Seed con datos ricos, incluida demanda real para que `/demand` tenga algo que
+  mostrar sin que haya que inventar publicaciones a mano.
+- Tests unitarios: 183 al día de hoy, todos en verde.
 
-### Fase 2 — Reproducir el diseño 🟡 **bloqueada**
+### Fase 2 — Reproducir el diseño ✅
 
-No puede completarse sin el export. Ver `docs/design-audit.md` §3.
+El export llegó y está aplicado. Ver `docs/design-audit.md`.
 
-Lo que sí se hizo: la arquitectura de tokens y los roles semánticos, para que
-reproducir el diseño sea reemplazar un archivo y no reescribir pantallas.
+- ✅ Bundle original conservado sin modificar en `design-reference/` (§112).
+- ✅ Paleta, tipografía, radios y sombras extraídos del board a `design-tokens`;
+  sólo `primitives.ts` tiene valores crudos.
+- ✅ Síntesis de las direcciones **1a** (map first: el mapa es la home) y **1c**
+  (social commerce: precios de amigo, comentarios públicos, feed), que es la
+  mezcla que pidió el usuario.
+- ✅ Los mismos tokens alimentan web (CSS custom properties) y mobile (objeto de
+  tema en `apps/mobile/src/lib/theme.ts`), así que las dos apps no pueden
+  divergir de color.
 
-### Fase 3 — Core marketplace ✅ (backend) / 🟡 (clientes)
+### Fase 3 — Core marketplace ✅
 
-| | Backend | Web |
-|---|---|---|
-| Listings (venta / busco / subasta) | ✅ | 🟡 |
-| Mapa por viewport con clustering en PostGIS | ✅ | 🟡 |
-| Búsqueda full-text + geo + filtros | ✅ | 🟡 |
-| Búsqueda con IA (adapter + mock real) | ✅ | ⬜ |
-| Ofertas y contraofertas | ✅ | ⬜ |
-| Perfiles | ✅ | ⬜ |
-| Favoritos y colecciones | ✅ | ⬜ |
-| Chat en tiempo real | ✅ | ⬜ |
+| | Backend | Web | Mobile |
+|---|---|---|---|
+| Listings (venta / busco / subasta) | ✅ | ✅ | ✅ |
+| Mapa por viewport con clustering en PostGIS | ✅ | ✅ | ✅ |
+| Búsqueda full-text + geo + filtros | ✅ | ✅ | ✅ |
+| Búsqueda con IA (adapter + mock real) | ✅ | ✅ | — |
+| Ofertas y contraofertas | ✅ | ✅ | — |
+| Perfiles | ✅ | ✅ | — |
+| Favoritos y colecciones | ✅ | ✅ | — |
+| Chat en tiempo real | ✅ | ✅ | ✅ |
 
-### Fase 4 — Social ✅ (backend)
+### Fase 4 — Social ✅
 
 - ✅ Follows (unilateral) y amistades (bilateral, con orden canónico en BD).
 - ✅ Bloqueos, que ocultan contenido en ambas direcciones y cortan el chat.
@@ -91,7 +106,7 @@ reproducir el diseño sea reemplazar un archivo y no reescribir pantallas.
 - ✅ Feed con fan-out a seguidores y amigos al publicar.
 - ✅ Notificaciones: in-app siempre, push best-effort, preferencias por tipo.
 - ✅ Reseñas atadas a una orden liquidada, con reputación transaccional.
-- ⬜ UI de feed y notificaciones en web.
+- ✅ UI de feed y notificaciones en web.
 
 ### Fase 5 — Comercio ✅ (núcleo)
 
@@ -101,7 +116,8 @@ reproducir el diseño sea reemplazar un archivo y no reescribir pantallas.
 - ✅ `PaymentProvider` con mock + Mercado Pago.
 - ✅ Historial de precios.
 - ✅ Reservas con el mismo guard de stock que el checkout, barridas por el scheduler.
-- 🟡 Promociones (motor ✅, ABM ⬜).
+- ✅ Promociones: motor, ABM en `/store/manage` y baja lógica (una promoción
+  terminada deja de aplicarse pero no se borra: las órdenes viejas la citan).
 
 ### Fase 6 — Subastas ✅
 
@@ -112,7 +128,7 @@ reproducir el diseño sea reemplazar un archivo y no reescribir pantallas.
 - ✅ WebSocket de sólo lectura (las pujas van por HTTP, con los mismos guards).
 - ✅ Notificaciones de outbid, subasta ganada y venta.
 
-### Fase 7 — Tiendas ✅ (backend)
+### Fase 7 — Tiendas ✅
 
 - ✅ Modelo completo: miembros, roles, horarios, ubicación física, seguidores.
 - ✅ Marker único de tienda en el mapa (§49) — una tienda con 500 productos no
@@ -122,25 +138,29 @@ reproducir el diseño sea reemplazar un archivo y no reescribir pantallas.
   combinaciones y guarda de stock comprometido.
 - ✅ Publicación explícita de un producto al mapa.
 - ✅ Dashboard del vendedor agregado en SQL (§50).
-- ⬜ UI de gestión de tienda.
+- ✅ UI de gestión de tienda: alta, dashboard y promociones.
 
-### Fase 8 — Inteligencia 🟡
+### Fase 8 — Inteligencia ✅
 
 - ✅ Adapter de IA con mock **real** (parser en castellano, con tests).
 - ✅ Matching de búsquedas guardadas y de "Busco", enganchado a los eventos:
   una publicación nueva notifica a quien tenga una alerta compatible o un Busco
   que la satisfaga, y una baja de precio sólo re-notifica a quien recién ahora
   entra en presupuesto.
-- ⬜ Demanda local agregada (§51), recomendaciones.
+- ✅ Demanda local agregada (§51): qué se pide cerca contra qué hay en venta,
+  en `/demand`, enlazado desde el chooser de publicar. **Sólo agregados** — la
+  pantalla nombra categorías y palabras repetidas, nunca a quién las pidió, y
+  una categoría con un solo pedido no se reporta (sería señalar a esa persona).
 
-### Fase 9 — Admin 🟡 (backend ✅)
+### Fase 9 — Admin ✅
 
 - ✅ Dashboard con métricas agregadas en SQL (usuarios, GMV, comisiones, cola).
 - ✅ Moderación con razón obligatoria y audit log transaccional.
 - ✅ Suspender/banear revoca sesiones al instante.
 - ✅ Reportes, disputas, risk score advisory, feature flags y configuración
   global editable.
-- ⬜ La app `apps/admin` (el backend está listo para consumirse).
+- ✅ La app `apps/admin`: cola de moderación, reportes, disputas, auditoría y
+  configuración global.
 
 ### Fase 10 — Hardening 🟡
 
@@ -149,7 +169,10 @@ reproducir el diseño sea reemplazar un archivo y no reescribir pantallas.
 - ✅ Errores accionables, sin stack traces al cliente.
 - ✅ `/health` y `/ready`, request id correlacionado.
 - ✅ Constraints de integridad en la base.
-- ⬜ Rate limiting, CI, tests e2e, accesibilidad.
+- ✅ Rate limiting con ventanas por usuario y por IP; las rutas de credenciales
+  se limitan por `email + IP`, para que un NAT compartido no deje afuera a un
+  barrio entero.
+- ⬜ CI, tests e2e, pasada de accesibilidad.
 
 ---
 
@@ -164,13 +187,20 @@ reproducir el diseño sea reemplazar un archivo y no reescribir pantallas.
 | Geografía nullable en Prisma | Prisma no genera `create` si una columna `Unsupported` es obligatoria. La invariante la garantiza un CHECK en la base. |
 | Ubicación pública determinística | Si el punto difuso cambiara en cada request, promediando se recupera el real. |
 | Paquetes compilados a CommonJS | Es el formato que cargan sin configuración extra Nest, Next y Metro. |
-| Tokens provisionales aislados | §1 vs §134: avanzar sin inventar una identidad visual que se presente como la diseñada. |
+| Tokens provisionales aislados hasta que llegó el export | §1 vs §134: se avanzó sin inventar una identidad visual que se presentara como la diseñada. Cuando llegó el board, aplicarlo fue reemplazar `primitives.ts`, que era exactamente para lo que servía la separación. |
+| `textOnBrand` y `textOnAccent` separados | Colapsarlos en un solo color dejaba tinta oscura sobre el botón casi negro: invisible. El export pone tinta oscura sobre el naranja y clara sobre el negro, y son dos decisiones distintas. |
+| Demanda local sólo agregada, con umbral de 2 | Una categoría con un solo pedido identifica a quien lo pidió. El pedido ya es público en el mapa; una lista rankeada de "cerca de esta esquina quieren X" es otro objeto, y uno que conviene no construir. |
+| Rate limit de credenciales por `email + IP` | Con la clave por IP sola, un NAT compartido (un edificio, una oficina) se bloquea entero porque una sola persona erró la contraseña. Se descubrió agotando el presupuesto del navegador desde curl. |
+| Sin `packages/ui` ni `packages/config` | Ver arriba: no había nada real que compartir en ninguno de los dos. |
 
 ## Próximos pasos
 
-1. **Desbloquear el diseño** (§3 de la auditoría) → completar Fase 2.
-2. Web: sincronización mapa ↔ resultados, detalle, publicar.
-3. Chat + notificaciones (cierra el bucle de §131: buscar → ver → hablar → comprar).
-4. Admin.
-5. Mobile.
-6. CI y e2e.
+Lo funcional está cerrado: el bucle de §131 (buscar → ver → hablar → comprar →
+reseñar) corre entero en web, y mobile cubre mapa, detalle y chat contra la
+misma API. Queda infraestructura alrededor del producto:
+
+1. **CI** — typecheck, lint y tests en cada push.
+2. **Tests e2e** — los recorridos que hoy se verifican a mano contra el stack
+   levantado, escritos para que corran solos.
+3. **Pasada de accesibilidad** — foco visible, orden de tabulación y contraste
+   revisados pantalla por pantalla, no sólo en los componentes nuevos.

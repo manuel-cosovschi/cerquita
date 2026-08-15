@@ -47,6 +47,30 @@
   color: var(--color-text-secondary);
 }
 
+/*
+ * "No sé qué publicar" is the other half of this screen, so the way out of it
+ * sits with the three options rather than in the footer with "volver".
+ */
+.demand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-sunken);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
+.demandArrow {
+  flex: none;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
 .note {
   margin: var(--space-8) 0 0;
   text-align: center;

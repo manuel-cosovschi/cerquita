@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { SearchView } from '@/components/SearchView';
 
 export const metadata: Metadata = {
@@ -7,5 +8,11 @@ export const metadata: Metadata = {
 };
 
 export default function SearchPage() {
-  return <SearchView />;
+  // The view reads `?q=` to run a search on arrival, which makes it a client
+  // subtree; the boundary keeps the rest of the route static.
+  return (
+    <Suspense>
+      <SearchView />
+    </Suspense>
+  );
 }
