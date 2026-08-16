@@ -34,20 +34,30 @@ test.describe('what people are looking for nearby', () => {
 
     const body = await page.innerText('body');
 
-    // The seed builds two shapes on purpose: a category with three people
-    // asking against one listing, and one with nobody selling at all.
-    expect(body).toMatch(/Bicicletas/);
-    expect(body).toMatch(/Electrodomésticos/);
+    /*
+     * This test reads the seed's two deliberate shapes: bicicletas with three
+     * people asking against one listing, and electrodomésticos with nobody
+     * selling at all.
+     *
+     * That makes it sensitive to a local database that has drifted — buying the
+     * one seeded bike while clicking around is enough to break it, because the
+     * shape it describes is genuinely gone. CI seeds fresh every run, so there
+     * a failure means the feature, not the fixture.
+     */
+    const drifted = 'If this fails locally, re-seed: the shape it describes is seed state.';
+
+    expect(body, drifted).toMatch(/Bicicletas/);
+    expect(body, drifted).toMatch(/Electrodomésticos/);
 
     // "Nadie vende" is the strongest signal there is, so it sorts to the top —
     // above any finite ratio, rather than being dropped for dividing by zero.
     const noSupply = body.indexOf('Electrodomésticos');
     const someSupply = body.indexOf('Bicicletas');
-    expect(noSupply).toBeLessThan(someSupply);
+    expect(noSupply, 'A category nobody sells outranks one with supply').toBeLessThan(someSupply);
 
     // Singular and plural have to agree; "1 publicaciones" reads as a bug.
-    expect(body).toContain('1 publicación en venta');
-    expect(body).toContain('0 publicaciones en venta');
+    expect(body, drifted).toContain('1 publicación en venta');
+    expect(body, drifted).toContain('0 publicaciones en venta');
   });
 
   test('names things, not people', async ({ page }) => {
