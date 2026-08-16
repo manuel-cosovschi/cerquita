@@ -69,7 +69,15 @@ pujas simultáneas dejan un solo ganador.
 
 Necesitan la base sembrada (`pnpm db:seed`): el grafo social del seed es lo que
 define los tres precios. Cada test publica lo que compra, así que se pueden
-correr las veces que haga falta; lo que crean queda retirado al terminar.
+correr las veces que haga falta sin quedarse sin stock.
+
+Eso sí, dejan rastro en una base de desarrollo: las publicaciones quedan
+retiradas o vendidas, pero las órdenes y los avisos que generan siguen ahí, así
+que después de correr la suite vas a ver varios "Compraste [e2e] Objeto de
+prueba" en tu actividad. Es esperable —en CI la base se siembra de cero en cada
+corrida— y se limpia resembrando. Si además comprás algo a mano mientras probás,
+tené en cuenta que algún test lee el estado del seed y te lo va a decir cuando
+falle.
 
 Si ya tenés la API y la web levantadas y no querés que Playwright arranque las
 suyas, usá `E2E_NO_SERVER=1 pnpm e2e`.
