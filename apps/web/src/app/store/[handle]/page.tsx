@@ -9,6 +9,7 @@ import { ListingCard } from '@/components/ListingCard';
 import { api } from '@/lib/api';
 import { useSession } from '@/lib/session';
 import styles from './page.module.css';
+import { Stat } from '@/components/Stat';
 
 const WEEKDAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -137,8 +138,8 @@ export default function StorePage() {
       </div>
 
       <div className={styles.stats}>
-        <Stat value={store.followerCount} label="Seguidores" />
-        <Stat value={store.activeListingCount} label="Publicaciones" />
+        <Stat value={store.followerCount} label="Seguidores" one="Seguidor" />
+        <Stat value={store.activeListingCount} label="Publicaciones" one="Publicación" />
         <Stat
           value={store.rating !== undefined ? Number(store.rating.toFixed(1)) : 0}
           label="Reputación"
@@ -173,15 +174,6 @@ export default function StorePage() {
         </div>
       )}
     </AppScreen>
-  );
-}
-
-function Stat({ value, label }: { value: number; label: string }) {
-  return (
-    <div className={styles.stat}>
-      <span className={styles.statValue}>{value}</span>
-      <span className={styles.statLabel}>{label}</span>
-    </div>
   );
 }
 

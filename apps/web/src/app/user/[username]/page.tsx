@@ -9,6 +9,7 @@ import { ListingCard } from '@/components/ListingCard';
 import { api } from '@/lib/api';
 import { useSession } from '@/lib/session';
 import styles from './page.module.css';
+import { Stat } from '@/components/Stat';
 
 const TABS: ReadonlyArray<{ id: ProfileTab; label: string }> = [
   { id: 'selling', label: 'En venta' },
@@ -198,10 +199,10 @@ export default function ProfilePage() {
       )}
 
       <div className={styles.stats}>
-        <Stat value={profile.salesCount} label="Ventas" />
-        <Stat value={profile.friendCount} label="Amigos" />
-        <Stat value={profile.followerCount} label="Seguidores" />
-        <Stat value={profile.reviewCount} label="Reseñas" />
+        <Stat value={profile.salesCount} label="Ventas" one="Venta" />
+        <Stat value={profile.friendCount} label="Amigos" one="Amigo" />
+        <Stat value={profile.followerCount} label="Seguidores" one="Seguidor" />
+        <Stat value={profile.reviewCount} label="Reseñas" one="Reseña" />
       </div>
 
       <div className={styles.tabs} role="tablist">
@@ -251,15 +252,6 @@ export default function ProfilePage() {
         </div>
       )}
     </AppScreen>
-  );
-}
-
-function Stat({ value, label }: { value: number; label: string }) {
-  return (
-    <div className={styles.stat}>
-      <span className={styles.statValue}>{value}</span>
-      <span className={styles.statLabel}>{label}</span>
-    </div>
   );
 }
 
