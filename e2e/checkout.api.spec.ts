@@ -170,6 +170,44 @@ test.describe('checkout recalculates instead of trusting the client', () => {
     expect(salesAfter).toBe(salesBefore + 1);
   });
 
+  test('the sale notification names the thing and promises the net', async ({ request }) => {
+    const seller = await login(request, AS.seller);
+    const buyer = await login(request, AS.stranger);
+    await clearCarts(request, buyer);
+
+    const listing = await publishListing(request, seller, { amount: PRICE });
+    const cart = await cartFor(request, buyer, listing.id);
+
+    const response = await request.post('/api/checkout', {
+      headers: buyer.headers,
+      data: { cartId: cart.id, deliveryMethod: 'pickup', quotedTotal: cart.total },
+    });
+    expect(response.ok()).toBe(true);
+    const { order } = (await response.json()) as {
+      order: { total: { amount: number }; platformFee: { amount: number } };
+    };
+
+    const inbox = await request.get('/api/notifications', { headers: seller.headers });
+    const body = (await inbox.json()) as { items?: Array<{ title: string; body?: string }> };
+    const latest = (body.items ?? [])[0];
+
+    // Naming it is the point: three sales used to produce three identical
+    // "Vendiste un producto" lines with nothing to tell them apart.
+    expect(latest?.title).toBe(`Vendiste ${listing.title}`);
+
+    /*
+     * And the figure is what the seller actually collects.
+     *
+     * This said the buyer's total, which overstates the payout by the whole
+     * commission — the kind of number a marketplace does not get to be
+     * optimistic about.
+     */
+    const net = order.total.amount - order.platformFee.amount;
+    expect(order.platformFee.amount).toBeGreaterThan(0);
+    expect(latest?.body).toContain(formatArs(net));
+    expect(latest?.body).not.toContain(formatArs(order.total.amount));
+  });
+
   test('somebody else cannot read the order', async ({ request }) => {
     const seller = await login(request, AS.seller);
     const buyer = await login(request, AS.stranger);
@@ -203,3 +241,11 @@ test.describe('checkout recalculates instead of trusting the client', () => {
     expect(response.status()).toBe(401);
   });
 });
+
+/** Centavos as the API formats them, so assertions compare like for like. */
+function formatArs(amountInCentavos: number): string {
+  return new Intl.NumberFormat('es-AR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amountInCentavos / 100);
+}

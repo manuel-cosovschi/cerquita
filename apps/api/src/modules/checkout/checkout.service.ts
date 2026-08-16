@@ -334,6 +334,12 @@ export class CheckoutService {
       buyerId: result.buyerId,
       sellerId: result.sellerId,
       total: { amount: result.total, currency: result.currency as 'ARS' },
+      // The platform's cut comes off here, once, rather than at each subscriber.
+      sellerNet: {
+        amount: result.total - result.platformFee,
+        currency: result.currency as 'ARS',
+      },
+      itemTitles: result.items.map((item) => item.titleSnapshot),
     });
   }
 

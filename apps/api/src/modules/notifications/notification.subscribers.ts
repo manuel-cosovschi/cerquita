@@ -91,18 +91,24 @@ export class NotificationSubscribers implements OnModuleInit {
     this.events.on('OrderPaid', async (event) => {
       const total = formatMoney(money(event.total.amount, event.total.currency));
 
+      // Naming the thing is the whole value of the notification: a seller with
+      // three sales was getting three identical "Vendiste un producto" lines.
+      const what = describeItems(event.itemTitles);
+
       await this.notifications.create({
         userId: event.sellerId,
         type: 'sale',
-        title: 'Vendiste un producto',
-        body: `Cobrás ${total}`,
+        title: what ? `Vendiste ${what}` : 'Vendiste un producto',
+        // The net, not the total: this used to promise the buyer's figure and
+        // quietly overstate what the seller would collect by the commission.
+        body: `Cobrás ${formatMoney(money(event.sellerNet.amount, event.sellerNet.currency))}`,
         deepLink: `cerquita://order/${event.orderId}`,
       });
 
       await this.notifications.create({
         userId: event.buyerId,
         type: 'purchase',
-        title: 'Compra confirmada',
+        title: what ? `Compraste ${what}` : 'Compra confirmada',
         body: total,
         deepLink: `cerquita://order/${event.orderId}`,
       });
@@ -249,4 +255,18 @@ export class NotificationSubscribers implements OnModuleInit {
     });
     return user?.displayName ?? 'Alguien';
   }
+}
+
+/**
+ * The items of an order, as a phrase that fits in a notification title.
+ *
+ * One name when there is one, and a count past that — "Vendiste 3 productos"
+ * beats a title that runs off the end of a lock screen. Returns null when the
+ * order carries no titles, so the caller can fall back rather than print
+ * "Vendiste ".
+ */
+function describeItems(titles: readonly string[]): string | null {
+  if (titles.length === 0) return null;
+  if (titles.length === 1) return titles[0] ?? null;
+  return `${titles.length} productos`;
 }

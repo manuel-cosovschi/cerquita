@@ -64,7 +64,25 @@ export interface OrderPaid extends DomainEventBase {
   readonly orderId: UUID;
   readonly buyerId: UUID;
   readonly sellerId: UUID;
+  /** What the buyer paid. */
   readonly total: MoneyDto;
+  /**
+   * What the seller actually receives: the total minus the platform's cut.
+   *
+   * Carried as its own figure rather than left for each subscriber to subtract,
+   * because the one place it was needed got it wrong and told a seller they
+   * would collect the buyer's total. Money is the worst thing to be optimistic
+   * about.
+   */
+  readonly sellerNet: MoneyDto;
+  /**
+   * What was bought, from the order's own snapshots.
+   *
+   * Carried on the event so a subscriber can name it without going back to the
+   * database — and taken from the snapshot rather than the live listing, so the
+   * notification still says what was sold after the listing is renamed or gone.
+   */
+  readonly itemTitles: readonly string[];
 }
 
 export interface OrderStatusChanged extends DomainEventBase {
