@@ -91,13 +91,20 @@ jobs:
       - name: Seed
         run: pnpm db:seed
 
-      # All three that have a build. Mobile is bundled by Metro at run time and
-      # has no build step, so typecheck above is what covers it.
       - name: Build apps
         run: |
           pnpm --filter @cerquita/api build
           pnpm --filter @cerquita/web build
           pnpm --filter @cerquita/admin build
+
+      # Mobile has no build, but it does have a resolver. Metro walks a pnpm
+      # workspace differently from tsc — that difference is what broke before,
+      # and a typecheck cannot see it. Bundling is the only thing that does.
+      - name: Bundle mobile
+        run: pnpm --filter @cerquita/mobile bundle
+        env:
+          # The runner has no Android SDK and does not need one to bundle.
+          EXPO_NO_TELEMETRY: '1'
 
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
