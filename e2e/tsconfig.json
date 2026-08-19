@@ -9,7 +9,7 @@
     // are serialised and run inside the browser, so they legitimately reach for
     // `document` and `getComputedStyle` even though the file around them runs
     // in Node.
-    "lib": ["ES2022", "DOM"]
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
   "include": ["**/*.ts"]
 }

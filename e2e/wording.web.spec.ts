@@ -133,6 +133,38 @@ test.describe('counts agree with the nouns beside them', () => {
     expect(disagreements(await page.innerText('body'))).toEqual([]);
   });
 
+  test('nothing sticks out of its card in the inbox', async ({ page }) => {
+    /*
+     * Not wording, but found the same way and in the same place.
+     *
+     * The listing title and the message preview are spans, and
+     * `text-overflow: ellipsis` only applies to a block container — so a long
+     * title ran straight out of the card, over the unread badge, and collided
+     * with the preview on the same line.
+     */
+    await signIn(page, AS.seller, '/messages');
+    await expect(page.getByRole('heading', { name: 'Chats' }).first()).toBeVisible();
+
+    const spilling = await page.evaluate(() => {
+      const out: string[] = [];
+      for (const row of document.querySelectorAll('a')) {
+        const bounds = row.getBoundingClientRect();
+        if (bounds.width === 0) continue;
+
+        for (const child of row.querySelectorAll('span')) {
+          const box = child.getBoundingClientRect();
+          // A pixel of slack for sub-pixel layout rounding.
+          if (box.width > 0 && box.right > bounds.right + 1) {
+            out.push(child.textContent?.slice(0, 40) ?? '');
+          }
+        }
+      }
+      return out;
+    });
+
+    expect(spilling).toEqual([]);
+  });
+
   test('the map and its results', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByLabel('Resultados')).toContainText(/publicaci[oó]n/, {

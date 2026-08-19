@@ -75,6 +75,15 @@
 }
 
 .about {
+  /*
+   * Block, or the truncation below does nothing.
+   *
+   * These are spans, and `text-overflow: ellipsis` only applies to a block
+   * container — so the text ran straight out of the card, over the unread
+   * badge, and "Sobre Nintendo Switch OLED" collided with the message preview
+   * on the same line.
+   */
+  display: block;
   margin: 1px 0 0;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
@@ -85,6 +94,7 @@
 }
 
 .preview {
+  display: block;
   margin: 2px 0 0;
   font-size: var(--font-size-base);
   color: var(--color-text-secondary);
