@@ -221,6 +221,23 @@ export class ListingsService {
       throw new NotFoundException({ message: 'Publicación no encontrada', code: 'not_found' });
     }
 
+    /*
+     * A block hides the listing here too, not only in search and on the map.
+     *
+     * Filtering the index while still serving the thing by its id is a half
+     * fix: the id is in a browser history, in a link somebody shared, in an old
+     * conversation. Blocking somebody and finding their listing still opens is
+     * the same as not having blocked them.
+     *
+     * Answered as "not found" rather than "forbidden", and with the same
+     * message as a listing that never existed: a distinct error would confirm
+     * to the blocked person both that the listing is there and that they have
+     * been blocked, which is the one thing this is meant not to say.
+     */
+    if (viewerId && (await this.isBlockedBetween(viewerId, row.sellerId))) {
+      throw new NotFoundException({ message: 'Publicación no encontrada', code: 'not_found' });
+    }
+
     const context = await this.buildContext(row, viewerId);
 
     const [priceHistory, auction] = await Promise.all([
@@ -590,15 +607,7 @@ export class ListingsService {
             select: { userId: true },
           })
         : Promise.resolve(null),
-      this.prisma.block.findFirst({
-        where: {
-          OR: [
-            { blockerId: viewerId, blockedId: sellerId },
-            { blockerId: sellerId, blockedId: viewerId },
-          ],
-        },
-        select: { blockerId: true },
-      }),
+      this.isBlockedBetween(viewerId, sellerId),
     ]);
 
     return resolveAudienceTier({
@@ -607,8 +616,30 @@ export class ListingsService {
       isFollowing: follow !== null || storeFollow !== null,
       isFollowedBy: false,
       friendship: friendship?.status ?? null,
-      isBlocked: block !== null,
+      isBlocked: block,
     });
+  }
+
+  /**
+   * A block in either direction.
+   *
+   * One definition, because the two callers have to agree: if the detail
+   * endpoint decided a block was one-way while pricing decided it was mutual,
+   * the listing would be reachable at a price that says the relationship is
+   * over.
+   */
+  private async isBlockedBetween(viewerId: string, sellerId: string): Promise<boolean> {
+    const block = await this.prisma.block.findFirst({
+      where: {
+        OR: [
+          { blockerId: viewerId, blockedId: sellerId },
+          { blockerId: sellerId, blockedId: viewerId },
+        ],
+      },
+      select: { blockerId: true },
+    });
+
+    return block !== null;
   }
 
   private async loadPromotions(listingId: string) {

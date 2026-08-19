@@ -101,7 +101,13 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
 ### Fase 4 — Social ✅
 
 - ✅ Follows (unilateral) y amistades (bilateral, con orden canónico en BD).
-- ✅ Bloqueos, que ocultan contenido en ambas direcciones y cortan el chat.
+- ✅ Bloqueos, que ocultan contenido en ambas direcciones y cortan el chat —
+  verificado end-to-end. Ocultaban en búsqueda, mapa y feed, y cortaban el chat,
+  pero el detalle seguía sirviendo la publicación por su id: filtrar el índice y
+  dejar el link directo abierto es medio arreglo, porque el id está en el
+  historial de cualquiera. Ahora responde 404, el mismo que una publicación
+  inexistente: un 403 le confirmaría a la persona bloqueada que la publicación
+  existe y que la bloquearon.
 - ✅ **Precios sociales resueltos en el servidor** — verificado end-to-end.
 - ✅ Feed con fan-out a seguidores y amigos al publicar.
 - ✅ Notificaciones: in-app siempre, push best-effort, preferencias por tipo.
@@ -188,11 +194,12 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
   una versión y además hay `packageManager` en el `package.json`. Se sacó la
   versión del workflow; la del `package.json` es la que vale para todos.
 
-- ✅ Tests e2e (Playwright, 69) contra el stack real, sin mocks: precios
+- ✅ Tests e2e (Playwright, 74) contra el stack real, sin mocks: precios
   sociales resueltos en el servidor, ubicación exacta que nunca sale, checkout
   que rechaza un total manipulado, dos pujas simultáneas con un solo ganador,
-  un baneo que corta la sesión en el request siguiente, y demanda local que
-  reporta patrones sin nombrar personas. Tres proyectos: `api` sin navegador,
+  un baneo que corta la sesión en el request siguiente, un bloqueo que tapa en
+  las dos direcciones, y demanda local que reporta patrones sin nombrar
+  personas. Tres proyectos: `api` sin navegador,
   `web` en un Pixel 7 y `admin` en escritorio.
 - ✅ Pasada de accesibilidad: cero violaciones WCAG 2.1 AA (axe) en las trece
   pantallas de web y las seis de la consola, con el chequeo incorporado a la
