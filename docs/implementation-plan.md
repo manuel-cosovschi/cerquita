@@ -1,6 +1,6 @@
 # Plan de implementación
 
-Última actualización: 2026-08-15.
+Última actualización: 2026-08-19.
 
 Leyenda: ✅ hecho y verificado · 🟡 parcial · ⬜ pendiente
 
@@ -69,7 +69,7 @@ conservar, transformar ni borrar. Todo el contenido es nuevo.
 - Auth: registro, login, refresh con rotación, sesiones, argon2id.
 - Seed con datos ricos, incluida demanda real para que `/demand` tenga algo que
   mostrar sin que haya que inventar publicaciones a mano.
-- Tests unitarios: 183 al día de hoy, todos en verde.
+- Tests unitarios: 186 al día de hoy, todos en verde.
 
 ### Fase 2 — Reproducir el diseño ✅
 
@@ -118,6 +118,10 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
 - ✅ Reservas con el mismo guard de stock que el checkout, barridas por el scheduler.
 - ✅ Promociones: motor, ABM en `/store/manage` y baja lógica (una promoción
   terminada deja de aplicarse pero no se borra: las órdenes viejas la citan).
+- ✅ Descuento de tienda a sus seguidores, configurable desde `/store/manage`.
+  Estaba a medio cablear: la columna, el motor y el comentario del dominio lo
+  daban por hecho, pero seguir una tienda no contaba al resolver qué es un
+  visitante, así que la tarifa se podía fijar y nadie podía ganarla.
 
 ### Fase 6 — Subastas ✅
 
@@ -181,7 +185,7 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
   una versión y además hay `packageManager` en el `package.json`. Se sacó la
   versión del workflow; la del `package.json` es la que vale para todos.
 
-- ✅ Tests e2e (Playwright, 46) contra el stack real, sin mocks: precios
+- ✅ Tests e2e (Playwright, 53) contra el stack real, sin mocks: precios
   sociales resueltos en el servidor, ubicación exacta que nunca sale, checkout
   que rechaza un total manipulado, dos pujas simultáneas con un solo ganador,
   y demanda local que reporta patrones sin nombrar personas.
@@ -193,27 +197,30 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
 
 ## Decisiones registradas
 
-| Decisión                                                | Motivo                                                                                                                                                                                                                                 |
-| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Monolito modular, no microservicios                     | §4. Los módulos se comunican por event bus, así que separarlos después no es un rewrite.                                                                                                                                               |
-| Prisma + SQL crudo para geo                             | §35. Esconder PostGIS detrás del ORM costaba más de lo que ahorraba: el clustering por `ST_SnapToGrid` y el orden por `ST_Distance` no se expresan bien vía ORM.                                                                       |
-| Dinero en enteros de unidad menor                       | §97. Sin punto flotante en ningún monto.                                                                                                                                                                                               |
-| `READ COMMITTED` + `FOR UPDATE` para pujas              | Con `SERIALIZABLE` el snapshot queda fijo y la relectura tras el lock devuelve estado viejo. Se descubrió probando dos pujas simultáneas reales.                                                                                       |
-| Geografía nullable en Prisma                            | Prisma no genera `create` si una columna `Unsupported` es obligatoria. La invariante la garantiza un CHECK en la base.                                                                                                                 |
-| Ubicación pública determinística                        | Si el punto difuso cambiara en cada request, promediando se recupera el real.                                                                                                                                                          |
-| Paquetes compilados a CommonJS                          | Es el formato que cargan sin configuración extra Nest, Next y Metro.                                                                                                                                                                   |
-| Tokens provisionales aislados hasta que llegó el export | §1 vs §134: se avanzó sin inventar una identidad visual que se presentara como la diseñada. Cuando llegó el board, aplicarlo fue reemplazar `primitives.ts`, que era exactamente para lo que servía la separación.                     |
-| `textOnBrand` y `textOnAccent` separados                | Colapsarlos en un solo color dejaba tinta oscura sobre el botón casi negro: invisible. El export pone tinta oscura sobre el naranja y clara sobre el negro, y son dos decisiones distintas.                                            |
-| Demanda local sólo agregada, con umbral de 2            | Una categoría con un solo pedido identifica a quien lo pidió. El pedido ya es público en el mapa; una lista rankeada de "cerca de esta esquina quieren X" es otro objeto, y uno que conviene no construir.                             |
-| Rate limit de credenciales por `email + IP`             | Con la clave por IP sola, un NAT compartido (un edificio, una oficina) se bloquea entero porque una sola persona erró la contraseña. Se descubrió agotando el presupuesto del navegador desde curl.                                    |
-| Sin `packages/ui` ni `packages/config`                  | Ver arriba: no había nada real que compartir en ninguno de los dos.                                                                                                                                                                    |
-| E2E contra el stack real, sin mocks                     | Lo que estos tests protegen sólo se rompe con las piezas conectadas. Un mock del servidor de precios convierte "el precio lo resuelve el servidor" en una tautología.                                                                  |
-| E2E con un solo worker                                  | Los límites de rate son reales en estos tests, a propósito. Workers en paralelo contra una sola IP producen 429 que parecen bugs del producto.                                                                                         |
-| Cada test e2e publica lo que compra                     | Comprar algo del seed funciona exactamente una vez; a la segunda corrida está vendido. Una suite que sólo pasa con la base recién sembrada es una suite que nadie corre dos veces.                                                     |
-| El mapa avisa su tamaño apenas lo sabe                  | Medía su tamaño para adentro y sólo lo informaba para arriba al arrastrarlo, así que la home —que espera saber su viewport antes de pedir nada— nunca pedía nada. Renderizaba, hidrataba, pasaba accesibilidad, y hacía cero requests. |
-| La hoja de resultados en mobile tiene tope              | Con `auto` crecía con su contenido y aplastaba el mapa a cero: desaparecía justo cuando por fin tenía marcadores que dibujar.                                                                                                          |
-| Contraste corregido en el token, no en las pantallas    | El texto terciario fallaba en doce pantallas por una sola razón: todas beben del mismo token. Arreglar cada CSS habría dejado el defecto vivo en la próxima pantalla que se escribiera.                                                |
-| El dock inactivo al 0.6 y no al 0.4                     | La intención del diseño —los ítems inactivos se retiran en vez de cambiar de color— es correcta; el valor no era legible. Se conservó la intención y se movió el número.                                                               |
+| Decisión                                                | Motivo                                                                                                                                                                                                                                                                   |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Monolito modular, no microservicios                     | §4. Los módulos se comunican por event bus, así que separarlos después no es un rewrite.                                                                                                                                                                                 |
+| Prisma + SQL crudo para geo                             | §35. Esconder PostGIS detrás del ORM costaba más de lo que ahorraba: el clustering por `ST_SnapToGrid` y el orden por `ST_Distance` no se expresan bien vía ORM.                                                                                                         |
+| Dinero en enteros de unidad menor                       | §97. Sin punto flotante en ningún monto.                                                                                                                                                                                                                                 |
+| `READ COMMITTED` + `FOR UPDATE` para pujas              | Con `SERIALIZABLE` el snapshot queda fijo y la relectura tras el lock devuelve estado viejo. Se descubrió probando dos pujas simultáneas reales.                                                                                                                         |
+| Geografía nullable en Prisma                            | Prisma no genera `create` si una columna `Unsupported` es obligatoria. La invariante la garantiza un CHECK en la base.                                                                                                                                                   |
+| Ubicación pública determinística                        | Si el punto difuso cambiara en cada request, promediando se recupera el real.                                                                                                                                                                                            |
+| Paquetes compilados a CommonJS                          | Es el formato que cargan sin configuración extra Nest, Next y Metro.                                                                                                                                                                                                     |
+| Tokens provisionales aislados hasta que llegó el export | §1 vs §134: se avanzó sin inventar una identidad visual que se presentara como la diseñada. Cuando llegó el board, aplicarlo fue reemplazar `primitives.ts`, que era exactamente para lo que servía la separación.                                                       |
+| `textOnBrand` y `textOnAccent` separados                | Colapsarlos en un solo color dejaba tinta oscura sobre el botón casi negro: invisible. El export pone tinta oscura sobre el naranja y clara sobre el negro, y son dos decisiones distintas.                                                                              |
+| Demanda local sólo agregada, con umbral de 2            | Una categoría con un solo pedido identifica a quien lo pidió. El pedido ya es público en el mapa; una lista rankeada de "cerca de esta esquina quieren X" es otro objeto, y uno que conviene no construir.                                                               |
+| Rate limit de credenciales por `email + IP`             | Con la clave por IP sola, un NAT compartido (un edificio, una oficina) se bloquea entero porque una sola persona erró la contraseña. Se descubrió agotando el presupuesto del navegador desde curl.                                                                      |
+| Sin `packages/ui` ni `packages/config`                  | Ver arriba: no había nada real que compartir en ninguno de los dos.                                                                                                                                                                                                      |
+| E2E contra el stack real, sin mocks                     | Lo que estos tests protegen sólo se rompe con las piezas conectadas. Un mock del servidor de precios convierte "el precio lo resuelve el servidor" en una tautología.                                                                                                    |
+| E2E con un solo worker                                  | Los límites de rate son reales en estos tests, a propósito. Workers en paralelo contra una sola IP producen 429 que parecen bugs del producto.                                                                                                                           |
+| Cada test e2e publica lo que compra                     | Comprar algo del seed funciona exactamente una vez; a la segunda corrida está vendido. Una suite que sólo pasa con la base recién sembrada es una suite que nadie corre dos veces.                                                                                       |
+| Una sola función arma la política de descuento          | La armaban a mano el carrito, el checkout, las ofertas y el serializer. Tienen que coincidir exactamente o el precio que se muestra deja de ser el que se cobra, y ya habían divergido en el caso de las tiendas.                                                        |
+| Verificar cada test revirtiendo el arreglo              | Dos veces escribí un test que pasaba sin poder fallar: uno buscaba un espacio donde `innerText` mete un salto de línea, otro comparaba carrito contra detalle, que con el bug coincidían en el precio equivocado. Un test verde no dice nada hasta que se lo vio fallar. |
+| Los tests e2e limpian antes, no sólo después            | Una corrida que muere a mitad dejaba un follow y un carrito con ítems, y la corrida siguiente fallaba con un error sobre el producto en vez de sobre la basura.                                                                                                          |
+| El mapa avisa su tamaño apenas lo sabe                  | Medía su tamaño para adentro y sólo lo informaba para arriba al arrastrarlo, así que la home —que espera saber su viewport antes de pedir nada— nunca pedía nada. Renderizaba, hidrataba, pasaba accesibilidad, y hacía cero requests.                                   |
+| La hoja de resultados en mobile tiene tope              | Con `auto` crecía con su contenido y aplastaba el mapa a cero: desaparecía justo cuando por fin tenía marcadores que dibujar.                                                                                                                                            |
+| Contraste corregido en el token, no en las pantallas    | El texto terciario fallaba en doce pantallas por una sola razón: todas beben del mismo token. Arreglar cada CSS habría dejado el defecto vivo en la próxima pantalla que se escribiera.                                                                                  |
+| El dock inactivo al 0.6 y no al 0.4                     | La intención del diseño —los ítems inactivos se retiran en vez de cambiar de color— es correcta; el valor no era legible. Se conservó la intención y se movió el número.                                                                                                 |
 
 ## Próximos pasos
 
