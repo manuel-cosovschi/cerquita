@@ -14,13 +14,13 @@ cerquita/
     api/          NestJS · monolito modular · Prisma + PostGIS     ✅
     web/          Next.js · mapa + resultados + detalle            ✅
     admin/        Next.js · panel de administración                ✅
-    mobile/       Expo · React Native                              ✅
+    mobile/       Expo · lista, mapa, detalle y chat               ✅
   packages/
     design-tokens/  primitives → semantic → CSS vars               ✅
     types/          enums, entidades de red, eventos de dominio    ✅
     validation/     esquemas Zod compartidos                       ✅
     domain/         reglas puras y testeables                      ✅
-    utils/          Money, geo, clustering, tiempo, slugs          ✅
+    utils/          Money, geo, proyección, clustering, tiempo     ✅
     api-client/     cliente tipado compartido                      ✅
   docs/                                                            ✅
   design-reference/  concepto original, sin modificar (§112)       ✅

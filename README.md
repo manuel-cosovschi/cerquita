@@ -84,13 +84,13 @@ apps/
   api/      NestJS · monolito modular · Prisma + PostGIS
   web/      Next.js · mapa + resultados sincronizados
   admin/    Next.js · consola de moderación
-  mobile/   Expo · iOS, Android y web
+  mobile/   Expo · lista cercana, mapa, detalle y chat
 packages/
   design-tokens/  primitives → semantic → CSS vars / RN theme
   domain/         reglas de negocio puras y testeables
   types/          enums, entidades de red, eventos
   validation/     esquemas Zod compartidos
-  utils/          Money, geo, clustering, tiempo
+  utils/          Money, geo, proyección, clustering, slugs, tiempo
   api-client/     cliente tipado compartido por las tres apps
 ```
 
