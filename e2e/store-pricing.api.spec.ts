@@ -98,6 +98,33 @@ test.describe("a shop's followers", () => {
     }
   });
 
+  test("a shop does not borrow its owner's mutual friends", async ({ request }) => {
+    /*
+     * "Tecno Almagro · Amigo de Manuel" read as though the shop were somebody's
+     * friend. The mutual friend is the person who owns it, and the rest of the
+     * system already holds that shops have followers and no friends — pricing
+     * enforces exactly that — so the badge was the one place contradicting it.
+     */
+    const viewer = await login(request, AS.follower);
+    const headers = viewer.headers;
+
+    const shopListingView = await shopListing(request);
+    const shopDetail = await request.get(`${API}/api/listings/${shopListingView.id}`, { headers });
+    expect(((await shopDetail.json()) as { socialProof: string | null }).socialProof).toBeNull();
+
+    // And a person's listing still carries it, which is the point of the badge.
+    const search = await request.post(`${API}/api/search`, {
+      data: { q: 'PlayStation 5 con dos joysticks', kind: 'sale', limit: 5 },
+    });
+    const items = ((await search.json()) as { items: Array<{ id: string; title: string }> }).items;
+    const personal = items.find((item) => item.title === 'PlayStation 5 con dos joysticks');
+    if (!personal) throw new Error('Seed listing missing. Run `pnpm db:seed`.');
+
+    const detail = await request.get(`${API}/api/listings/${personal.id}`, { headers });
+    const { socialProof } = (await detail.json()) as { socialProof: string | null };
+    expect(socialProof).toMatch(/Amigo de/);
+  });
+
   test('the cart charges the same rate the listing showed', async ({ request }) => {
     // The basket and the bill are built by different code paths; this is the
     // assertion that keeps them agreeing about a shop's discount.

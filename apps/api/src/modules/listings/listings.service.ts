@@ -232,9 +232,19 @@ export class ListingsService {
       this.prisma.auction.findUnique({ where: { listingId: id } }),
     ]);
 
-    // "Amigo de Nacho" — the reason a stranger should trust this seller. Comes
-    // from the graph, resolved per viewer (direction 1c).
-    const proof = await this.socialProof.forSeller(row.sellerId, viewerId);
+    /*
+     * "Amigo de Nacho" — the reason a stranger should trust this seller. Comes
+     * from the graph, resolved per viewer (direction 1c).
+     *
+     * Not for a shop's listing. The label rendered under the shop's name, so
+     * "Tecno Almagro · Amigo de Manuel" read as though the shop were somebody's
+     * friend, when the mutual friend is the person who owns it. The rest of the
+     * system already holds that shops have followers and no friends — pricing
+     * enforces it — and the badge was the one place contradicting it.
+     */
+    const proof = row.storeId
+      ? { label: null }
+      : await this.socialProof.forSeller(row.sellerId, viewerId);
 
     return this.serializer.toDetail(
       row,
