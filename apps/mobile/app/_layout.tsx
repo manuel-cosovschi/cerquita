@@ -28,6 +28,7 @@ export default function RootLayout() {
           }}
         >
           <Stack.Screen name="index" options={{ title: 'Cerca tuyo' }} />
+          <Stack.Screen name="map" options={{ title: 'Mapa' }} />
           <Stack.Screen name="listing/[id]" options={{ title: 'Publicación' }} />
           <Stack.Screen name="chat/[id]" options={{ title: 'Chat' }} />
           <Stack.Screen name="account" options={{ title: 'Cuenta' }} />

@@ -22,8 +22,8 @@ import { theme } from '@/lib/theme';
  *
  * The web app's home is the map; on a phone the first screen is a list, because
  * a hyperlocal search on a small screen is mostly "what is around me right
- * now", and a list answers that with less panning. The map lives one tap away
- * on the web and will move here as a tab.
+ * now", and a list answers that with less panning. The map is one tap away, on
+ * the same data and the same projection.
  *
  * Location is asked for once and declining is a real answer: without it the
  * list falls back to the newest listings rather than an empty screen.
@@ -99,6 +99,14 @@ export default function NearbyScreen() {
           accessibilityLabel="Buscar"
         />
         <Pressable
+          style={styles.mapButton}
+          onPress={() => router.push('/map')}
+          accessibilityRole="button"
+          accessibilityLabel="Ver en el mapa"
+        >
+          <Text style={styles.mapButtonLabel}>Mapa</Text>
+        </Pressable>
+        <Pressable
           style={styles.accountButton}
           onPress={() => router.push('/account')}
           accessibilityRole="button"
@@ -162,6 +170,19 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.lg,
     backgroundColor: theme.color.surface,
     fontSize: theme.font.size.md,
+    color: theme.color.text,
+  },
+  mapButton: {
+    height: 46,
+    paddingHorizontal: theme.space.md,
+    borderRadius: theme.radius.full,
+    backgroundColor: theme.color.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mapButtonLabel: {
+    fontSize: theme.font.size.sm,
+    fontWeight: theme.font.weight.bold,
     color: theme.color.text,
   },
   accountButton: {

@@ -4,9 +4,14 @@
  * The map surface positions markers by projecting lat/lng into pixel space at a
  * given zoom, so a marker sits where a tile layer would put it and swapping in
  * real tiles later is a rendering change, not a maths change.
+ *
+ * Shared rather than web-only because the phone needs exactly the same numbers.
+ * Two implementations of Mercator would agree until they did not, and the way
+ * they would disagree is a marker in the wrong place on one platform — visible
+ * only to somebody holding both.
  */
 
-import type { BoundingBox, Coordinates } from '@cerquita/utils';
+import type { BoundingBox, Coordinates } from './geo.js';
 
 export const TILE_SIZE = 256;
 
@@ -96,6 +101,20 @@ export function zoomForBounds(bounds: BoundingBox, width: number, height: number
   return Math.max(1, Math.min(20, Math.floor(Math.min(lngZoom, latZoom))));
 }
 
+/**
+ * The arithmetic centre of a box.
+ *
+ * Arithmetic, not the Mercator centre — and for a big box those are not the
+ * same thing, because latitude is not linear in pixel space. Feeding it the
+ * bounds of a whole-world viewport and expecting the viewport's centre back is
+ * off by more than a thousand kilometres; at the sizes it is actually used for
+ * —the bounds of a tapped cluster— the error is under ten metres at zoom 12 and
+ * half a metre at zoom 14, well inside the fuzzing every public coordinate
+ * already carries.
+ *
+ * Written down because the failure is invisible: the map lands *near* the right
+ * place, which reads as a rounding artefact rather than as the wrong function.
+ */
 export function boundsCenter(bounds: BoundingBox): Coordinates {
   return {
     lat: (bounds.minLat + bounds.maxLat) / 2,

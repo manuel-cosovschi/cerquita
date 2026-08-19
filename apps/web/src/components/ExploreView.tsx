@@ -2,8 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ListingSummary, MapLayer, MapMarker } from '@cerquita/types';
-import { serializeBoundingBox, type BoundingBox, type Coordinates } from '@cerquita/utils';
-import { viewportBounds } from '@/lib/projection';
+import {
+  serializeBoundingBox,
+  viewportBounds,
+  type BoundingBox,
+  type Coordinates,
+} from '@cerquita/utils';
 import { api } from '@/lib/api';
 import { MapSurface } from './MapSurface';
 import { LayerChips } from './LayerChips';

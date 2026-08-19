@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Coordinates } from '@cerquita/utils';
-import { fromScreen, project } from '@/lib/projection';
+import { fromScreen, project, type Coordinates } from '@cerquita/utils';
 import styles from './LocationPicker.module.css';
 
 /** Buenos Aires. Only used until the browser or the user says otherwise. */

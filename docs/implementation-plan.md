@@ -69,7 +69,7 @@ conservar, transformar ni borrar. Todo el contenido es nuevo.
 - Auth: registro, login, refresh con rotación, sesiones, argon2id.
 - Seed con datos ricos, incluida demanda real para que `/demand` tenga algo que
   mostrar sin que haya que inventar publicaciones a mano.
-- Tests unitarios: 209 al día de hoy, todos en verde.
+- Tests unitarios: 224 al día de hoy, todos en verde.
 
 ### Fase 2 — Reproducir el diseño ✅
 
@@ -267,14 +267,15 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
 | El mapa avisa su tamaño apenas lo sabe                  | Medía su tamaño para adentro y sólo lo informaba para arriba al arrastrarlo, así que la home —que espera saber su viewport antes de pedir nada— nunca pedía nada. Renderizaba, hidrataba, pasaba accesibilidad, y hacía cero requests.                                                                                                                                                                                                                                                                                                                              |
 | La hoja de resultados en mobile tiene tope              | Con `auto` crecía con su contenido y aplastaba el mapa a cero: desaparecía justo cuando por fin tenía marcadores que dibujar.                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Contraste corregido en el token, no en las pantallas    | El texto terciario fallaba en doce pantallas por una sola razón: todas beben del mismo token. Arreglar cada CSS habría dejado el defecto vivo en la próxima pantalla que se escribiera.                                                                                                                                                                                                                                                                                                                                                                             |
+| La proyección la comparten web y mobile                 | Vivía en `apps/web`, y la tabla de fases decía que mobile tenía mapa cuando en realidad tenía una lista y un comentario prometiendo el mapa "como tab" —un TODO en prosa, que §125 prohíbe. Se movió Mercator a `packages/utils` y se construyó la pantalla: dos implementaciones habrían coincidido hasta que no, y la forma de no coincidir es un marcador a unas cuadras de distancia en una sola plataforma.                                                                                                                                                    |
 | Auditar el plan como se audita el código                | Se revisaron una por una las líneas marcadas `✅`. Diez estaban sin vigilancia y se cerraron con tests: una era directamente falsa (el chequeo de accesibilidad no incluía la consola), una escondía un bug (el bloqueo tapaba en búsqueda y mapa pero servía la publicación por su id), y ocho eran ciertas pero no las cubría nada. Otras —reseñas atadas a una orden liquidada, el barrido de reservas, el WebSocket de sólo lectura— ya estaban cubiertas y no se tocaron. Un `✅` sin nada que lo vigile describe el día que se escribió, no el estado de hoy. |
 | El dock inactivo al 0.6 y no al 0.4                     | La intención del diseño —los ítems inactivos se retiran en vez de cambiar de color— es correcta; el valor no era legible. Se conservó la intención y se movió el número.                                                                                                                                                                                                                                                                                                                                                                                            |
 
 ## Próximos pasos
 
 Lo funcional está cerrado: el bucle de §131 (buscar → ver → hablar → comprar →
-reseñar) corre entero en web, y mobile cubre mapa, detalle y chat contra la
-misma API. CI, e2e y accesibilidad ya corren.
+reseñar) corre entero en web, y mobile cubre lista cercana, mapa, detalle y chat
+contra la misma API. CI, e2e y accesibilidad ya corren.
 
 Nada bloqueante. Lo que queda es trabajo de operación, no de construcción:
 observabilidad en producción, presupuesto de performance, y el proveedor de

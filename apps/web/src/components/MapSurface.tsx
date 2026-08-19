@@ -2,15 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { MapMarker } from '@cerquita/types';
-import type { Coordinates } from '@cerquita/utils';
 import {
   boundsCenter,
   fromScreen,
   metersPerPixel,
   toScreen,
   zoomForBounds,
+  type Coordinates,
   type Viewport,
-} from '@/lib/projection';
+} from '@cerquita/utils';
 import { Marker } from './Marker';
 import styles from './MapSurface.module.css';
 
