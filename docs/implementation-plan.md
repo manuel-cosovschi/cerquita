@@ -110,7 +110,11 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
   existe y que la bloquearon.
 - ✅ **Precios sociales resueltos en el servidor** — verificado end-to-end.
 - ✅ Feed con fan-out a seguidores y amigos al publicar.
-- ✅ Notificaciones: in-app siempre, push best-effort, preferencias por tipo.
+- ✅ Notificaciones: in-app siempre, push best-effort, preferencias por tipo —
+  verificado end-to-end, apagando y volviendo a prender. Un interruptor de
+  preferencias falla en silencio en las dos direcciones: si deja de suprimir
+  nadie reporta un bug, se molesta; y si empieza a suprimir todo tampoco, porque
+  un aviso que no llega es igual a que no haya pasado nada.
 - ✅ Reseñas atadas a una orden liquidada, con reputación transaccional.
 - ✅ UI de feed y notificaciones en web.
 
@@ -194,7 +198,7 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
   una versión y además hay `packageManager` en el `package.json`. Se sacó la
   versión del workflow; la del `package.json` es la que vale para todos.
 
-- ✅ Tests e2e (Playwright, 74) contra el stack real, sin mocks: precios
+- ✅ Tests e2e (Playwright, 76) contra el stack real, sin mocks: precios
   sociales resueltos en el servidor, ubicación exacta que nunca sale, checkout
   que rechaza un total manipulado, dos pujas simultáneas con un solo ganador,
   un baneo que corta la sesión en el request siguiente, un bloqueo que tapa en
