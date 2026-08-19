@@ -38,7 +38,11 @@ test.afterAll(async ({ playwright }) => {
   await request.dispose();
 });
 
-async function createAuction(request: APIRequestContext, seller: Session) {
+async function createAuction(
+  request: APIRequestContext,
+  seller: Session,
+  options: { endsInMs?: number } = {},
+) {
   const categories = await request.get('/api/categories');
   const all = (await categories.json()) as Array<{ id: string; parentId: string | null }>;
   const categoryId = all.find((entry) => entry.parentId)?.id;
@@ -55,7 +59,7 @@ async function createAuction(request: APIRequestContext, seller: Session) {
       deliveryMethods: ['pickup'],
       images: [{ url: 'https://example.test/e2e.jpg', width: 800, height: 600, position: 0 }],
       location: { lat: -34.6037, lng: -58.3816 },
-      endsAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+      endsAt: new Date(Date.now() + (options.endsInMs ?? 60 * 60 * 1000)).toISOString(),
       startingPrice: { amount: START, currency: 'ARS' },
       minimumIncrement: { amount: INCREMENT, currency: 'ARS' },
     },
@@ -238,5 +242,85 @@ test.describe('auctions', () => {
     });
 
     expect(response.status()).toBe(401);
+  });
+
+  test('an auction closes on its own, with nobody watching', async ({ request }) => {
+    /*
+     * §28: an auction is never resolved on the frontend. The failure mode that
+     * rule exists to prevent is subtle — an auction that only closes when
+     * somebody opens its page looks perfectly correct to whoever opened it, and
+     * stays open forever for a listing nobody visits.
+     *
+     * So this deliberately does not watch. The auction is given a short life,
+     * then left completely alone past its end, and read exactly once. If it is
+     * closed by then, nothing but the scheduler closed it.
+     *
+     * No bid, on purpose: a bid this late lands inside the anti-snipe window and
+     * pushes the end two minutes out, which is the next test.
+     */
+    test.setTimeout(120_000);
+
+    const seller = await login(request, AS.seller);
+    const auction = await createAuction(request, seller, { endsInMs: 12_000 });
+
+    // Past the end, plus a couple of scheduler ticks of margin.
+    await new Promise((resolve) => setTimeout(resolve, 22_000));
+
+    const detail = await request.get(`/api/listings/${auction.id}`);
+    const view = (await detail.json()) as { auction?: { status: string } };
+
+    expect(view.auction?.status).toBe('ended');
+  });
+
+  test('a bid in the closing seconds pushes the end out instead of ending it', async ({
+    request,
+  }) => {
+    /*
+     * Anti-sniping, from the outside. The rule is unit-tested as a pure
+     * function; what this adds is that the API actually applies it — the
+     * extension is written to the row and comes back in the response, so a bid
+     * placed at the last second cannot win by arriving too late to be answered.
+     *
+     * Found by accident: the first version of the test above bid on its
+     * twelve-second auction and then failed because the auction was still live.
+     * That was not a bug, it was this feature.
+     */
+    test.setTimeout(120_000);
+
+    const seller = await login(request, AS.seller);
+    const bidder = await login(request, AS.friend);
+
+    // Short enough that any bid is inside the two-minute closing window.
+    const auction = await createAuction(request, seller, { endsInMs: 12_000 });
+
+    const before = await request.get(`/api/listings/${auction.id}`);
+    const endsAtBefore = ((await before.json()) as { auction: { endsAt: string } }).auction.endsAt;
+
+    const bid = await request.post(`/api/auctions/${auction.auction.id}/bids`, {
+      headers: bidder.headers,
+      data: {
+        amount: { amount: START, currency: 'ARS' },
+        expectedMinimum: { amount: START, currency: 'ARS' },
+      },
+    });
+    expect(bid.ok(), 'the bid should land while the auction is live').toBe(true);
+
+    const after = await request.get(`/api/listings/${auction.id}`, { headers: bidder.headers });
+    const view = (await after.json()) as {
+      auction: { status: string; endsAt: string; viewerIsHighestBidder?: boolean };
+    };
+
+    expect(new Date(view.auction.endsAt).getTime()).toBeGreaterThan(
+      new Date(endsAtBefore).getTime(),
+    );
+    expect(view.auction.status).toBe('live');
+    expect(view.auction.viewerIsHighestBidder).toBe(true);
+
+    // Well past the original end, and still open because of the extension —
+    // which is the whole point: the late bidder did not steal it.
+    await new Promise((resolve) => setTimeout(resolve, 22_000));
+
+    const later = await request.get(`/api/listings/${auction.id}`);
+    expect(((await later.json()) as { auction: { status: string } }).auction.status).toBe('live');
   });
 });

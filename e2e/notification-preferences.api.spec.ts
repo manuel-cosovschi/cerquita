@@ -34,11 +34,27 @@ async function setPreference(
   expect(response.ok(), 'the preference should be saved').toBe(true);
 }
 
-/** How many `new_follower` notices the recipient is holding right now. */
-async function count(request: APIRequestContext, session: Session): Promise<number> {
+/**
+ * The ids on the recipient's first page right now.
+ *
+ * Identity, not a tally.
+ *
+ * Counting how many `new_follower` notices are on the page looked simpler and
+ * passed on its own — then failed after a full API run, because by then the
+ * seller's inbox was full of sales and the page was saturated: a new notice
+ * arrived at the top and an older one of the same type dropped off the bottom,
+ * leaving the count unchanged. Comparing sets of ids has no such blind spot;
+ * new notices are newest-first, so anything that arrived is on the page.
+ */
+async function inbox(request: APIRequestContext, session: Session): Promise<Map<string, string>> {
   const response = await request.get(`${API}/api/notifications`, { headers: session.headers });
-  const { items } = (await response.json()) as { items: Array<{ type: string }> };
-  return items.filter((item) => item.type === TYPE).length;
+  const { items } = (await response.json()) as { items: Array<{ id: string; type: string }> };
+  return new Map(items.map((item) => [item.id, item.type]));
+}
+
+/** The notices that appeared between two readings of the inbox. */
+function arrived(before: Map<string, string>, after: Map<string, string>): string[] {
+  return [...after].filter(([id]) => !before.has(id)).map(([, type]) => type);
 }
 
 /** Unfollow, then follow: makes the event happen whatever the starting state. */
@@ -66,10 +82,13 @@ test.describe('notification preferences', () => {
     try {
       // Off.
       await setPreference(request, recipient, false);
-      const quiet = await count(request, recipient);
+      const beforeQuiet = await inbox(request, recipient);
 
       await refollow(request, follower, recipientId);
-      expect(await count(request, recipient), 'nothing should arrive while off').toBe(quiet);
+      expect(
+        arrived(beforeQuiet, await inbox(request, recipient)),
+        'nothing should arrive while off',
+      ).toEqual([]);
 
       /*
        * On, and then the same event again.
@@ -79,8 +98,13 @@ test.describe('notification preferences', () => {
        * only the arrival would pass against a preference that is never read.
        */
       await setPreference(request, recipient, true);
+      const beforeLoud = await inbox(request, recipient);
+
       await refollow(request, follower, recipientId);
-      expect(await count(request, recipient), 'exactly one should arrive while on').toBe(quiet + 1);
+      expect(
+        arrived(beforeLoud, await inbox(request, recipient)),
+        'exactly one should arrive while on',
+      ).toEqual([TYPE]);
     } finally {
       await request.delete(`${API}/api/users/${recipientId}/follow`, {
         headers: follower.headers,
@@ -108,10 +132,13 @@ test.describe('notification preferences', () => {
     try {
       await setPreference(request, quiet, false);
 
-      const before = await count(request, loud);
+      const before = await inbox(request, loud);
       await refollow(request, follower, loudId);
 
-      expect(await count(request, loud), "somebody else's switch is not mine").toBe(before + 1);
+      expect(
+        arrived(before, await inbox(request, loud)),
+        "somebody else's switch is not mine",
+      ).toEqual([TYPE]);
     } finally {
       await request.delete(`${API}/api/users/${loudId}/follow`, { headers: follower.headers });
       await request.delete(`${API}/api/users/${quietId}/follow`, { headers: follower.headers });

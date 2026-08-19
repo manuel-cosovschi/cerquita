@@ -136,9 +136,14 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
 ### Fase 6 — Subastas ✅
 
 - ✅ Pujas transaccionales con row lock; **una sola puja ganadora** (verificado).
-- ✅ Anti-sniping con extensión acotada.
+- ✅ Anti-sniping con extensión acotada — verificado end-to-end. La regla estaba
+  testeada como función pura; lo que faltaba era que la API la aplique de verdad
+  y que la extensión vuelva en la respuesta.
 - ✅ Comprar ahora, que se retira si las pujas lo superan.
-- ✅ Scheduler que abre y cierra subastas sin depender de que alguien mire.
+- ✅ Scheduler que abre y cierra subastas sin depender de que alguien mire —
+  verificado sin mirar: una subasta corta se deja completamente sola pasado su
+  fin y se lee una sola vez. Si a esa altura está cerrada, la cerró el scheduler
+  y nada más.
 - ✅ WebSocket de sólo lectura (las pujas van por HTTP, con los mismos guards).
 - ✅ Notificaciones de outbid, subasta ganada y venta.
 
@@ -198,7 +203,7 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
   una versión y además hay `packageManager` en el `package.json`. Se sacó la
   versión del workflow; la del `package.json` es la que vale para todos.
 
-- ✅ Tests e2e (Playwright, 76) contra el stack real, sin mocks: precios
+- ✅ Tests e2e (Playwright, 78) contra el stack real, sin mocks: precios
   sociales resueltos en el servidor, ubicación exacta que nunca sale, checkout
   que rechaza un total manipulado, dos pujas simultáneas con un solo ganador,
   un baneo que corta la sesión en el request siguiente, un bloqueo que tapa en
