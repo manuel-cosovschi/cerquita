@@ -69,7 +69,7 @@ conservar, transformar ni borrar. Todo el contenido es nuevo.
 - Auth: registro, login, refresh con rotación, sesiones, argon2id.
 - Seed con datos ricos, incluida demanda real para que `/demand` tenga algo que
   mostrar sin que haya que inventar publicaciones a mano.
-- Tests unitarios: 198 al día de hoy, todos en verde.
+- Tests unitarios: 200 al día de hoy, todos en verde.
 
 ### Fase 2 — Reproducir el diseño ✅
 
@@ -192,7 +192,12 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
   equivocarse: una línea, fácil de escribir persiguiendo un 401, invisible en un
   diff grande. Ahora agregar una excepción rompe un test, así que hay que
   justificarla editando la lista.
-- ✅ Validación de entrada en todos los endpoints.
+- ✅ Validación de entrada en todos los endpoints, con trampa: los cuarenta y
+  cinco `@Body()` de la API pasan por un esquema Zod, y un `@Body()` sin
+  esquema rompe un test. No se valida así el query string a propósito —llega
+  como texto y se parsea en el borde del servicio, donde `limit` y `radius` se
+  acotan y una coordenada faltante se rechaza— porque un esquema anterior
+  tendría que entregarle el mismo valor acotado a la misma consulta.
 - ✅ Errores accionables, sin stack traces al cliente — testeado, incluida la
   mitad que se olvida: la respuesta tiene que decir lo suficiente para actuar, y
   al mismo tiempo lo único que puede llevar es lo que el filtro puso ahí. Un
