@@ -37,6 +37,8 @@ export const AS = {
   seller: 'manuel@cerquita.dev',
   /** No relationship with Manuel at all. */
   stranger: 'bruno@cerquita.dev',
+  /** The only account the seed grants console access. Never self-served. */
+  admin: 'admin@cerquita.dev',
 } as const;
 
 /** Manuel's own listing — not one of his store's, which price differently. */

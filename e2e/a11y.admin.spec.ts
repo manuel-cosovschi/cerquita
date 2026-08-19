@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { PASSWORD } from './helpers';
+import { AS, PASSWORD } from './helpers';
 
 /**
  * Accessibility of the moderation console (spec §68).
@@ -34,9 +34,6 @@ const PAGES: Array<[path: string, label: string, heading: string]> = [
 
 const STANDARD = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
-/** The seeded super admin. Console accounts are granted, never self-served. */
-const CONSOLE_ACCOUNT = 'admin@cerquita.dev';
-
 /**
  * Signs in through the console's own form.
  *
@@ -48,7 +45,7 @@ async function signInToConsole(page: Page, path: string): Promise<void> {
   await page.goto(path);
 
   // Every test gets a fresh context, so this is always the signed-out state.
-  await page.fill('#email', CONSOLE_ACCOUNT);
+  await page.fill('#email', AS.admin);
   await page.fill('#password', PASSWORD);
   await page.click('button[type=submit]');
 
@@ -99,7 +96,7 @@ test.describe('consola', () => {
      * that the refusal is legible.
      */
     await page.goto('/');
-    await page.fill('#email', 'manuel@cerquita.dev');
+    await page.fill('#email', AS.seller);
     await page.fill('#password', PASSWORD);
     await page.click('button[type=submit]');
 
