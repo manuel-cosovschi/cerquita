@@ -69,7 +69,7 @@ conservar, transformar ni borrar. Todo el contenido es nuevo.
 - Auth: registro, login, refresh con rotación, sesiones, argon2id.
 - Seed con datos ricos, incluida demanda real para que `/demand` tenga algo que
   mostrar sin que haya que inventar publicaciones a mano.
-- Tests unitarios: 186 al día de hoy, todos en verde.
+- Tests unitarios: 189 al día de hoy, todos en verde.
 
 ### Fase 2 — Reproducir el diseño ✅
 
@@ -186,7 +186,12 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
 
 ### Fase 10 — Hardening 🟡
 
-- ✅ Guard global (las rutas son privadas salvo opt-in explícito).
+- ✅ Guard global (las rutas son privadas salvo opt-in explícito), con la lista
+  de excepciones escrita y testeada. El diseño hace que _olvidar_ el decorador
+  sea inofensivo —la ruta queda privada— y que agregarlo sea la única forma de
+  equivocarse: una línea, fácil de escribir persiguiendo un 401, invisible en un
+  diff grande. Ahora agregar una excepción rompe un test, así que hay que
+  justificarla editando la lista.
 - ✅ Validación de entrada en todos los endpoints.
 - ✅ Errores accionables, sin stack traces al cliente.
 - ✅ `/health` y `/ready`, request id correlacionado.
