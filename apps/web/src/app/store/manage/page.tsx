@@ -234,7 +234,7 @@ export default function StoreManagePage() {
       {dashboard && (
         <section className={styles.section} aria-label="Métricas">
           <div className={styles.stats}>
-            <Stat label="Órdenes" value={dashboard.orders} />
+            <Stat label="Órdenes" one="Orden" value={dashboard.orders} />
             <Stat
               label="Facturado"
               value={formatMoney(money(dashboard.revenue.amount, dashboard.revenue.currency))}
@@ -245,10 +245,14 @@ export default function StoreManagePage() {
                 money(dashboard.averageTicket.amount, dashboard.averageTicket.currency),
               )}
             />
-            <Stat label="Compradores" value={dashboard.buyers} />
-            <Stat label="Publicaciones activas" value={dashboard.activeListings} />
-            <Stat label="Vistas" value={dashboard.views} />
-            <Stat label="Seguidores" value={dashboard.followers} />
+            <Stat label="Compradores" one="Comprador" value={dashboard.buyers} />
+            <Stat
+              label="Publicaciones activas"
+              one="Publicación activa"
+              value={dashboard.activeListings}
+            />
+            <Stat label="Vistas" one="Vista" value={dashboard.views} />
+            <Stat label="Seguidores" one="Seguidor" value={dashboard.followers} />
             {/* Null, not zero: with no views there is no rate to report. */}
             <Stat
               label="Conversión"
@@ -370,9 +374,15 @@ export default function StoreManagePage() {
                   value={percent}
                   onChange={(event) => setPercent(event.target.value)}
                 />
+                {/* "Basis points" is how the number travels, not something a
+                    shopkeeper should have to read. What they need is the price
+                    it lands on. */}
                 <p className={styles.hint}>
-                  En porcentaje. Se guarda como {Math.round(Number(percent) * 100) || 0} basis
-                  points.
+                  Algo de $ 10.000 les va a salir{' '}
+                  {formatMoney(
+                    money(Math.round(1_000_000 * (1 - (Number(percent) || 0) / 100)), 'ARS'),
+                  )}
+                  .
                 </p>
               </div>
             ) : (
@@ -441,10 +451,16 @@ export default function StoreManagePage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: number | string }) {
+/**
+ * This screen's own stat: label above value, and money as well as counts.
+ *
+ * `one` is the singular, for the counts. A shop with one listing read
+ * "1 PUBLICACIONES ACTIVAS", which is the third screen this has come up on.
+ */
+function Stat({ label, value, one }: { label: string; value: number | string; one?: string }) {
   return (
     <div className={styles.stat}>
-      <span className={styles.statLabel}>{label}</span>
+      <span className={styles.statLabel}>{value === 1 && one ? one : label}</span>
       <span className={styles.statValue}>{value}</span>
     </div>
   );
