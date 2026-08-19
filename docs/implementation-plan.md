@@ -69,7 +69,7 @@ conservar, transformar ni borrar. Todo el contenido es nuevo.
 - Auth: registro, login, refresh con rotación, sesiones, argon2id.
 - Seed con datos ricos, incluida demanda real para que `/demand` tenga algo que
   mostrar sin que haya que inventar publicaciones a mano.
-- Tests unitarios: 189 al día de hoy, todos en verde.
+- Tests unitarios: 198 al día de hoy, todos en verde.
 
 ### Fase 2 — Reproducir el diseño ✅
 
@@ -193,7 +193,12 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
   diff grande. Ahora agregar una excepción rompe un test, así que hay que
   justificarla editando la lista.
 - ✅ Validación de entrada en todos los endpoints.
-- ✅ Errores accionables, sin stack traces al cliente.
+- ✅ Errores accionables, sin stack traces al cliente — testeado, incluida la
+  mitad que se olvida: la respuesta tiene que decir lo suficiente para actuar, y
+  al mismo tiempo lo único que puede llevar es lo que el filtro puso ahí. Un
+  `throw` de string es el caso peligroso: un fallback a `String(exception)` lo
+  publica tal cual, mientras que el mismo fallback convierte un objeto en el
+  inofensivo `[object Object]`.
 - ✅ `/health` y `/ready`, request id correlacionado.
 - ✅ Constraints de integridad en la base.
 - ✅ Rate limiting con ventanas por usuario y por IP; las rutas de credenciales
