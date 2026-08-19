@@ -91,12 +91,19 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
 | ------------------------------------------- | ------- | --- | ------ |
 | Listings (venta / busco / subasta)          | ✅      | ✅  | ✅     |
 | Mapa por viewport con clustering en PostGIS | ✅      | ✅  | ✅     |
-| Búsqueda full-text + geo + filtros          | ✅      | ✅  | ✅     |
+| Búsqueda full-text + geo + filtros          | ✅      | ✅  | 🟡     |
 | Búsqueda con IA (adapter + mock real)       | ✅      | ✅  | —      |
 | Ofertas y contraofertas                     | ✅      | ✅  | —      |
 | Perfiles                                    | ✅      | ✅  | —      |
 | Favoritos y colecciones                     | ✅      | ✅  | —      |
-| Chat en tiempo real                         | ✅      | ✅  | ✅     |
+| Chat en tiempo real                         | ✅      | ✅  | 🟡     |
+
+Los dos 🟡 de mobile son de alcance, no de deuda escondida: la búsqueda del
+teléfono es texto y cercanía, sin los filtros de categoría y precio que sí tiene
+web, y el chat se actualiza por polling cada ocho segundos en vez de por el
+WebSocket. Mobile es a propósito un cliente fino sobre la misma API —lista
+cercana, mapa, detalle y chat—, y las dos cosas están así porque se eligió, no
+porque falten. Dicho acá para que la tabla no prometa paridad.
 
 ### Fase 4 — Social ✅
 
