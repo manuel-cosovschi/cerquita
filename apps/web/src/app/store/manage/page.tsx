@@ -442,8 +442,8 @@ export default function StoreManagePage() {
           </button>
 
           <p className={styles.hint}>
-            Las promociones de tienda no se suman al descuento social: las tiendas no tienen amigos,
-            tienen promociones.
+            Una promoción no se suma al descuento a seguidores de acá arriba: se aplica la que más
+            convenga, no las dos.
           </p>
         </form>
       </section>

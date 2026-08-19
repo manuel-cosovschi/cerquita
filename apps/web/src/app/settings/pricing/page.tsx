@@ -129,7 +129,8 @@ export default function PricingSettingsPage() {
     <AppScreen title="Precios sociales" active="profile">
       <p className={styles.intro}>
         Elegí cuánto menos pagan las personas que te siguen y tus amigos. Se aplica solo a lo que
-        publicás como persona: las tiendas usan promociones.
+        publicás como persona: lo de tu tienda se configura en su gestión, y ahí no hay amigos, sólo
+        seguidores.
       </p>
 
       <DiscountGroup
