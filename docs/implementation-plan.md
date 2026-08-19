@@ -185,7 +185,7 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
   una versión y además hay `packageManager` en el `package.json`. Se sacó la
   versión del workflow; la del `package.json` es la que vale para todos.
 
-- ✅ Tests e2e (Playwright, 53) contra el stack real, sin mocks: precios
+- ✅ Tests e2e (Playwright, 57) contra el stack real, sin mocks: precios
   sociales resueltos en el servidor, ubicación exacta que nunca sale, checkout
   que rechaza un total manipulado, dos pujas simultáneas con un solo ganador,
   y demanda local que reporta patrones sin nombrar personas.
@@ -217,6 +217,8 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
 | Una sola función arma la política de descuento          | La armaban a mano el carrito, el checkout, las ofertas y el serializer. Tienen que coincidir exactamente o el precio que se muestra deja de ser el que se cobra, y ya habían divergido en el caso de las tiendas.                                                        |
 | Verificar cada test revirtiendo el arreglo              | Dos veces escribí un test que pasaba sin poder fallar: uno buscaba un espacio donde `innerText` mete un salto de línea, otro comparaba carrito contra detalle, que con el bug coincidían en el precio equivocado. Un test verde no dice nada hasta que se lo vio fallar. |
 | Los tests e2e limpian antes, no sólo después            | Una corrida que muere a mitad dejaba un follow y un carrito con ítems, y la corrida siguiente fallaba con un error sobre el producto en vez de sobre la basura.                                                                                                          |
+| Un test que crea su propia condición                    | El de "1 mensajes sin leer" dependía de que la bandeja del seed tuviera un hilo con exactamente un no leído, lo que cambia según qué tocó cada quien. Pasaba con el bug en pantalla. Ahora abre el hilo, lo marca leído y manda uno.                                     |
+| Medir el desborde en el navegador, no deducirlo del CSS | Cinco reglas declaraban `ellipsis` sin `display`; sólo una estaba realmente rota. Las otras son elementos de bloque o flex items, donde ya funciona. Arreglarlas por sospecha habría sido ruido.                                                                         |
 | El mapa avisa su tamaño apenas lo sabe                  | Medía su tamaño para adentro y sólo lo informaba para arriba al arrastrarlo, así que la home —que espera saber su viewport antes de pedir nada— nunca pedía nada. Renderizaba, hidrataba, pasaba accesibilidad, y hacía cero requests.                                   |
 | La hoja de resultados en mobile tiene tope              | Con `auto` crecía con su contenido y aplastaba el mapa a cero: desaparecía justo cuando por fin tenía marcadores que dibujar.                                                                                                                                            |
 | Contraste corregido en el token, no en las pantallas    | El texto terciario fallaba en doce pantallas por una sola razón: todas beben del mismo token. Arreglar cada CSS habría dejado el defecto vivo en la próxima pantalla que se escribiera.                                                                                  |
