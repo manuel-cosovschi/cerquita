@@ -40,6 +40,16 @@ async function whileBlocked(
   const viewer = await login(request, VIEWER);
   const target = await userId(request, viewer);
 
+  /*
+   * Lifted before, as well as after.
+   *
+   * The `finally` below covers a failing assertion, but not a run killed
+   * mid-test — and that is precisely when a block is left standing. CI starts
+   * from an empty database so it would never notice; a developer's machine
+   * would, as a seeded listing that has silently stopped existing.
+   */
+  await request.delete(`${API}/api/users/${target}/block`, { headers: blocker.headers });
+
   await request.post(`${API}/api/users/${target}/block`, {
     headers: blocker.headers,
     data: {},
