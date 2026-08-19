@@ -1,0 +1,369 @@
+.page {
+  min-height: 100dvh;
+  background: var(--color-background);
+}
+
+.topBar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: var(--border-width-hairline) solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.back {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.back:hover {
+  color: var(--color-text-primary);
+}
+
+/* Desktop gets a two-column detail; below 900px it stacks. */
+.layout {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-5);
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: var(--space-9);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: var(--space-7);
+    padding: var(--space-5);
+  }
+}
+
+.gallery {
+  display: grid;
+  gap: var(--space-4);
+  position: sticky;
+  top: 84px;
+}
+
+@media (max-width: 900px) {
+  .gallery {
+    position: static;
+  }
+}
+
+.image {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-sunken);
+  display: block;
+}
+
+.imagePlaceholder {
+  aspect-ratio: 4 / 3;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+}
+
+.details {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.tags {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.auctionTag,
+.wantedTag,
+.promotedTag {
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.auctionTag {
+  background: var(--color-auction-subtle);
+  color: var(--color-auction);
+}
+
+.wantedTag {
+  background: var(--color-wanted-subtle);
+  color: var(--color-wanted);
+}
+
+.promotedTag {
+  background: var(--color-surface-sunken);
+  color: var(--color-text-secondary);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: -0.02em;
+}
+
+.priceBlock {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.budget {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-wanted);
+}
+
+.socialNote {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-friend);
+}
+
+.auctionBox {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: var(--border-width-hairline) solid var(--color-auction);
+  border-radius: var(--radius-lg);
+  background: var(--color-auction-subtle);
+}
+
+.auctionRow {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.auctionRow strong {
+  color: var(--color-text-primary);
+}
+
+.reserveNote {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-target-comfortable);
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+}
+
+.primary {
+  border: none;
+  background: var(--color-brand);
+  color: var(--color-text-on-brand);
+  flex: 1 1 160px;
+}
+
+.primary:hover {
+  background: var(--color-brand-hover);
+}
+
+.secondary {
+  border: var(--border-width-hairline) solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.secondary:hover {
+  background: var(--color-surface-sunken);
+}
+
+.sellerBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: var(--border-width-hairline) solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.sellerName {
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+}
+
+.verified {
+  color: var(--color-brand);
+}
+
+.socialProof {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-friend);
+}
+
+.sellerMeta {
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.sectionTitle {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+.description {
+  margin: 0;
+  white-space: pre-wrap;
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+}
+
+.location {
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.locationNote {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* ── viewer actions ───────────────────────────────────────────────────────── */
+
+.topBarRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+/* The heart lives in the top bar, where a thumb reaches it without scrolling. */
+.favorite {
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  border: none;
+  border-radius: var(--radius-full);
+  background: none;
+  font-size: var(--font-size-lg);
+  line-height: 1;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+}
+
+.favoriteOn {
+  color: var(--color-auction);
+}
+
+.primary:disabled,
+.secondary:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+/*
+ * The amount panel for an offer or a bid.
+ *
+ * Inline rather than a modal: on a listing the number you type depends on the
+ * price you are looking at, and a dialog that covers it makes you guess.
+ */
+.amountPanel {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--ring-hairline-strong);
+}
+
+.amountLabel {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.amountRow {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.amountInput {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--touch-target-comfortable);
+  padding: 0 var(--space-5);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-background);
+  box-shadow: var(--ring-hairline);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+
+.amountHint {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.feedback {
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.feedbackError {
+  background: var(--color-danger-subtle);
+  color: var(--color-danger);
+}
+
+.feedbackOk {
+  background: var(--color-success-subtle);
+  color: var(--color-success);
+}
+
+.signedOutNote {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+.signedOutLink {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

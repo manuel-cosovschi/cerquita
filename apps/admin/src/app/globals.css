@@ -1,0 +1,59 @@
+/*
+ * The admin console.
+ *
+ * Same tokens as the storefront, arranged for a different job: this is a
+ * desk tool read on a laptop by someone doing repetitive work, not a phone
+ * screen designed to be inviting. Denser, quieter, and monospaced wherever a
+ * number or an identifier has to be compared by eye.
+ *
+ * It deliberately does not look playful. A console that looks like the consumer
+ * app invites the mistake of treating a ban like a like.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Identifiers and amounts are compared by eye all day; they get tabular figures. */
+.mono {
+  font-family: var(--font-family-numeric, ui-monospace, monospace);
+  font-variant-numeric: tabular-nums;
+}

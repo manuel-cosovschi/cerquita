@@ -1,0 +1,271 @@
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import type { FriendshipStatus, UserSummary } from '@cerquita/types';
+import { canRespondToRequest, friendshipKey, isParticipant } from '@cerquita/domain';
+import { PrismaService } from '../../prisma/prisma.service';
+import { UserSerializer, USER_SUMMARY_SELECT } from '../users/user.serializer';
+import { EventBus } from '../events/event-bus.service';
+
+/** A friend request the viewer can answer. */
+export interface FriendRequest {
+  readonly id: string;
+  readonly from: UserSummary;
+  readonly createdAt: string;
+}
+
+/**
+ * Follows and friendships (spec §8).
+ *
+ * Friendship rows are stored under a canonical `(userA < userB)` ordering, so
+ * (A,B) and (B,A) cannot both exist. `requesterId` records who asked, which is
+ * what the accept/reject rules key off.
+ */
+@Injectable()
+export class SocialService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly events: EventBus,
+    private readonly users: UserSerializer,
+  ) {}
+
+  async follow(followerId: string, followeeId: string): Promise<{ following: true }> {
+    if (followerId === followeeId) {
+      throw new BadRequestException({
+        message: 'No podés seguirte a vos mismo',
+        code: 'self_follow',
+      });
+    }
+
+    await this.prisma.follow.upsert({
+      where: { followerId_followeeId: { followerId, followeeId } },
+      update: {},
+      create: { followerId, followeeId },
+    });
+
+    await this.events.publish({
+      type: 'UserFollowed',
+      id: `${followerId}:${followeeId}`,
+      occurredAt: new Date().toISOString(),
+      followerId,
+      followeeId,
+    });
+
+    return { following: true };
+  }
+
+  async unfollow(followerId: string, followeeId: string): Promise<{ following: false }> {
+    await this.prisma.follow
+      .delete({ where: { followerId_followeeId: { followerId, followeeId } } })
+      .catch(() => undefined);
+    return { following: false };
+  }
+
+  /**
+   * Friend requests waiting on the viewer.
+   *
+   * Only INCOMING ones: `requesterId` is who sent it, so a row where the viewer
+   * is the requester is their own pending request, which they can cancel but
+   * cannot answer. An inbox that mixed the two would offer accept/reject on a
+   * request the viewer sent themselves.
+   */
+  async pendingFriendRequests(viewerId: string): Promise<FriendRequest[]> {
+    const rows = await this.prisma.friendship.findMany({
+      where: {
+        status: 'pending',
+        requesterId: { not: viewerId },
+        OR: [{ userAId: viewerId }, { userBId: viewerId }],
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      include: {
+        userA: { select: USER_SUMMARY_SELECT },
+        userB: { select: USER_SUMMARY_SELECT },
+      },
+    });
+
+    // `requesterId` is a plain column with no relation of its own — the row is
+    // keyed by the canonical (userA, userB) ordering, so who asked is whichever
+    // of the two ids it matches.
+    return rows.map((row) => ({
+      id: row.id,
+      from: this.users.toSummary(row.userA.id === row.requesterId ? row.userA : row.userB),
+      createdAt: row.createdAt.toISOString(),
+    }));
+  }
+
+  async requestFriendship(
+    requesterId: string,
+    addresseeId: string,
+  ): Promise<{ status: FriendshipStatus }> {
+    if (requesterId === addresseeId) {
+      throw new BadRequestException({
+        message: 'No podés enviarte una solicitud',
+        code: 'self_friendship',
+      });
+    }
+
+    const [userAId, userBId] = friendshipKey(requesterId, addresseeId);
+
+    const existing = await this.prisma.friendship.findUnique({
+      where: { userAId_userBId: { userAId, userBId } },
+    });
+
+    if (existing) {
+      if (existing.status === 'accepted') return { status: 'accepted' };
+      if (existing.status === 'blocked') {
+        throw new BadRequestException({ message: 'No disponible', code: 'blocked' });
+      }
+
+      // If the other person had already asked, accepting is the natural result
+      // rather than creating a competing request in the opposite direction.
+      if (existing.status === 'pending' && existing.requesterId === addresseeId) {
+        return this.respondToFriendship(existing.id, requesterId, 'accepted');
+      }
+
+      await this.prisma.friendship.update({
+        where: { id: existing.id },
+        data: { status: 'pending', requesterId },
+      });
+      return { status: 'pending' };
+    }
+
+    await this.prisma.friendship.create({
+      data: { userAId, userBId, requesterId, status: 'pending' },
+    });
+    return { status: 'pending' };
+  }
+
+  async respondToFriendship(
+    friendshipId: string,
+    actorId: string,
+    decision: 'accepted' | 'rejected',
+  ): Promise<{ status: FriendshipStatus }> {
+    const friendship = await this.prisma.friendship.findUnique({ where: { id: friendshipId } });
+    if (!friendship) {
+      throw new NotFoundException({ message: 'Solicitud no encontrada', code: 'not_found' });
+    }
+
+    const state = {
+      requesterId: friendship.requesterId,
+      addresseeId:
+        friendship.requesterId === friendship.userAId ? friendship.userBId : friendship.userAId,
+      status: friendship.status,
+    };
+
+    if (!canRespondToRequest(state, actorId)) {
+      throw new BadRequestException({
+        message: 'No podés responder esta solicitud',
+        code: 'not_addressee',
+      });
+    }
+
+    await this.prisma.friendship.update({
+      where: { id: friendshipId },
+      data: { status: decision },
+    });
+
+    if (decision === 'accepted') {
+      await this.events.publish({
+        type: 'FriendshipAccepted',
+        id: friendshipId,
+        occurredAt: new Date().toISOString(),
+        requesterId: state.requesterId,
+        addresseeId: state.addresseeId,
+      });
+    }
+
+    return { status: decision };
+  }
+
+  async removeFriendship(friendshipId: string, actorId: string): Promise<{ removed: true }> {
+    const friendship = await this.prisma.friendship.findUnique({ where: { id: friendshipId } });
+    if (!friendship) {
+      throw new NotFoundException({ message: 'Amistad no encontrada', code: 'not_found' });
+    }
+
+    const state = {
+      requesterId: friendship.requesterId,
+      addresseeId:
+        friendship.requesterId === friendship.userAId ? friendship.userBId : friendship.userAId,
+      status: friendship.status,
+    };
+
+    if (!isParticipant(state, actorId)) {
+      throw new BadRequestException({
+        message: 'No formás parte de esta amistad',
+        code: 'forbidden',
+      });
+    }
+
+    await this.prisma.friendship.delete({ where: { id: friendshipId } });
+    return { removed: true };
+  }
+
+  /** Blocking hides content in both directions and severs any friendship. */
+  async block(blockerId: string, blockedId: string): Promise<{ blocked: true }> {
+    const [userAId, userBId] = friendshipKey(blockerId, blockedId);
+
+    await this.prisma.$transaction([
+      this.prisma.block.upsert({
+        where: { blockerId_blockedId: { blockerId, blockedId } },
+        update: {},
+        create: { blockerId, blockedId },
+      }),
+      this.prisma.friendship.updateMany({
+        where: { userAId, userBId },
+        data: { status: 'blocked' },
+      }),
+      this.prisma.follow.deleteMany({
+        where: {
+          OR: [
+            { followerId: blockerId, followeeId: blockedId },
+            { followerId: blockedId, followeeId: blockerId },
+          ],
+        },
+      }),
+    ]);
+
+    return { blocked: true };
+  }
+
+  async unblock(blockerId: string, blockedId: string): Promise<{ blocked: false }> {
+    await this.prisma.block
+      .delete({ where: { blockerId_blockedId: { blockerId, blockedId } } })
+      .catch(() => undefined);
+    return { blocked: false };
+  }
+
+  async followStore(userId: string, storeId: string): Promise<{ following: true }> {
+    await this.prisma.storeFollow.upsert({
+      where: { storeId_userId: { storeId, userId } },
+      update: {},
+      create: { storeId, userId },
+    });
+
+    await this.events.publish({
+      type: 'StoreFollowed',
+      id: `${storeId}:${userId}`,
+      occurredAt: new Date().toISOString(),
+      storeId,
+      userId,
+    });
+
+    return { following: true };
+  }
+
+  /**
+   * Stops following a shop.
+   *
+   * The counterpart existed for people and not for shops, so following one was
+   * a one-way door: the storefront's button read "Siguiendo" and did nothing
+   * when pressed, because the only endpoint was an upsert that always answered
+   * "following: true".
+   *
+   * `deleteMany` rather than `delete` so unfollowing something you already do
+   * not follow is a no-op instead of a 404 — the caller wants a state, not a
+   * transaction.
+   */
+  async unfollowStore(userId: string, storeId: string): Promise<{ following: false }> {
+    await this.prisma.storeFollow.deleteMany({ where: { storeId, userId } });
+    return { following: false };
+  }
+}

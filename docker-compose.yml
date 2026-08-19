@@ -1,0 +1,40 @@
+services:
+  postgres:
+    # PostGIS is not optional for Cerquita — the map, radius queries and
+    # clustering all run on it, so the base image ships with it rather than
+    # expecting an operator to install the extension by hand.
+    image: postgis/postgis:16-3.4
+    container_name: cerquita-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cerquita
+      POSTGRES_PASSWORD: cerquita
+      POSTGRES_DB: cerquita
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U cerquita -d cerquita']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: cerquita-redis
+    restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres-data:
+  redis-data:

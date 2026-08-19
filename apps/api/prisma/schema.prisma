@@ -1,0 +1,1216 @@
+// Cerquita database schema.
+//
+// Two conventions worth knowing before reading:
+//
+// 1. LOCATION. Every locatable row stores `exactLocation` (a PostGIS geography
+//    point) and a separate `publicLocation`. Only the public one is ever
+//    serialized to a client. `Unsupported(...)` means Prisma stores and migrates
+//    the column but geo queries are written as raw SQL, which is deliberate —
+//    the map is the product, and hiding PostGIS behind an ORM would cost more
+//    than it saves.
+//
+// 2. MONEY. Amounts are `Int` counts of the currency's minor unit, paired with a
+//    currency column. No Float or Decimal appears anywhere near a price.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis, pg_trgm, uuidOssp(map: "uuid-ossp")]
+}
+
+/* ── identity ─────────────────────────────────────────────────────────────── */
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique
+  passwordHash String?
+  username     String    @unique
+  displayName  String
+  avatarUrl    String?
+  bio          String?
+  /// Coarse label shown publicly, e.g. "Palermo, CABA". Never an address.
+  area         String?
+
+  emailVerifiedAt DateTime?
+  phone           String?   @unique
+  phoneVerifiedAt DateTime?
+  verified        Boolean   @default(false)
+
+  /// Home location. Private: used to centre the map and compute distances.
+  exactLocation  Unsupported("geography(Point, 4326)")?
+  publicLocation Unsupported("geography(Point, 4326)")?
+
+  /// Seller-wide social discount defaults, inherited by new listings.
+  followerDiscountBps Int @default(0)
+  friendDiscountBps   Int @default(0)
+
+  plan      SubscriptionPlan @default(free)
+  adminRole AdminRole?
+
+  suspendedUntil DateTime?
+  bannedAt       DateTime?
+
+  ratingSum      Int @default(0)
+  reviewCount    Int @default(0)
+  salesCount     Int @default(0)
+  purchasesCount Int @default(0)
+
+  showSoldListings Boolean @default(true)
+  showFavorites    Boolean @default(false)
+  showActivity     Boolean @default(true)
+  showPurchases    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions            Session[]
+  devices             DeviceToken[]
+  listings            Listing[]
+  stores              StoreMember[]
+  following           Follow[]              @relation("follower")
+  followers           Follow[]              @relation("followee")
+  friendshipsSent     Friendship[]          @relation("requester")
+  friendshipsReceived Friendship[]          @relation("addressee")
+  storeFollows        StoreFollow[]
+  favorites           Favorite[]
+  collections         FavoriteCollection[]
+  savedSearches       SavedSearch[]
+  offersSent          Offer[]               @relation("offerFrom")
+  offersReceived      Offer[]               @relation("offerTo")
+  bids                Bid[]
+  carts               Cart[]               @relation("cartBuyer")
+  cartsAsSeller       Cart[]               @relation("cartSeller")
+  ordersBought        Order[]               @relation("buyer")
+  ordersSold          Order[]               @relation("seller")
+  reservations        Reservation[]
+  reviewsWritten      Review[]              @relation("reviewAuthor")
+  reviewsReceived     Review[]              @relation("reviewSubject")
+  conversations       ConversationMember[]
+  messages            Message[]
+  notifications       Notification[]
+  notificationPrefs   NotificationPreference[]
+  reportsFiled        Report[]              @relation("reporter")
+  auditLogs           AdminAuditLog[]
+  riskAssessments     RiskAssessment[]
+  disputesOpened      Dispute[]
+  listingComments     ListingComment[]
+
+  @@index([username])
+  @@index([createdAt])
+}
+
+model Session {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @db.Uuid
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// SHA-256 of the refresh token. The token itself is never stored.
+  tokenHash    String   @unique
+  deviceName   String?
+  ipAddress    String?
+  userAgent    String?
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  createdAt    DateTime @default(now())
+  lastUsedAt   DateTime @default(now())
+
+  @@index([userId, revokedAt])
+}
+
+model DeviceToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  platform  String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  /// SHA-256 of the emailed token.
+  tokenHash String   @unique
+  purpose   String
+  userId    String   @db.Uuid
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId, purpose])
+}
+
+/* ── social ───────────────────────────────────────────────────────────────── */
+
+model Follow {
+  followerId String   @db.Uuid
+  followeeId String   @db.Uuid
+  follower   User     @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followee   User     @relation("followee", fields: [followeeId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([followerId, followeeId])
+  @@index([followeeId])
+}
+
+/// Bilateral. `userAId` < `userBId` is enforced by the service so (A,B) and
+/// (B,A) cannot both exist; `requesterId` records who asked.
+model Friendship {
+  id          String           @id @default(uuid()) @db.Uuid
+  userAId     String           @db.Uuid
+  userBId     String           @db.Uuid
+  requesterId String           @db.Uuid
+  status      FriendshipStatus @default(pending)
+  userA       User             @relation("requester", fields: [userAId], references: [id], onDelete: Cascade)
+  userB       User             @relation("addressee", fields: [userBId], references: [id], onDelete: Cascade)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([userAId, userBId])
+  @@index([userBId, status])
+}
+
+model Block {
+  blockerId String   @db.Uuid
+  blockedId String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  @@id([blockerId, blockedId])
+}
+
+/* ── stores ───────────────────────────────────────────────────────────────── */
+
+model Store {
+  id          String  @id @default(uuid()) @db.Uuid
+  handle      String  @unique
+  name        String
+  description String?
+  logoUrl     String?
+  coverUrl    String?
+  categories  String[]
+  verified    Boolean @default(false)
+
+  hasPhysicalLocation Boolean @default(false)
+  address             String?
+  exactLocation       Unsupported("geography(Point, 4326)")?
+  publicLocation      Unsupported("geography(Point, 4326)")?
+
+  deliveryMethods DeliveryMethod[]
+  /// Stores have followers but no friends, so only a follower rate applies.
+  followerDiscountBps Int @default(0)
+
+  ratingSum   Int @default(0)
+  reviewCount Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members       StoreMember[]
+  listings      Listing[]
+  products      Product[]
+  followers     StoreFollow[]
+  promotions    Promotion[]
+  orders        Order[]
+  carts         Cart[]
+  openingHours  StoreOpeningHours[]
+
+  @@index([handle])
+}
+
+model StoreMember {
+  storeId   String    @db.Uuid
+  userId    String    @db.Uuid
+  role      StoreRole
+  store     Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@id([storeId, userId])
+  @@index([userId])
+}
+
+model StoreFollow {
+  storeId   String   @db.Uuid
+  userId    String   @db.Uuid
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([storeId, userId])
+  @@index([userId])
+}
+
+model StoreOpeningHours {
+  id       String @id @default(uuid()) @db.Uuid
+  storeId  String @db.Uuid
+  store    Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  weekday  Int
+  opensAt  Int
+  closesAt Int
+
+  @@index([storeId])
+}
+
+/* ── catalogue ────────────────────────────────────────────────────────────── */
+
+model Category {
+  id       String     @id @default(uuid()) @db.Uuid
+  slug     String     @unique
+  name     String
+  icon     String?
+  parentId String?    @db.Uuid
+  parent   Category?  @relation("categoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("categoryTree")
+  listings Listing[]
+  products Product[]
+
+  @@index([parentId])
+}
+
+/// A store's catalogue entry. A private seller with one used item works purely
+/// through Listing and never touches Product (spec §15).
+model Product {
+  id          String  @id @default(uuid()) @db.Uuid
+  storeId     String  @db.Uuid
+  store       Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  title       String
+  description String  @default("")
+  categoryId  String  @db.Uuid
+  category    Category @relation(fields: [categoryId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  options  ProductOption[]
+  variants ProductVariant[]
+  listings Listing[]
+
+  @@index([storeId])
+}
+
+model ProductOption {
+  id        String   @id @default(uuid()) @db.Uuid
+  productId String   @db.Uuid
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String
+  values    String[]
+  position  Int      @default(0)
+
+  @@index([productId])
+}
+
+model ProductVariant {
+  id            String  @id @default(uuid()) @db.Uuid
+  productId     String  @db.Uuid
+  product       Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku           String?
+  /// Values in the same order as the product's options, e.g. ["L", "Azul"].
+  optionValues  String[]
+  priceAmount   Int
+  priceCurrency String  @default("ARS")
+  imageUrl      String?
+  active        Boolean @default(true)
+
+  inventory InventoryItem?
+  cartItems CartItem[]
+
+  @@unique([productId, sku])
+  @@index([productId])
+}
+
+/// Stock lives in its own row so the conditional UPDATE that prevents overselling
+/// touches one narrow, hot table rather than the whole variant.
+model InventoryItem {
+  id        String         @id @default(uuid()) @db.Uuid
+  variantId String         @unique @db.Uuid
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  quantity  Int            @default(0)
+  reserved  Int            @default(0)
+  sold      Int            @default(0)
+  updatedAt DateTime       @updatedAt
+}
+
+/* ── listings ─────────────────────────────────────────────────────────────── */
+
+model Listing {
+  id          String        @id @default(uuid()) @db.Uuid
+  kind        ListingKind
+  status      ListingStatus @default(draft)
+  title       String
+  description String        @default("")
+  tags        String[]
+
+  sellerId   String   @db.Uuid
+  seller     User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  storeId    String?  @db.Uuid
+  store      Store?   @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  productId  String?  @db.Uuid
+  product    Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  categoryId String   @db.Uuid
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  condition ItemCondition?
+
+  priceAmount   Int?
+  priceCurrency String @default("ARS")
+
+  /// Wanted posts carry a budget ceiling instead of a price.
+  maxBudgetAmount    Int?
+  wantedRadiusMeters Int?
+  acceptedConditions ItemCondition[]
+
+  /// Per-listing override of the seller's social discounts. NULL means inherit.
+  followerDiscountBps Int?
+  friendDiscountBps   Int?
+
+  quantity Int @default(1)
+  reserved Int @default(0)
+  sold     Int @default(0)
+
+  deliveryMethods    DeliveryMethod[]
+  acceptsOffers      Boolean          @default(true)
+  reservationMinutes Int?
+
+  /// Private. Never serialized — see ListingSerializer.
+  ///
+  /// Nullable at the Prisma level because Prisma refuses to generate `create`
+  /// for a model with a REQUIRED `Unsupported` column. The database enforces the
+  /// real invariant instead: a CHECK constraint (see the initial migration)
+  /// rejects any non-draft listing whose locations are null, so a published
+  /// listing can never exist without them.
+  exactLocation  Unsupported("geography(Point, 4326)")?
+  /// Deterministically fuzzed from exactLocation. This is what clients receive.
+  publicLocation Unsupported("geography(Point, 4326)")?
+  neighborhood   String?
+  city           String?
+  region         String?
+  country        String?
+
+  viewCount     Int @default(0)
+  favoriteCount Int @default(0)
+  commentCount  Int @default(0)
+
+  /// Generated tsvector for full-text search, maintained by a trigger.
+  searchVector Unsupported("tsvector")?
+
+  promotedUntil DateTime?
+  publishedAt   DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  images        ListingImage[]
+  comments      ListingComment[]
+  priceHistory  ListingPriceHistory[]
+  auction       Auction?
+  offers        Offer[]
+  favorites     Favorite[]
+  reservations  Reservation[]
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  conversations Conversation[]
+  promotions    PromotionListing[]
+
+  @@index([sellerId, status])
+  @@index([storeId, status])
+  @@index([categoryId, status])
+  @@index([kind, status, publishedAt])
+  @@index([status, promotedUntil])
+}
+
+/// Comments on a listing. In direction 1c these work as public references
+/// ("Nacho: doy fe, la vi funcionando"), which is why they are attached to the
+/// listing rather than buried in a chat.
+model ListingComment {
+  id        String   @id @default(uuid()) @db.Uuid
+  listingId String   @db.Uuid
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  authorId  String   @db.Uuid
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  body      String
+  /// Set when this is a reply to another comment.
+  parentId  String?  @db.Uuid
+  parent    ListingComment?  @relation("commentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   ListingComment[] @relation("commentThread")
+  hiddenAt  DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([listingId, createdAt])
+  @@index([authorId])
+}
+
+model ListingImage {
+  id        String  @id @default(uuid()) @db.Uuid
+  listingId String  @db.Uuid
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  url       String
+  thumbnailUrl String
+  width     Int
+  height    Int
+  position  Int     @default(0)
+  alt       String?
+
+  @@index([listingId, position])
+}
+
+model ListingPriceHistory {
+  id            String   @id @default(uuid()) @db.Uuid
+  listingId     String   @db.Uuid
+  listing       Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  priceAmount   Int
+  priceCurrency String   @default("ARS")
+  reason        String?
+  recordedAt    DateTime @default(now())
+
+  @@index([listingId, recordedAt])
+}
+
+/* ── auctions ─────────────────────────────────────────────────────────────── */
+
+model Auction {
+  id        String        @id @default(uuid()) @db.Uuid
+  listingId String        @unique @db.Uuid
+  listing   Listing       @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  status    AuctionStatus @default(scheduled)
+
+  startsAt DateTime
+  endsAt   DateTime
+
+  currency             String @default("ARS")
+  startingPriceAmount  Int
+  minimumIncrementAmount Int
+  reservePriceAmount   Int?
+  buyNowPriceAmount    Int?
+
+  /// Denormalised standing bid. Updated inside the same transaction as the Bid
+  /// insert, under a row lock on this auction — that lock is what makes two
+  /// simultaneous bids resolve to exactly one winner.
+  highestBidAmount   Int?
+  highestBidderId    String? @db.Uuid
+  bidCount           Int     @default(0)
+  participantCount   Int     @default(0)
+
+  antiSnipeWindowMs    Int  @default(120000)
+  antiSnipeExtensionMs Int  @default(120000)
+  maxEndsAt            DateTime?
+
+  winnerId    String?   @db.Uuid
+  finalAmount Int?
+  closedAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bids Bid[]
+
+  @@index([status, endsAt])
+  @@index([status, startsAt])
+}
+
+model Bid {
+  id        String   @id @default(uuid()) @db.Uuid
+  auctionId String   @db.Uuid
+  auction   Auction  @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  bidderId  String   @db.Uuid
+  bidder    User     @relation(fields: [bidderId], references: [id], onDelete: Cascade)
+  amount    Int
+  currency  String   @default("ARS")
+  placedAt  DateTime @default(now())
+
+  @@unique([auctionId, amount])
+  @@index([auctionId, placedAt])
+  @@index([bidderId])
+}
+
+/* ── offers ───────────────────────────────────────────────────────────────── */
+
+model Offer {
+  id        String      @id @default(uuid()) @db.Uuid
+  listingId String      @db.Uuid
+  listing   Listing     @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  fromUserId String     @db.Uuid
+  fromUser  User        @relation("offerFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId  String      @db.Uuid
+  toUser    User        @relation("offerTo", fields: [toUserId], references: [id], onDelete: Cascade)
+  status    OfferStatus @default(pending)
+  amount    Int
+  currency  String      @default("ARS")
+  message   String?
+  expiresAt DateTime?
+
+  counterOfOfferId String? @unique @db.Uuid
+  counterOfOffer   Offer?  @relation("counter", fields: [counterOfOfferId], references: [id])
+  counteredBy      Offer?  @relation("counter")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders Order[]
+
+  @@index([listingId, status])
+  @@index([toUserId, status])
+  @@index([status, expiresAt])
+}
+
+/* ── reservations, cart, orders ───────────────────────────────────────────── */
+
+model Reservation {
+  id        String            @id @default(uuid()) @db.Uuid
+  listingId String            @db.Uuid
+  listing   Listing           @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  variantId String?           @db.Uuid
+  buyerId   String            @db.Uuid
+  buyer     User              @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  quantity  Int               @default(1)
+  status    ReservationStatus @default(active)
+  expiresAt DateTime
+  createdAt DateTime          @default(now())
+
+  @@index([status, expiresAt])
+  @@index([buyerId, status])
+}
+
+/// One cart per (buyer, seller-or-store). Carts are never mixed across sellers
+/// because a single payment cannot settle to two payees (spec §40).
+model Cart {
+  id       String  @id @default(uuid()) @db.Uuid
+  buyerId  String  @db.Uuid
+  buyer    User    @relation("cartBuyer", fields: [buyerId], references: [id], onDelete: Cascade)
+  sellerId String  @db.Uuid
+  seller   User    @relation("cartSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+  storeId  String? @db.Uuid
+  store    Store?  @relation(fields: [storeId], references: [id], onDelete: SetNull)
+  currency String  @default("ARS")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items CartItem[]
+
+  @@unique([buyerId, sellerId, storeId])
+  @@index([buyerId])
+}
+
+model CartItem {
+  id        String          @id @default(uuid()) @db.Uuid
+  cartId    String          @db.Uuid
+  cart      Cart            @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  listingId String          @db.Uuid
+  listing   Listing         @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  variantId String?         @db.Uuid
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  quantity  Int             @default(1)
+  addedAt   DateTime        @default(now())
+
+  @@unique([cartId, listingId, variantId])
+  @@index([cartId])
+}
+
+model Order {
+  id        String      @id @default(uuid()) @db.Uuid
+  reference String      @unique
+  status    OrderStatus @default(pending_payment)
+
+  buyerId  String  @db.Uuid
+  buyer    User    @relation("buyer", fields: [buyerId], references: [id])
+  sellerId String  @db.Uuid
+  seller   User    @relation("seller", fields: [sellerId], references: [id])
+  storeId  String? @db.Uuid
+  store    Store?  @relation(fields: [storeId], references: [id])
+
+  offerId String? @db.Uuid
+  offer   Offer?  @relation(fields: [offerId], references: [id])
+
+  currency      String @default("ARS")
+  subtotal      Int
+  discountTotal Int    @default(0)
+  shippingTotal Int    @default(0)
+  platformFee   Int    @default(0)
+  total         Int
+
+  deliveryMethod    DeliveryMethod
+  meetingLabel      String?
+  meetingPoint      Unsupported("geography(Point, 4326)")?
+  meetingAgreedAt   DateTime?
+
+  createdAt   DateTime  @default(now())
+  paidAt      DateTime?
+  completedAt DateTime?
+  cancelledAt DateTime?
+
+  items    OrderItem[]
+  payments Payment[]
+  reviews  Review[]
+  disputes Dispute[]
+
+  @@index([buyerId, status])
+  @@index([sellerId, status])
+  @@index([storeId, status])
+  @@index([createdAt])
+}
+
+/// Snapshots, not references. A historical sale must render correctly even after
+/// the listing is edited or deleted (spec §42).
+model OrderItem {
+  id                   String  @id @default(uuid()) @db.Uuid
+  orderId              String  @db.Uuid
+  order                Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  listingId            String? @db.Uuid
+  listing              Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  variantId            String? @db.Uuid
+  titleSnapshot        String
+  imageUrlSnapshot     String?
+  variantLabelSnapshot String?
+  unitPriceSnapshot    Int
+  currency             String  @default("ARS")
+  quantity             Int
+  lineTotal            Int
+
+  @@index([orderId])
+}
+
+model Payment {
+  id             String        @id @default(uuid()) @db.Uuid
+  orderId        String        @db.Uuid
+  order          Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  provider       String
+  providerRef    String?
+  status         PaymentStatus @default(pending)
+  amount         Int
+  currency       String        @default("ARS")
+  refundedAmount Int           @default(0)
+  failureReason  String?
+  rawPayload     Json?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([orderId])
+  @@index([provider, providerRef])
+}
+
+/* ── engagement ───────────────────────────────────────────────────────────── */
+
+model FavoriteCollection {
+  id        String     @id @default(uuid()) @db.Uuid
+  userId    String     @db.Uuid
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  createdAt DateTime   @default(now())
+  favorites Favorite[]
+
+  @@unique([userId, name])
+}
+
+model Favorite {
+  id           String              @id @default(uuid()) @db.Uuid
+  userId       String              @db.Uuid
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listingId    String?             @db.Uuid
+  listing      Listing?            @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  storeId      String?             @db.Uuid
+  collectionId String?             @db.Uuid
+  collection   FavoriteCollection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  createdAt    DateTime            @default(now())
+
+  @@unique([userId, listingId])
+  @@unique([userId, storeId])
+  @@index([userId])
+}
+
+model SavedSearch {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @db.Uuid
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  text         String?
+  categoryIds  String[]
+  kinds        ListingKind[]
+  conditions   ItemCondition[]
+  minPrice     Int?
+  maxPrice     Int?
+  currency     String   @default("ARS")
+  center       Unsupported("geography(Point, 4326)")?
+  radiusMeters Int?
+  notify       Boolean  @default(true)
+  lastMatchedAt DateTime?
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([notify])
+}
+
+/* ── chat ─────────────────────────────────────────────────────────────────── */
+
+model Conversation {
+  id        String               @id @default(uuid()) @db.Uuid
+  context   ConversationContext?
+  contextId String?              @db.Uuid
+  listingId String?              @db.Uuid
+  listing   Listing?             @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  members  ConversationMember[]
+  messages Message[]
+
+  @@index([updatedAt])
+}
+
+model ConversationMember {
+  conversationId String       @db.Uuid
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String       @db.Uuid
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastReadAt     DateTime?
+  mutedAt        DateTime?
+  joinedAt       DateTime     @default(now())
+
+  @@id([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(uuid()) @db.Uuid
+  conversationId String       @db.Uuid
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String       @db.Uuid
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  kind           MessageKind  @default(text)
+  body           String?
+  imageUrl       String?
+  offerId        String?      @db.Uuid
+  meetingLabel   String?
+  meetingPoint   Unsupported("geography(Point, 4326)")?
+  /// Idempotency key from the client, so a retried send does not duplicate.
+  clientId       String?
+  createdAt      DateTime     @default(now())
+
+  @@unique([conversationId, clientId])
+  @@index([conversationId, createdAt])
+}
+
+/* ── reviews, notifications, feed ─────────────────────────────────────────── */
+
+model Review {
+  id        String   @id @default(uuid()) @db.Uuid
+  orderId   String   @db.Uuid
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  authorId  String   @db.Uuid
+  author    User     @relation("reviewAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  subjectId String   @db.Uuid
+  subject   User     @relation("reviewSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+  rating    Int
+  body      String?
+  createdAt DateTime @default(now())
+
+  /// One review per author per order — enforced here, not in application code.
+  @@unique([orderId, authorId])
+  @@index([subjectId])
+}
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @db.Uuid
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  body      String?
+  imageUrl  String?
+  deepLink  String?
+  data      Json?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+}
+
+model NotificationPreference {
+  userId  String           @db.Uuid
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type    NotificationType
+  push    Boolean          @default(true)
+  email   Boolean          @default(false)
+  inApp   Boolean          @default(true)
+
+  @@id([userId, type])
+}
+
+model FeedItem {
+  id        String       @id @default(uuid()) @db.Uuid
+  /// Denormalised fan-out: one row per recipient.
+  userId    String       @db.Uuid
+  type      FeedItemType
+  actorId   String?      @db.Uuid
+  storeId   String?      @db.Uuid
+  listingId String?      @db.Uuid
+  headline  String
+  createdAt DateTime     @default(now())
+
+  @@index([userId, createdAt])
+}
+
+/* ── promotions ───────────────────────────────────────────────────────────── */
+
+model Promotion {
+  id            String        @id @default(uuid()) @db.Uuid
+  storeId       String?       @db.Uuid
+  store         Store?        @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  ownerId       String?       @db.Uuid
+  kind          PromotionKind
+  label         String
+  basisPoints   Int?
+  fixedPriceAmount Int?
+  currency      String        @default("ARS")
+  couponCode    String?       @unique
+  minimumQuantity Int?
+  requiredTier  AudienceTier  @default(public)
+  stacksWithSocialDiscount Boolean @default(false)
+  startsAt      DateTime?
+  endsAt        DateTime?
+  active        Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+
+  listings PromotionListing[]
+
+  @@index([storeId, active])
+  @@index([active, startsAt, endsAt])
+}
+
+model PromotionListing {
+  promotionId String    @db.Uuid
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  listingId   String    @db.Uuid
+  listing     Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@id([promotionId, listingId])
+  @@index([listingId])
+}
+
+/* ── trust & safety ───────────────────────────────────────────────────────── */
+
+model Report {
+  id         String           @id @default(uuid()) @db.Uuid
+  reporterId String           @db.Uuid
+  reporter   User             @relation("reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  targetType ReportTargetType
+  targetId   String           @db.Uuid
+  category   String
+  detail     String?
+  status     ReportStatus     @default(open)
+  resolvedBy String?          @db.Uuid
+  resolvedAt DateTime?
+  createdAt  DateTime         @default(now())
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+}
+
+model Dispute {
+  id         String        @id @default(uuid()) @db.Uuid
+  orderId    String        @db.Uuid
+  order      Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  openedById String        @db.Uuid
+  openedBy   User          @relation(fields: [openedById], references: [id], onDelete: Cascade)
+  status     DisputeStatus @default(opened)
+  reason     String
+  resolution String?
+  refundAmount Int?
+  evidence   DisputeEvidence[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([status, createdAt])
+}
+
+model DisputeEvidence {
+  id          String   @id @default(uuid()) @db.Uuid
+  disputeId   String   @db.Uuid
+  dispute     Dispute  @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  uploadedById String  @db.Uuid
+  url         String
+  note        String?
+  createdAt   DateTime @default(now())
+
+  @@index([disputeId])
+}
+
+model RiskAssessment {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score     Int
+  band      String
+  signals   Json
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model AdminAuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  adminId    String   @db.Uuid
+  admin      User     @relation(fields: [adminId], references: [id])
+  action     String
+  targetType String
+  targetId   String
+  reason     String
+  before     Json?
+  after      Json?
+  createdAt  DateTime @default(now())
+
+  @@index([adminId, createdAt])
+  @@index([targetType, targetId])
+}
+
+/* ── platform configuration ───────────────────────────────────────────────── */
+
+/// Single-row table holding operator-tunable values, so commissions, radii and
+/// auction limits are never hardcoded (spec §78).
+model GlobalConfig {
+  id                       Int      @id @default(1)
+  platformFeeBasisPoints   Int      @default(500)
+  maxSearchRadiusMeters    Int      @default(50000)
+  defaultReservationMinutes Int     @default(30)
+  maxAuctionDurationDays   Int      @default(30)
+  publicLocationFuzzMeters Int      @default(350)
+  prohibitedKeywords       String[]
+  updatedAt                DateTime @updatedAt
+}
+
+model FeatureFlag {
+  key         String   @id
+  enabled     Boolean  @default(false)
+  description String?
+  /// Percentage rollout, 0-100. Evaluated against a hash of the user id.
+  rolloutPercent Int   @default(100)
+  updatedAt   DateTime @updatedAt
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  userId    String?  @db.Uuid
+  sessionId String?
+  properties Json?
+  createdAt DateTime @default(now())
+
+  @@index([name, createdAt])
+  @@index([userId, createdAt])
+}
+
+/// Aggregated search demand, used for the "14 personas buscaron PS5" insight.
+/// Deliberately stores no user ids — only counts inside a coarse geohash cell.
+model SearchDemand {
+  id         String   @id @default(uuid()) @db.Uuid
+  term       String
+  geohash    String
+  weekStart  DateTime
+  searchCount Int     @default(0)
+  uniqueUsers Int     @default(0)
+
+  @@unique([term, geohash, weekStart])
+  @@index([weekStart])
+}
+
+/* ── enums ────────────────────────────────────────────────────────────────── */
+
+enum ListingKind {
+  sale
+  wanted
+  auction
+}
+
+enum ListingStatus {
+  draft
+  active
+  reserved
+  sold
+  paused
+  expired
+  removed
+}
+
+enum ItemCondition {
+  new
+  like_new
+  good
+  fair
+  for_parts
+}
+
+enum DeliveryMethod {
+  pickup
+  meetup
+  store_delivery
+  shipping
+}
+
+enum OfferStatus {
+  pending
+  accepted
+  rejected
+  countered
+  expired
+  cancelled
+  completed
+}
+
+enum AuctionStatus {
+  scheduled
+  live
+  ended
+  cancelled
+}
+
+enum OrderStatus {
+  pending_payment
+  paid
+  preparing
+  ready_for_pickup
+  shipped
+  delivered
+  completed
+  cancelled
+  refunded
+  disputed
+}
+
+enum PaymentStatus {
+  pending
+  authorized
+  captured
+  failed
+  refunded
+  partially_refunded
+  cancelled
+}
+
+enum ReservationStatus {
+  active
+  consumed
+  released
+  expired
+}
+
+enum FriendshipStatus {
+  pending
+  accepted
+  rejected
+  blocked
+}
+
+enum AudienceTier {
+  public
+  follower
+  friend
+}
+
+enum StoreRole {
+  owner
+  admin
+  manager
+  seller
+  support
+}
+
+enum AdminRole {
+  super_admin
+  admin
+  moderator
+  support
+  finance
+}
+
+enum PromotionKind {
+  percentage
+  fixed_price
+  follower_discount
+  flash_sale
+  second_unit
+  minimum_quantity
+  coupon
+}
+
+enum DisputeStatus {
+  opened
+  under_review
+  resolved_buyer
+  resolved_seller
+  partial
+  closed
+}
+
+enum ReportTargetType {
+  listing
+  user
+  store
+  message
+  review
+}
+
+enum ReportStatus {
+  open
+  reviewing
+  actioned
+  dismissed
+}
+
+enum NotificationType {
+  message
+  offer
+  counteroffer
+  offer_accepted
+  sale
+  purchase
+  friend_request
+  friend_accepted
+  new_follower
+  price_drop
+  auction_starting
+  auction_ending
+  outbid
+  auction_won
+  store_promotion
+  saved_search_match
+  wanted_match
+}
+
+enum FeedItemType {
+  new_listing
+  new_auction
+  wanted_listing
+  store_promotion
+  price_drop
+  friend_activity
+  recommended_listing
+}
+
+enum ConversationContext {
+  listing
+  order
+  auction
+  store
+}
+
+enum MessageKind {
+  text
+  image
+  offer
+  counteroffer
+  offer_accepted
+  reservation
+  meeting_point
+  system
+}
+
+enum SubscriptionPlan {
+  free
+  pro
+  business
+}

@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    // DOM on top of the base's ES2022. The callbacks passed to `page.evaluate`
+    // are serialised and run inside the browser, so they legitimately reach for
+    // `document` and `getComputedStyle` even though the file around them runs
+    // in Node.
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+  },
+  "include": ["**/*.ts"]
+}

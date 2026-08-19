@@ -1,0 +1,127 @@
+.surface {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-surface-sunken);
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+
+.surface:active {
+  cursor: grabbing;
+}
+
+/*
+ * Placeholder graticule shown when no tile provider is configured. It gives the
+ * map a sense of scale and movement while panning, without pretending to be
+ * cartography.
+ */
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--color-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+  background-size: 64px 64px;
+  opacity: 0.5;
+}
+
+/*
+ * The export desaturates and warms OSM tiles so markers stay the loudest thing
+ * on screen. Without it the map competes with its own content.
+ */
+.tileLayer {
+  position: absolute;
+  inset: 0;
+  filter: var(--map-tile-filter);
+}
+
+/* Accent wash over the tiles, at the 7% the export uses. */
+.tileTint {
+  position: absolute;
+  inset: 0;
+  background: var(--color-auction);
+  opacity: 0.07;
+  pointer-events: none;
+}
+
+.markerLayer {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-map-marker);
+}
+
+.loadingBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: var(--z-overlay-controls);
+  background: linear-gradient(90deg, transparent, var(--color-brand), transparent);
+  background-size: 40% 100%;
+  background-repeat: no-repeat;
+  animation: sweep 1.1s var(--easing-standard) infinite;
+}
+
+@keyframes sweep {
+  from {
+    background-position: -40% 0;
+  }
+  to {
+    background-position: 140% 0;
+  }
+}
+
+.scale {
+  position: absolute;
+  left: var(--space-5);
+  bottom: var(--space-5);
+  z-index: var(--z-overlay-controls);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface-overlay);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-sm);
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-secondary);
+}
+
+.scaleBar {
+  display: block;
+  width: 100px;
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--color-text-tertiary);
+}
+
+.zoomControls {
+  position: absolute;
+  right: var(--space-5);
+  bottom: var(--space-5);
+  z-index: var(--z-overlay-controls);
+  display: flex;
+  flex-direction: column;
+  gap: var(--border-width-hairline);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.zoomControls button {
+  width: var(--touch-target-min);
+  height: var(--touch-target-min);
+  border: none;
+  background: var(--color-surface-overlay);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  line-height: 1;
+}
+
+.zoomControls button:hover {
+  background: var(--color-surface-sunken);
+}

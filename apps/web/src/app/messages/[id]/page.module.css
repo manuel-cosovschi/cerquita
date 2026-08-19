@@ -1,0 +1,260 @@
+/*
+ * A conversation.
+ *
+ * Full-height column: a fixed header naming who and what, a scrolling
+ * transcript, and a composer pinned to the bottom. The dock is deliberately
+ * absent — you are inside a thread, and a nav bar competing with the composer
+ * for the same 60px is the classic way to lose a message to a mis-tap.
+ */
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  background: var(--color-background);
+}
+
+.header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-6);
+  background: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.back {
+  flex: none;
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  padding: var(--space-2);
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: var(--radius-full);
+  background: var(--color-brand-subtle);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-black);
+  color: var(--color-text-primary);
+  object-fit: cover;
+}
+
+.who {
+  min-width: 0;
+  flex: 1;
+}
+
+.name {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.about {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The listing this thread is about, kept in reach the whole way down. */
+.contextCard {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: var(--space-5) var(--space-6) 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--ring-hairline);
+  color: inherit;
+}
+
+.contextImage {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--color-surface-sunken);
+}
+
+.contextTitle {
+  display: block;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contextPrice {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+
+/* ── transcript ───────────────────────────────────────────────────────────── */
+
+.thread {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.day {
+  align-self: center;
+  margin: var(--space-4) 0 var(--space-2);
+  padding: 2px var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-sunken);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary);
+}
+
+.bubble {
+  max-width: 78%;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  word-break: break-word;
+}
+
+.mine {
+  align-self: flex-end;
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
+  border-bottom-right-radius: var(--radius-xs);
+}
+
+.theirs {
+  align-self: flex-start;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--ring-hairline);
+  border-bottom-left-radius: var(--radius-xs);
+}
+
+/* Not yet acknowledged by the server. */
+.pending {
+  opacity: 0.6;
+}
+
+.time {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--font-size-3xs);
+  opacity: 0.65;
+  font-variant-numeric: tabular-nums;
+}
+
+.image {
+  display: block;
+  max-width: 100%;
+  border-radius: var(--radius-md);
+}
+
+/* Meeting points are a distinct kind of message, not a formatted string. */
+.meeting {
+  align-self: center;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-friend-subtle);
+  color: var(--color-friend);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+}
+
+/* ── composer ─────────────────────────────────────────────────────────────── */
+
+.composer {
+  flex: none;
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6) calc(var(--space-6) + env(safe-area-inset-bottom));
+  background: var(--color-background);
+  border-top: 1px solid var(--color-border);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--touch-target-min);
+  max-height: 120px;
+  padding: var(--space-3) var(--space-5);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--ring-hairline);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  resize: none;
+}
+
+.send {
+  flex: none;
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+  padding: 0 var(--space-6);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+}
+
+.send:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.state {
+  margin: auto;
+  padding: var(--space-9);
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-md);
+}
+
+.error {
+  margin: 0 var(--space-6) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-danger);
+  text-align: center;
+}
+
+.safetyNote {
+  margin: 0 var(--space-6) var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-warning-subtle);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+}

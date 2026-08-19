@@ -1,0 +1,155 @@
+.layout {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100dvh;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: var(--border-width-hairline) solid var(--color-border);
+  background: var(--color-surface);
+  z-index: var(--z-header);
+}
+
+.logo {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.02em;
+  color: var(--color-brand);
+}
+
+.searchForm {
+  display: flex;
+  gap: var(--space-3);
+  max-width: 620px;
+  width: 100%;
+  justify-self: center;
+}
+
+.searchInput {
+  flex: 1;
+  min-height: var(--touch-target-min);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-pill);
+  border: var(--border-width-hairline) solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.searchButton,
+.publishButton {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target-min);
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-pill);
+  border: none;
+  background: var(--color-brand);
+  color: var(--color-text-on-brand);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.searchButton:hover,
+.publishButton:hover {
+  background: var(--color-brand-hover);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+/*
+ * Desktop: results and map side by side (spec §60). The map is the larger of
+ * the two because it is the primary interface of the product.
+ */
+.body {
+  display: grid;
+  grid-template-columns: minmax(340px, 34%) 1fr;
+  min-height: 0;
+}
+
+.mapPane {
+  position: relative;
+  min-height: 0;
+}
+
+.mapOverlay {
+  position: absolute;
+  top: var(--space-4);
+  left: var(--space-4);
+  right: var(--space-4);
+  z-index: var(--z-overlay-controls);
+  pointer-events: none;
+}
+
+.mapOverlay > * {
+  pointer-events: auto;
+}
+
+.searchHere {
+  position: absolute;
+  top: calc(var(--space-4) + 52px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-overlay-controls);
+}
+
+.searchHereButton {
+  min-height: 38px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-pill);
+  border: var(--border-width-hairline) solid var(--color-border-strong);
+  background: var(--color-surface-overlay);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  box-shadow: var(--shadow-md);
+}
+
+.searchHereButton:hover {
+  background: var(--color-surface-sunken);
+}
+
+/*
+ * Tablet and below: the map becomes the whole surface and results are a sheet.
+ * Mobile is not a narrowed desktop — the map is full-bleed and thumb-reachable.
+ */
+@media (max-width: 1023px) {
+  .body {
+    grid-template-columns: 1fr;
+    /*
+     * The sheet is capped, not `auto`.
+     *
+     * With `auto` the results row sized itself to its content, so as soon as a
+     * search returned anything the sheet grew and squeezed the map to zero
+     * height — the map vanished exactly when it finally had something to show.
+     * Capping it makes the list scroll inside the sheet, which is what a sheet
+     * is, and leaves the map its half of the screen.
+     */
+    grid-template-rows: minmax(0, 1fr) minmax(0, 52vh);
+  }
+
+  .mapPane {
+    grid-row: 1;
+  }
+
+  .header {
+    grid-template-columns: auto 1fr;
+    gap: var(--space-4);
+  }
+
+  .actions {
+    display: none;
+  }
+}

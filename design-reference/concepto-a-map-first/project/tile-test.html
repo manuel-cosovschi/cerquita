@@ -1,0 +1,18 @@
+<!doctype html><meta charset="utf-8">
+<body style="margin:0;background:#111;display:flex;gap:8px">
+<script>
+const z=15,X=11146,Y=20128;
+function grid(filter){
+  const d=document.createElement('div');
+  d.style.cssText=`display:grid;grid-template-columns:repeat(3,180px);grid-template-rows:repeat(3,180px);filter:${filter}`;
+  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+    const i=document.createElement('img');
+    i.src=`https://tile.openstreetmap.org/${z}/${X+dx}/${Y+dy}.png`;
+    i.style.cssText='width:180px;height:180px;display:block';
+    d.appendChild(i);
+  }
+  return d;
+}
+document.body.append(grid('none'),grid('invert(1) hue-rotate(180deg) saturate(.55) brightness(.9) contrast(1.05)'));
+</script>
+</body>

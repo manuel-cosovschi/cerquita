@@ -1,0 +1,54 @@
+{
+  "name": "cerquita",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Cerquita — hyperlocal social marketplace",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/**\" build",
+    "typecheck": "pnpm -r typecheck && tsc -p e2e/tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "dev:infra": "docker compose up -d",
+    "dev:infra:down": "docker compose down",
+    "db:generate": "pnpm --filter @cerquita/api db:generate",
+    "db:migrate": "pnpm --filter @cerquita/api db:migrate",
+    "db:seed": "pnpm --filter @cerquita/api db:seed",
+    "dev:api": "pnpm --filter @cerquita/api dev",
+    "dev:web": "pnpm --filter @cerquita/web dev",
+    "dev:admin": "pnpm --filter @cerquita/admin dev",
+    "dev:mobile": "pnpm --filter @cerquita/mobile start"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@eslint/js": "^9.18.0",
+    "@playwright/test": "1.56.1",
+    "@types/node": "^22.20.1",
+    "axe-core": "^4.13.0",
+    "eslint": "^9.18.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.11.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.21.0",
+    "vitest": "^3.0.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "prisma",
+      "@prisma/engines",
+      "argon2",
+      "esbuild",
+      "msgpackr-extract"
+    ]
+  }
+}
