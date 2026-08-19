@@ -132,7 +132,11 @@ export default function MessagesPage() {
                 {unread && (
                   <span className={styles.badge}>
                     {conversation.unreadCount}
-                    <span className="sr-only"> mensajes sin leer</span>
+                    {/* Read aloud, so it has to agree: "1 mensajes sin leer" is
+                        the most common case there is — one message. */}
+                    <span className="sr-only">
+                      {conversation.unreadCount === 1 ? ' mensaje sin leer' : ' mensajes sin leer'}
+                    </span>
                   </span>
                 )}
               </Link>

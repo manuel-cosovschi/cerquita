@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { SELLER_LISTING, findListing } from './helpers';
+import { API, AS, SELLER_LISTING, findListing, login, signIn } from './helpers';
 
 /**
  * Singular and plural agreement.
@@ -29,6 +29,8 @@ const COUNTED: Array<[singular: string, plural: string]> = [
   ['foto', 'fotos'],
   ['oferta', 'ofertas'],
   ['puja', 'pujas'],
+  ['mensaje', 'mensajes'],
+  ['conversación', 'conversaciones'],
 ];
 
 /**
@@ -87,6 +89,46 @@ test.describe('counts agree with the nouns beside them', () => {
 
     await page.goto(`/listing/${listing.id}`);
     await expect(page.getByRole('heading', { name: SELLER_LISTING })).toBeVisible();
+
+    expect(disagreements(await page.innerText('body'))).toEqual([]);
+  });
+
+  test('the message list', async ({ page, request }) => {
+    /*
+     * Creates the case rather than hoping for it.
+     *
+     * "1 mensajes sin leer" needs a thread with exactly one unread message, and
+     * whether the seeded inbox happens to contain one depends on what anybody
+     * clicked last. The first version of this test passed against the bug for
+     * precisely that reason.
+     */
+    const sender = await login(request, AS.follower);
+    const seller = await login(request, AS.seller);
+
+    const me = await request.get(`${API}/api/users/manuel`);
+    const { id: sellerId } = (await me.json()) as { id: string };
+
+    const opened = await request.post(`${API}/api/conversations`, {
+      headers: sender.headers,
+      data: { recipientId: sellerId, firstMessage: 'Una sola pregunta.' },
+    });
+    const conversation = (await opened.json()) as { id: string };
+
+    // Read it first so the count starts from zero, then send exactly one.
+    await request.post(`${API}/api/conversations/${conversation.id}/read`, {
+      headers: seller.headers,
+      data: {},
+    });
+    await request.post(`${API}/api/conversations/${conversation.id}/messages`, {
+      headers: sender.headers,
+      data: { body: 'Y ahora sí, una sin leer.' },
+    });
+
+    await signIn(page, AS.seller, '/messages');
+    await expect(page.getByRole('heading', { name: 'Chats' }).first()).toBeVisible();
+    // Wait for the thread to appear before reading the page, so the assertion
+    // is not racing the fetch.
+    await expect(page.getByText('Y ahora sí, una sin leer.')).toBeVisible({ timeout: 15_000 });
 
     expect(disagreements(await page.innerText('body'))).toEqual([]);
   });
