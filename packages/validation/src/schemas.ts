@@ -287,6 +287,14 @@ export const createStoreSchema = z.object({
   location: coordinatesSchema.optional(),
   address: z.string().max(300).optional(),
   deliveryMethods: z.array(deliveryMethodSchema).min(1),
+  /**
+   * What the shop takes off for people who follow it.
+   *
+   * Stores have followers but no friends, so this is the only social rate they
+   * get. The column and the pricing engine had it from the start; there was
+   * simply no way to set it, which made it a rate only the seed could grant.
+   */
+  followerBasisPoints: basisPointsSchema.optional(),
 });
 
 export const updateStoreSchema = createStoreSchema.partial().omit({ handle: true });

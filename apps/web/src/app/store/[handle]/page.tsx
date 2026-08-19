@@ -75,9 +75,12 @@ export default function StorePage() {
 
     setBusy(true);
     try {
-      await api.stores.follow(store.id);
-      // The endpoint toggles, so the truth comes back from a reload rather than
-      // from flipping a boolean here.
+      // Two endpoints, not a toggle: following used to be a one-way door
+      // because only the POST existed, so this button did nothing once it read
+      // "Siguiendo". The truth still comes back from a reload rather than from
+      // flipping a boolean here.
+      if (store.isFollowedByViewer) await api.stores.unfollow(store.id);
+      else await api.stores.follow(store.id);
       await load();
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : 'No pudimos completar la acción.');

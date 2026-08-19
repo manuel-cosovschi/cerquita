@@ -541,6 +541,8 @@ export function createClient(options: ClientOptions) {
       listings: (storeId: string, cursor?: string) =>
         post<Paginated<ListingSummary>>('/search', { storeId, sort: 'newest', cursor, limit: 24 }),
       follow: (storeId: string) => post<unknown>(`/stores/${storeId}/follow`, {}),
+      unfollow: (storeId: string) =>
+        request<unknown>(`/stores/${storeId}/follow`, { method: 'DELETE' }),
     },
 
     favorites: {

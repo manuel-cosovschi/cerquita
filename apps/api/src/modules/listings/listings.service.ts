@@ -8,6 +8,7 @@ import { Prisma } from '@prisma/client';
 import type { AudienceTier, Listing, ListingSummary } from '@cerquita/types';
 import {
   canManageListing,
+  discountPolicyFor,
   isNotifiablePriceDrop,
   resolveAudienceTier,
   validateListingForPublish,
@@ -458,7 +459,7 @@ export class ListingsService {
       },
     });
 
-    const tier = await this.resolveTier(row.sellerId, viewerId);
+    const tier = await this.resolveTier(row.sellerId, viewerId, row.storeId);
 
     const [images, favorite, store, promotions] = await Promise.all([
       this.prisma.listingImage.findMany({
@@ -482,16 +483,21 @@ export class ListingsService {
               verified: true,
               ratingSum: true,
               reviewCount: true,
+              followerDiscountBps: true,
             },
           })
         : Promise.resolve(null),
       this.loadPromotions(row.id),
     ]);
 
-    const sellerPolicy: DiscountPolicy = {
-      followerBasisPoints: seller.followerDiscountBps,
-      friendBasisPoints: seller.friendDiscountBps,
-    };
+    // A shop's listing is priced by the shop, not by whoever owns it.
+    const sellerPolicy: DiscountPolicy = discountPolicyFor({
+      seller: {
+        followerBasisPoints: seller.followerDiscountBps,
+        friendBasisPoints: seller.friendDiscountBps,
+      },
+      store: store ? { followerBasisPoints: store.followerDiscountBps } : null,
+    });
 
     return {
       tier,
@@ -539,10 +545,22 @@ export class ListingsService {
    * Sellers viewing their own listing resolve to `public`, so the price they see
    * is the one strangers see rather than a discount they cannot claim.
    */
-  async resolveTier(sellerId: string, viewerId?: string): Promise<AudienceTier> {
+  /**
+   * What this viewer counts as for this seller.
+   *
+   * `storeId` matters because following a shop is its own relationship: it used
+   * to be ignored entirely, so a shop could set a followers' rate that nobody
+   * could ever earn — the only way to get a discount on a shop's listing was to
+   * follow the person who owned it, which is a different thing to have done.
+   */
+  async resolveTier(
+    sellerId: string,
+    viewerId?: string,
+    storeId?: string | null,
+  ): Promise<AudienceTier> {
     if (!viewerId || viewerId === sellerId) return 'public';
 
-    const [friendship, follow, block] = await Promise.all([
+    const [friendship, follow, storeFollow, block] = await Promise.all([
       this.prisma.friendship.findFirst({
         where: {
           OR: [
@@ -556,6 +574,12 @@ export class ListingsService {
         where: { followerId_followeeId: { followerId: viewerId, followeeId: sellerId } },
         select: { followerId: true },
       }),
+      storeId
+        ? this.prisma.storeFollow.findUnique({
+            where: { storeId_userId: { storeId, userId: viewerId } },
+            select: { userId: true },
+          })
+        : Promise.resolve(null),
       this.prisma.block.findFirst({
         where: {
           OR: [
@@ -568,7 +592,9 @@ export class ListingsService {
     ]);
 
     return resolveAudienceTier({
-      isFollowing: follow !== null,
+      // Following the shop counts on the shop's listings, following the person
+      // counts on theirs, and either is enough on a listing that has both.
+      isFollowing: follow !== null || storeFollow !== null,
       isFollowedBy: false,
       friendship: friendship?.status ?? null,
       isBlocked: block !== null,

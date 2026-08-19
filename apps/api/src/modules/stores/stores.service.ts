@@ -37,6 +37,7 @@ export class StoresService {
       location?: Coordinates;
       address?: string;
       deliveryMethods: string[];
+      followerBasisPoints?: number;
     },
     actor: AuthenticatedUser,
   ): Promise<Store> {
@@ -66,6 +67,7 @@ export class StoresService {
         hasPhysicalLocation: input.hasPhysicalLocation,
         address: input.address,
         deliveryMethods: input.deliveryMethods as never,
+        followerDiscountBps: input.followerBasisPoints,
         // The creator is the owner; that is the only way an owner is assigned.
         members: { create: { userId: actor.userId, role: 'owner' } },
       },
@@ -108,13 +110,14 @@ export class StoresService {
         address: string | null;
         ratingSum: number;
         reviewCount: number;
+        followerDiscountBps: number;
         lat: number | null;
         lng: number | null;
       }>
     >`
       SELECT s."id", s."handle", s."name", s."description", s."logoUrl", s."coverUrl",
              s."categories", s."verified", s."hasPhysicalLocation", s."address",
-             s."ratingSum", s."reviewCount",
+             s."ratingSum", s."reviewCount", s."followerDiscountBps",
              ST_Y(s."publicLocation"::geometry) AS lat,
              ST_X(s."publicLocation"::geometry) AS lng
       FROM "Store" s
@@ -184,6 +187,9 @@ export class StoresService {
       isOpenNow: isOpenNow(openingHours, new Date()),
       deliveryMethods: deliveryMethods.deliveryMethods as Store['deliveryMethods'],
       isFollowedByViewer: isFollowed !== null,
+      // Public on purpose: "seguime y te hago 5%" only works if people can see
+      // the offer before they follow.
+      followerBasisPoints: store.followerDiscountBps,
       viewerRole: (membership?.role as StoreRole | undefined) ?? undefined,
     };
   }
@@ -204,6 +210,9 @@ export class StoresService {
         hasPhysicalLocation: patch.hasPhysicalLocation as boolean | undefined,
         address: patch.address as string | undefined,
         deliveryMethods: patch.deliveryMethods as never,
+        // The API says "basis points" and the column says "bps"; the mapping
+        // lives here so neither name has to follow the other around.
+        followerDiscountBps: patch.followerBasisPoints as number | undefined,
       },
       select: { handle: true },
     });

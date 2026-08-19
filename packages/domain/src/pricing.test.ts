@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { money } from '@cerquita/utils';
 import {
+  discountPolicyFor,
   NO_DISCOUNT_POLICY,
   priceMatchesQuote,
   resolvePrice,
@@ -237,5 +238,31 @@ describe('no policy configured', () => {
       });
       expect(result.effective).toEqual(ARS(50_000));
     }
+  });
+});
+
+describe('discountPolicyFor', () => {
+  const seller = { followerBasisPoints: 500, friendBasisPoints: 1500 };
+
+  it("uses the person's own policy for their own listings", () => {
+    expect(discountPolicyFor({ seller })).toEqual(seller);
+    expect(discountPolicyFor({ seller, store: null })).toEqual(seller);
+  });
+
+  it("uses the shop's rate for a shop's listings, not the owner's", () => {
+    // Somebody who gives their friends 15% off their own things has not thereby
+    // discounted the shop's inventory.
+    expect(discountPolicyFor({ seller, store: { followerBasisPoints: 300 } })).toEqual({
+      followerBasisPoints: 300,
+      friendBasisPoints: 300,
+    });
+  });
+
+  it('never lets a shop grant more than its follower rate', () => {
+    // Shops have followers and no friends, so a friend of the owner earns the
+    // follower rate and nothing beyond it.
+    const policy = discountPolicyFor({ seller, store: { followerBasisPoints: 0 } });
+    expect(policy.followerBasisPoints).toBe(0);
+    expect(policy.friendBasisPoints).toBe(0);
   });
 });

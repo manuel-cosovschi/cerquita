@@ -50,6 +50,31 @@ export const NO_DISCOUNT_POLICY: DiscountPolicy = {
   friendBasisPoints: 0,
 };
 
+/**
+ * Whose discount policy governs a listing.
+ *
+ * A shop's listing is priced by the shop, not by whoever happens to own it: a
+ * seller who gives their friends 15% off their own things is not thereby
+ * discounting the shop's inventory. Shops have followers and no friends, so
+ * their friend rate is their follower rate.
+ *
+ * Built here rather than at each call site because four of them assembled it by
+ * hand — the cart, the checkout, the offers and the listing serializer — and
+ * they must agree exactly or the price shown stops matching the price charged.
+ */
+export function discountPolicyFor(input: {
+  seller: { followerBasisPoints: number; friendBasisPoints: number };
+  /** The shop this listing belongs to, when it belongs to one. */
+  store?: { followerBasisPoints: number } | null;
+}): DiscountPolicy {
+  if (!input.store) return input.seller;
+
+  return {
+    followerBasisPoints: input.store.followerBasisPoints,
+    friendBasisPoints: input.store.followerBasisPoints,
+  };
+}
+
 /** A per-listing override. `null` on a field means "inherit the seller policy". */
 export interface ListingDiscountOverride {
   readonly followerBasisPoints: number | null;

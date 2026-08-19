@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import type { Cart } from '@cerquita/types';
-import { resolvePrice, toResolvedPriceDto } from '@cerquita/domain';
+import { discountPolicyFor, resolvePrice, toResolvedPriceDto } from '@cerquita/domain';
 import { add, money, zero, type Money } from '@cerquita/utils';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ListingsService } from '../listings/listings.service';
@@ -176,7 +176,16 @@ export class CartService {
             friendDiscountBps: true,
           },
         },
-        store: { select: { id: true, handle: true, name: true, logoUrl: true, verified: true } },
+        store: {
+          select: {
+            id: true,
+            handle: true,
+            name: true,
+            logoUrl: true,
+            verified: true,
+            followerDiscountBps: true,
+          },
+        },
       },
     });
 
@@ -185,7 +194,18 @@ export class CartService {
     }
 
     const currency = cart.currency as 'ARS';
-    const tier = await this.listings.resolveTier(cart.sellerId, buyerId);
+    const tier = await this.listings.resolveTier(cart.sellerId, buyerId, cart.storeId);
+
+    // A shop's listing is priced by the shop, not by whoever owns it. Built with
+    // the same helper the checkout uses, so the basket and the bill agree.
+    const sellerPolicy = discountPolicyFor({
+      seller: {
+        followerBasisPoints: cart.seller.followerDiscountBps,
+        friendBasisPoints: cart.seller.friendDiscountBps,
+      },
+      store: cart.store ? { followerBasisPoints: cart.store.followerDiscountBps } : null,
+    });
+
     const now = new Date();
 
     let subtotal: Money = zero(currency);
@@ -198,10 +218,7 @@ export class CartService {
       const resolution = resolvePrice({
         listPrice,
         tier,
-        sellerPolicy: {
-          followerBasisPoints: cart.seller.followerDiscountBps,
-          friendBasisPoints: cart.seller.friendDiscountBps,
-        },
+        sellerPolicy,
         listingOverride: {
           followerBasisPoints: item.listing.followerDiscountBps,
           friendBasisPoints: item.listing.friendDiscountBps,

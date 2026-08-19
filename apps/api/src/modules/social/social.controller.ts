@@ -65,4 +65,9 @@ export class SocialController {
   followStore(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.social.followStore(user.userId, id);
   }
+
+  @Delete('stores/:id/follow')
+  unfollowStore(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.social.unfollowStore(user.userId, id);
+  }
 }

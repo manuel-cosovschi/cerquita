@@ -4,6 +4,7 @@ import {
   canCancel,
   canCreateOffer,
   canRespond,
+  discountPolicyFor,
   resolvePrice,
   type OfferState,
 } from '@cerquita/domain';
@@ -51,6 +52,7 @@ export class OffersService {
         followerDiscountBps: true,
         friendDiscountBps: true,
         seller: { select: { followerDiscountBps: true, friendDiscountBps: true } },
+        store: { select: { followerDiscountBps: true } },
       },
     });
 
@@ -60,14 +62,18 @@ export class OffersService {
 
     // Compare against the price THIS buyer would actually pay, so someone with a
     // friend discount is not blocked for "exceeding" the public price.
-    const tier = await this.listings.resolveTier(listing.sellerId, buyerId);
+    const tier = await this.listings.resolveTier(listing.sellerId, buyerId, listing.storeId);
     const asking = resolvePrice({
       listPrice: money(listing.priceAmount ?? 0, listing.priceCurrency as 'ARS'),
       tier,
-      sellerPolicy: {
-        followerBasisPoints: listing.seller.followerDiscountBps,
-        friendBasisPoints: listing.seller.friendDiscountBps,
-      },
+      // A shop's listing is priced by the shop, not by whoever owns it.
+      sellerPolicy: discountPolicyFor({
+        seller: {
+          followerBasisPoints: listing.seller.followerDiscountBps,
+          friendBasisPoints: listing.seller.friendDiscountBps,
+        },
+        store: listing.store ? { followerBasisPoints: listing.store.followerDiscountBps } : null,
+      }),
       listingOverride: {
         followerBasisPoints: listing.followerDiscountBps,
         friendBasisPoints: listing.friendDiscountBps,

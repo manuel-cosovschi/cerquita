@@ -47,6 +47,9 @@ export default function StoreManagePage() {
   const [couponCode, setCouponCode] = useState('');
   const [endsAt, setEndsAt] = useState('');
 
+  /** The shop's rate for its own followers, as a percentage in the input. */
+  const [followerPercent, setFollowerPercent] = useState('');
+
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
@@ -72,10 +75,27 @@ export default function StoreManagePage() {
     if (promos.status === 'fulfilled') setPromotions(promos.value);
   }, []);
 
+  /**
+   * The follower rate comes from the store itself rather than the dashboard,
+   * which is why it loads separately: the dashboard is numbers, this is a
+   * setting.
+   */
+  const loadFollowerRate = useCallback(async (handle: string) => {
+    try {
+      const store = await api.stores.get(handle);
+      setFollowerPercent(String(store.followerBasisPoints / 100));
+    } catch {
+      // Leaving the field blank is better than filling it with a guess.
+    }
+  }, []);
+
   useEffect(() => {
     if (!storeId) return;
     void load(storeId);
-  }, [load, storeId]);
+
+    const handle = stores?.find((entry) => entry.id === storeId)?.handle;
+    if (handle) void loadFollowerRate(handle);
+  }, [load, loadFollowerRate, storeId, stores]);
 
   if (loading) {
     return (
@@ -127,6 +147,31 @@ export default function StoreManagePage() {
 
   const store = stores.find((entry) => entry.id === storeId) ?? stores[0];
   const needs = KINDS.find((entry) => entry.id === kind)?.needs ?? 'bps';
+
+  async function saveFollowerRate(event: FormEvent) {
+    event.preventDefault();
+    if (!storeId) return;
+
+    const percent = Number(followerPercent.replace(',', '.'));
+    if (!Number.isFinite(percent) || percent < 0 || percent > 100) {
+      setError('Poné un descuento entre 0 y 100.');
+      return;
+    }
+
+    setBusy(true);
+    setError(null);
+    setSaved(null);
+    try {
+      // Basis points on the wire: percentages with decimals are how rounding
+      // errors get into prices.
+      await api.stores.update(storeId, { followerBasisPoints: Math.round(percent * 100) });
+      setSaved(percent > 0 ? `Tus seguidores pagan ${percent}% menos.` : 'Descuento desactivado.');
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : 'No pudimos guardar el descuento.');
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function createPromotion(event: FormEvent) {
     event.preventDefault();
@@ -212,6 +257,35 @@ export default function StoreManagePage() {
           </div>
         </section>
       )}
+
+      <section className={styles.section} aria-label="Descuento a seguidores">
+        <h2 className={styles.sectionTitle}>Descuento a seguidores</h2>
+
+        <form className={styles.form} onSubmit={saveFollowerRate}>
+          <div>
+            <label className={styles.label} htmlFor="followerPercent">
+              Cuánto les descontás
+            </label>
+            <input
+              id="followerPercent"
+              className={styles.input}
+              inputMode="decimal"
+              value={followerPercent}
+              onChange={(event) => setFollowerPercent(event.target.value)}
+              placeholder="5"
+            />
+            <p className={styles.hint}>
+              Se aplica solo a quien te sigue, en todo lo que publiques. Las tiendas no tienen
+              amigos: esta es su única tarifa social, y se ve en tu perfil público para que la
+              oferta valga antes de seguirte.
+            </p>
+          </div>
+
+          <button type="submit" className={styles.submit} disabled={busy}>
+            {busy ? 'Guardando…' : 'Guardar descuento'}
+          </button>
+        </form>
+      </section>
 
       <section className={styles.section} aria-label="Promociones">
         <h2 className={styles.sectionTitle}>Promociones</h2>

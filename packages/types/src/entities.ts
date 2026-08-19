@@ -122,6 +122,13 @@ export interface Store extends StoreSummary {
   readonly isOpenNow?: boolean;
   readonly deliveryMethods: DeliveryMethod[];
   readonly isFollowedByViewer: boolean;
+  /**
+   * What the shop takes off for its followers, in basis points.
+   *
+   * Public rather than owner-only: "seguime y te hago 5%" is an offer, and an
+   * offer nobody can see before accepting it is not one.
+   */
+  readonly followerBasisPoints: number;
   readonly viewerRole?: StoreRole;
 }
 

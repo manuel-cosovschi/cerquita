@@ -251,4 +251,21 @@ export class SocialService {
 
     return { following: true };
   }
+
+  /**
+   * Stops following a shop.
+   *
+   * The counterpart existed for people and not for shops, so following one was
+   * a one-way door: the storefront's button read "Siguiendo" and did nothing
+   * when pressed, because the only endpoint was an upsert that always answered
+   * "following: true".
+   *
+   * `deleteMany` rather than `delete` so unfollowing something you already do
+   * not follow is a no-op instead of a 404 — the caller wants a state, not a
+   * transaction.
+   */
+  async unfollowStore(userId: string, storeId: string): Promise<{ following: false }> {
+    await this.prisma.storeFollow.deleteMany({ where: { storeId, userId } });
+    return { following: false };
+  }
 }

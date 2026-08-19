@@ -11,6 +11,7 @@ import type { Order } from '@cerquita/types';
 import {
   buildOrderReference,
   computeOrderTotals,
+  discountPolicyFor,
   lockedPriceForOffer,
   priceMatchesQuote,
   resolvePrice,
@@ -94,10 +95,26 @@ export class CheckoutService {
         throw new BadRequestException({ message: 'El carrito está vacío', code: 'empty_cart' });
       }
 
-      const tier = await this.listings.resolveTier(cart.sellerId, buyerId);
+      const tier = await this.listings.resolveTier(cart.sellerId, buyerId, cart.storeId);
       const seller = await tx.user.findUniqueOrThrow({
         where: { id: cart.sellerId },
         select: { followerDiscountBps: true, friendDiscountBps: true },
+      });
+
+      // A shop's listing is priced by the shop, not by whoever owns it.
+      const store = cart.storeId
+        ? await tx.store.findUnique({
+            where: { id: cart.storeId },
+            select: { followerDiscountBps: true },
+          })
+        : null;
+
+      const sellerPolicy = discountPolicyFor({
+        seller: {
+          followerBasisPoints: seller.followerDiscountBps,
+          friendBasisPoints: seller.friendDiscountBps,
+        },
+        store: store ? { followerBasisPoints: store.followerDiscountBps } : null,
       });
 
       // A price locked by an accepted offer supersedes the social price.
@@ -138,10 +155,7 @@ export class CheckoutService {
         const resolution = resolvePrice({
           listPrice,
           tier,
-          sellerPolicy: {
-            followerBasisPoints: seller.followerDiscountBps,
-            friendBasisPoints: seller.friendDiscountBps,
-          },
+          sellerPolicy,
           listingOverride: {
             followerBasisPoints: listing.followerDiscountBps,
             friendBasisPoints: listing.friendDiscountBps,
