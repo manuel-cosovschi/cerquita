@@ -69,7 +69,7 @@ conservar, transformar ni borrar. Todo el contenido es nuevo.
 - Auth: registro, login, refresh con rotación, sesiones, argon2id.
 - Seed con datos ricos, incluida demanda real para que `/demand` tenga algo que
   mostrar sin que haya que inventar publicaciones a mano.
-- Tests unitarios: 200 al día de hoy, todos en verde.
+- Tests unitarios: 209 al día de hoy, todos en verde.
 
 ### Fase 2 — Reproducir el diseño ✅
 
@@ -208,7 +208,11 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
 - ✅ Constraints de integridad en la base.
 - ✅ Rate limiting con ventanas por usuario y por IP; las rutas de credenciales
   se limitan por `email + IP`, para que un NAT compartido no deje afuera a un
-  barrio entero.
+  barrio entero. Testeado, incluido el bypass: `x-forwarded-for` sólo se lee con
+  `TRUST_PROXY`, porque sin proxy ese header lo elige quien llama y un límite
+  cuya clave elige el atacante no es un límite. Las dos formas de equivocarse
+  acá son silenciosas —una parece que la app está caída para algunos, la otra no
+  parece nada—, que es justo por qué conviene fijarlas.
 - ✅ CI: instala, genera el cliente de Prisma, lint, formato, typecheck, tests,
   aplica las migraciones desde cero contra PostGIS, siembra, compila las tres
   apps que tienen build y corre la suite e2e contra todo eso.
