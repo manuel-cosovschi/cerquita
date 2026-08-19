@@ -185,13 +185,19 @@ El export llegó y está aplicado. Ver `docs/design-audit.md`.
   una versión y además hay `packageManager` en el `package.json`. Se sacó la
   versión del workflow; la del `package.json` es la que vale para todos.
 
-- ✅ Tests e2e (Playwright, 57) contra el stack real, sin mocks: precios
+- ✅ Tests e2e (Playwright, 63) contra el stack real, sin mocks: precios
   sociales resueltos en el servidor, ubicación exacta que nunca sale, checkout
   que rechaza un total manipulado, dos pujas simultáneas con un solo ganador,
-  y demanda local que reporta patrones sin nombrar personas.
-- ✅ Pasada de accesibilidad: cero violaciones WCAG 2.1 AA (axe) en las quince
-  pantallas de web y las cinco del admin, con el chequeo incorporado a la suite
-  e2e para que no vuelva en silencio.
+  y demanda local que reporta patrones sin nombrar personas. Tres proyectos:
+  `api` sin navegador, `web` en un Pixel 7 y `admin` en escritorio.
+- ✅ Pasada de accesibilidad: cero violaciones WCAG 2.1 AA (axe) en las trece
+  pantallas de web y las seis de la consola, con el chequeo incorporado a la
+  suite e2e para que no vuelva en silencio.
+
+  La consola necesita su propia pasada, no por completitud: el bug de contraste
+  que rompió doce pantallas de web salía de **un** token semántico, y todas las
+  pantallas del admin beben del mismo. Verificar sólo la tienda habría dado por
+  arreglado algo que, para esas seis pantallas, nadie había mirado.
 
 ---
 

@@ -109,9 +109,9 @@ jobs:
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
 
-      # Runs against the API and web builds produced above, on the database
-      # seeded above — the whole stack, no mocks. Playwright starts both
-      # servers itself (see playwright.config.ts).
+      # Runs against the API, web and admin builds produced above, on the
+      # database seeded above — the whole stack, no mocks. Playwright starts
+      # all three servers itself (see playwright.config.ts).
       - name: End-to-end tests
         run: pnpm e2e
         env:

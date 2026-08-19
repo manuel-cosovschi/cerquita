@@ -19,6 +19,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const WEB = process.env.E2E_WEB_URL ?? 'http://localhost:3000';
 const API = process.env.E2E_API_URL ?? 'http://localhost:4000';
+const ADMIN = process.env.E2E_ADMIN_URL ?? 'http://localhost:3001';
 
 export default defineConfig({
   testDir: './e2e',
@@ -74,6 +75,19 @@ export default defineConfig({
         timezoneId: 'America/Argentina/Buenos_Aires',
       },
     },
+    {
+      // The moderation console. A desktop viewport rather than the storefront's
+      // phone: this is a sidebar-and-tables layout used at a desk, and checking
+      // it at 412px would report overflow that nobody will ever meet.
+      name: 'admin',
+      testMatch: /.*\.admin\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: ADMIN,
+        locale: 'es-AR',
+        timezoneId: 'America/Argentina/Buenos_Aires',
+      },
+    },
   ],
 
   // Reuse whatever is already running locally; start it from scratch in CI.
@@ -89,6 +103,12 @@ export default defineConfig({
         {
           command: 'pnpm --filter @cerquita/web start',
           url: WEB,
+          reuseExistingServer: !process.env.CI,
+          timeout: 120_000,
+        },
+        {
+          command: 'pnpm --filter @cerquita/admin start',
+          url: ADMIN,
           reuseExistingServer: !process.env.CI,
           timeout: 120_000,
         },

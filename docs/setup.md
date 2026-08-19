@@ -27,7 +27,13 @@ pnpm db:migrate
 pnpm db:seed
 pnpm dev:api                        # http://localhost:4000/api
 pnpm dev:web                        # http://localhost:3000
+pnpm dev:admin                      # http://localhost:3001 — la consola
+pnpm dev:mobile                     # Expo
 ```
+
+A la consola se entra con `admin@cerquita.dev`; es la única cuenta del seed con
+rol de administrador. Cualquier otra ve "esta cuenta no tiene acceso", que es lo
+que tiene que pasar.
 
 ## Sin Docker
 
@@ -57,9 +63,13 @@ Para ver los precios sociales en acción, entrá con `santiago@cerquita.dev`
 ## Tests end-to-end
 
 ```bash
-pnpm e2e            # levanta api y web si no están corriendo
-pnpm e2e:ui         # el modo interactivo de Playwright
+pnpm e2e                          # levanta api, web y admin si no están corriendo
+pnpm e2e --project=api            # sólo las invariantes del servidor, sin navegador
+pnpm e2e:ui                       # el modo interactivo de Playwright
 ```
+
+Son tres proyectos: `api` corre sin navegador, `web` en un Pixel 7 y `admin` en
+escritorio. Si querés correr uno solo, pasale `--project=`.
 
 Corren contra el stack de verdad: Postgres con PostGIS, la API con sus guards y
 sus límites de rate, el build de Next. No hay mocks, porque lo que vale la pena
@@ -79,8 +89,8 @@ corrida— y se limpia resembrando. Si además comprás algo a mano mientras pro
 tené en cuenta que algún test lee el estado del seed y te lo va a decir cuando
 falle.
 
-Si ya tenés la API y la web levantadas y no querés que Playwright arranque las
-suyas, usá `E2E_NO_SERVER=1 pnpm e2e`.
+Si ya tenés la API, la web y el admin levantados y no querés que Playwright
+arranque los suyos, usá `E2E_NO_SERVER=1 pnpm e2e`.
 
 ## Problemas frecuentes
 
