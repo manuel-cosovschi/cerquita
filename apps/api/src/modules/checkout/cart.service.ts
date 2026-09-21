@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import type { Cart } from '@cerquita/types';
 import { discountPolicyFor, resolvePrice, toResolvedPriceDto } from '@cerquita/domain';
 import { add, money, zero, type Money } from '@cerquita/utils';
@@ -62,7 +67,16 @@ export class CartService {
 
     const available = listing.quantity - listing.reserved - listing.sold;
     if (available < input.quantity) {
-      throw new BadRequestException({
+      /*
+       * 409, like the reservation and the checkout raise for the same thing.
+       *
+       * This was a 400, which says the request was malformed — and a client is
+       * right to treat that as its own bug and stop. Running out of stock is a
+       * conflict with the world as it currently is: somebody else got there
+       * first, the same request may well work in a minute, and a client that
+       * retries a 409 is behaving correctly.
+       */
+      throw new ConflictException({
         message: 'No hay stock suficiente',
         code: 'insufficient_stock',
       });

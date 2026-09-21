@@ -141,7 +141,18 @@ porque falten. Dicho acá para que la tabla no prometa paridad.
 - ✅ Órdenes con snapshots inmutables.
 - ✅ `PaymentProvider` con mock + Mercado Pago.
 - ✅ Historial de precios.
-- ✅ Reservas con el mismo guard de stock que el checkout, barridas por el scheduler.
+- ✅ Reservas con el mismo guard de stock que el checkout, barridas por el
+  scheduler — testeado de afuera, porque la falla no es un error: sobrevender
+  _funciona_. Dos personas reciben confirmación por lo mismo y se enteran
+  cuando las dos aparecen. El test afirma el código de rechazo y no que "algo
+  falló": la primera versión pasaba con el guard borrado, porque el CHECK de la
+  base atajaba la sobreventa y un 500 también es "no ok". La constraint es la
+  última línea, no la primera.
+- ✅ Un mismo rechazo, un mismo código. El carrito devolvía 400 donde la reserva
+  y el checkout devuelven 409 para exactamente la misma condición. 400 le dice
+  al cliente que su request estaba mal armado, y es razonable que deje de
+  intentar; quedarse sin stock es un conflicto con el mundo tal como está ahora,
+  y reintentar un 409 es lo correcto.
 - ✅ Promociones: motor, ABM en `/store/manage` y baja lógica (una promoción
   terminada deja de aplicarse pero no se borra: las órdenes viejas la citan).
 - ✅ Descuento de tienda a sus seguidores, configurable desde `/store/manage`.
@@ -253,7 +264,7 @@ porque falten. Dicho acá para que la tabla no prometa paridad.
   una versión y además hay `packageManager` en el `package.json`. Se sacó la
   versión del workflow; la del `package.json` es la que vale para todos.
 
-- ✅ Tests e2e (Playwright, 99) contra el stack real, sin mocks: precios
+- ✅ Tests e2e (Playwright, 103) contra el stack real, sin mocks: precios
   sociales resueltos en el servidor, ubicación exacta que nunca sale, checkout
   que rechaza un total manipulado, dos pujas simultáneas con un solo ganador,
   un baneo que corta la sesión en el request siguiente, un bloqueo que tapa en
