@@ -1,0 +1,108 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: var(--border-width-hairline) solid var(--color-border);
+  background: var(--color-background);
+}
+
+.summary {
+  padding: var(--space-5);
+  border-bottom: var(--border-width-hairline) solid var(--color-border);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.hint {
+  margin: var(--space-3) 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-5);
+  display: grid;
+  gap: var(--space-4);
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.skeleton {
+  height: 128px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-sunken) 25%,
+    var(--color-border) 50%,
+    var(--color-surface-sunken) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s var(--easing-standard) infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.state {
+  padding: var(--space-8) var(--space-5);
+  text-align: center;
+}
+
+.stateTitle {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+.stateBody {
+  margin: 0 0 var(--space-6);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.stateActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  justify-content: center;
+}
+
+.primaryAction,
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-target-min);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-pill);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.primaryAction {
+  border: none;
+  background: var(--color-brand);
+  color: var(--color-text-on-brand);
+}
+
+.primaryAction:hover {
+  background: var(--color-brand-hover);
+}
+
+.secondaryAction {
+  border: var(--border-width-hairline) solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.secondaryAction:hover {
+  background: var(--color-surface-sunken);
+}

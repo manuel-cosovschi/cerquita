@@ -1,0 +1,262 @@
+/*
+ * Markers, direction 1a.
+ *
+ * The signature element: a photo thumbnail with the price bubble HANGING off its
+ * bottom edge, overlapping by 9px, and a caption underneath. The overlap is what
+ * makes the three parts read as one object rather than a stack.
+ *
+ * Relationship is encoded in the ring, not in the text: a teal ring means
+ * friend. That is why the ring is a token (`--ring-marker`) and not a border.
+ */
+
+.marker {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  padding: 0;
+  border: none;
+  background: none;
+  z-index: var(--z-map-marker);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition:
+    transform var(--duration-fast) var(--easing-standard),
+    filter var(--duration-fast) var(--easing-standard);
+}
+
+.marker:hover,
+.hovered {
+  z-index: var(--z-map-marker-active);
+  transform: translate(-50%, -100%) scale(1.06);
+}
+
+.selected {
+  z-index: var(--z-map-marker-active);
+  transform: translate(-50%, -100%) scale(1.12);
+}
+
+/* ── the photo ────────────────────────────────────────────────────────────── */
+
+.thumb {
+  width: var(--marker-thumb-size);
+  height: var(--marker-thumb-size);
+  border-radius: var(--marker-thumb-radius);
+  overflow: hidden;
+  /* White ring + lift. The ring is what separates it from the map tiles. */
+  box-shadow: var(--ring-marker), var(--shadow-marker);
+  background: var(--color-surface-sunken);
+  display: grid;
+  place-items: center;
+}
+
+.thumbImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Placeholder when a listing has no photo — the export uses diagonal stripes. */
+.thumbPlaceholder {
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-placeholder-from) 0 5px,
+    var(--color-placeholder-to) 5px 10px
+  );
+  display: grid;
+  place-items: center;
+  font-size: var(--font-size-3xs);
+  font-family: var(--font-family-numeric);
+  color: rgba(0, 0, 0, 0.45);
+  text-align: center;
+  padding: 2px;
+}
+
+/* Friend: teal ring instead of white. The relationship IS the ring. */
+.friend .thumb {
+  box-shadow:
+    0 0 0 3px var(--color-friend-ring),
+    var(--shadow-marker);
+}
+
+/* ── the price bubble, hanging ────────────────────────────────────────────── */
+
+.bubble {
+  margin-top: calc(var(--marker-bubble-overlap) * -1);
+  padding: 5px 10px;
+  border-radius: var(--marker-bubble-radius);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  box-shadow: var(--shadow-bubble);
+  /* Default: ink bubble, white text. */
+  background: var(--color-sale);
+  color: var(--color-text-inverse);
+}
+
+/* Friend price: teal bubble with dark text on it, per the export. */
+.friend .bubble {
+  background: var(--color-friend-ring);
+  color: var(--color-text-on-social, #04252b);
+}
+
+/* Auction: orange bubble carrying the countdown, dark text. */
+.auction .bubble {
+  background: var(--color-auction);
+  color: var(--color-text-on-accent);
+}
+
+/* ── the caption ──────────────────────────────────────────────────────────── */
+
+.caption {
+  margin-top: 4px;
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  /* Reads over map tiles without a background plate. */
+  text-shadow: 0 1px 3px var(--color-background);
+  white-space: nowrap;
+}
+
+.captionFriend {
+  color: var(--color-friend);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.captionAuction {
+  color: var(--color-auction-text);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+/* ── wanted: a pill, not a photo ──────────────────────────────────────────── */
+
+.wantedPill {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 7px 14px 7px 8px;
+  border-radius: 22px;
+  background: var(--color-surface);
+  box-shadow:
+    0 0 0 1.5px var(--color-friend-ring),
+    0 8px 18px -8px rgba(0, 0, 0, 0.3);
+}
+
+.wantedAvatar {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: var(--color-wanted-subtle);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-wanted);
+}
+
+.wantedLabel {
+  display: block;
+  font-size: var(--font-size-3xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-wider);
+  color: var(--color-wanted);
+}
+
+.wantedTitle {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+/* ── store ────────────────────────────────────────────────────────────────── */
+
+.storePill {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-store);
+  color: var(--color-text-inverse);
+  box-shadow: var(--ring-marker), var(--shadow-marker);
+  max-width: 168px;
+}
+
+.storeName {
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.storeCount {
+  font-size: var(--font-size-2xs);
+  opacity: 0.75;
+}
+
+.storePromo {
+  margin-top: 2px;
+  padding: 1px var(--space-3);
+  border-radius: var(--radius-xs);
+  background: var(--color-auction);
+  color: var(--color-text-on-accent);
+  font-size: var(--font-size-3xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+}
+
+/* ── clusters ─────────────────────────────────────────────────────────────── */
+
+.clusterMarker {
+  transform: translate(-50%, -50%);
+}
+.clusterMarker:hover,
+.clusterMarker.hovered {
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+.cluster {
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  background: var(--color-map-cluster);
+  color: var(--color-map-cluster-text);
+  font-family: var(--font-family-sans);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  /* Translucent ink halo rather than a hard border. */
+  box-shadow: var(--ring-cluster), var(--shadow-marker);
+}
+
+.cluster_sm {
+  width: var(--marker-cluster-size-sm);
+  height: var(--marker-cluster-size-sm);
+  font-size: var(--font-size-base);
+  box-shadow: var(--ring-cluster-sm), var(--shadow-marker);
+}
+
+.cluster_md {
+  width: var(--marker-cluster-size-md);
+  height: var(--marker-cluster-size-md);
+  font-size: var(--font-size-lg);
+}
+
+.cluster_lg {
+  width: var(--marker-cluster-size-lg);
+  height: var(--marker-cluster-size-lg);
+  font-size: var(--font-size-xl);
+}

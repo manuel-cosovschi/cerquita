@@ -1,0 +1,140 @@
+/*
+ * The console shell: a fixed sidebar and a scrolling work area.
+ *
+ * Sidebar rather than the storefront's dock, because this is a laptop tool and
+ * the work is moving between queues, not between modes.
+ */
+
+.shell {
+  display: grid;
+  grid-template-columns: 216px minmax(0, 1fr);
+  min-height: 100dvh;
+}
+
+@media (max-width: 800px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sidebar {
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  padding: var(--space-7) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+}
+
+@media (max-width: 800px) {
+  .sidebar {
+    position: static;
+    height: auto;
+  }
+}
+
+.wordmark {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.role {
+  margin: 2px 0 0;
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-wider);
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.navItem:hover {
+  background: var(--color-surface-sunken);
+}
+
+.navActive {
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
+  font-weight: var(--font-weight-semibold);
+}
+
+.navActive:hover {
+  background: var(--color-brand-hover);
+}
+
+/* Pending work is a number on the queue that has it, not a dot. */
+.count {
+  min-width: 20px;
+  padding: 0 5px;
+  border-radius: var(--radius-full);
+  background: var(--color-auction);
+  color: var(--color-text-on-accent);
+  font-size: var(--font-size-3xs);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.signOut {
+  border: none;
+  background: none;
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+}
+
+.main {
+  padding: var(--space-8) var(--space-9);
+  max-width: 1080px;
+}
+
+@media (max-width: 800px) {
+  .main {
+    padding: var(--space-6) var(--space-5);
+  }
+}
+
+.title {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.subtitle {
+  margin: 0 0 var(--space-8);
+  color: var(--color-text-secondary);
+}
+
+.state {
+  padding: var(--space-10) 0;
+  text-align: center;
+  color: var(--color-text-tertiary);
+}

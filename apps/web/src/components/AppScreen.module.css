@@ -1,0 +1,91 @@
+.screen {
+  position: relative;
+  min-height: 100dvh;
+  background: var(--color-background);
+  /* Room for the floating dock so content never hides behind it. */
+  padding-bottom: calc(var(--layout-dock-height) + var(--layout-dock-bottom) + var(--space-6));
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  padding: var(--space-6) var(--space-7) var(--space-5);
+  background: var(--color-background);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text-primary);
+}
+
+.subtitle {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+.body {
+  padding: 0 var(--space-7);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.empty {
+  padding: var(--space-12) var(--space-7);
+  text-align: center;
+}
+
+.emptyTitle {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.emptyBody {
+  margin: 0 0 var(--space-7);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-target-comfortable);
+  padding: 0 var(--space-8);
+  border: none;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+.primary {
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
+}
+
+.primary:hover {
+  background: var(--color-brand-hover);
+}
+
+.secondary {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--ring-hairline-strong);
+}

@@ -1,0 +1,157 @@
+.card {
+  border: var(--border-width-hairline) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  overflow: hidden;
+  transition:
+    border-color var(--duration-fast) var(--easing-standard),
+    box-shadow var(--duration-fast) var(--easing-standard),
+    transform var(--duration-fast) var(--easing-standard);
+}
+
+.card:hover,
+.hovered {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.selected {
+  border-color: var(--color-map-selected);
+  box-shadow: var(--shadow-md);
+}
+
+.link {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-surface-sunken);
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.imagePlaceholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-2xs);
+}
+
+.promoted,
+.auctionTag,
+.wantedTag {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Promoted content stays clearly identified rather than blending in (spec §54). */
+.promoted {
+  background: var(--color-surface-overlay);
+  color: var(--color-text-secondary);
+  border: var(--border-width-hairline) solid var(--color-border);
+}
+
+.auctionTag {
+  background: var(--color-auction);
+  color: var(--color-text-on-accent);
+}
+
+.wantedTag {
+  background: var(--color-wanted);
+  color: var(--color-text-inverse);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.budget {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-wanted);
+}
+
+.auctionRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  font-size: var(--font-size-xs);
+  color: var(--color-auction);
+  font-weight: var(--font-weight-semibold);
+}
+
+.auctionLabel {
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-regular);
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.seller {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.verified {
+  color: var(--color-brand);
+}
+
+.distance {
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+}
+
+.socialNote {
+  margin: 0;
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-friend);
+}

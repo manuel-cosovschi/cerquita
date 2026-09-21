@@ -2,4 +2,24 @@ node_modules/
 dist/
 build/
 .next/
+out/
+coverage/
+*.tsbuildinfo
+
 .env
+.env.local
+.env.*.local
+!.env.example
+
+.expo/
+.DS_Store
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Local object storage used by the `local` storage provider
+.storage/
+
+# Playwright: traces, screenshots and the HTML report from an e2e run
+e2e/.results/
+playwright-report/

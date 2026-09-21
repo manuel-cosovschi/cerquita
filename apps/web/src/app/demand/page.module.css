@@ -1,0 +1,179 @@
+/*
+ * "Qué se busca cerca tuyo".
+ *
+ * A seller's screen, read right before deciding what to list. So the ordering
+ * is by how unmet a category is, and the loudest thing on each row is the gap
+ * between what people ask for and what is actually on sale.
+ */
+
+.prompt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--ring-hairline);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.promptButton {
+  flex: none;
+  min-height: var(--touch-target-min);
+  padding: 0 var(--space-5);
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+}
+
+.summary {
+  margin: 0 0 var(--space-7);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-secondary);
+}
+
+.sectionTitle {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text-primary);
+}
+
+.section {
+  margin-bottom: var(--space-8);
+}
+
+/* ── categories ───────────────────────────────────────────────────────────── */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.row {
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--ring-hairline);
+}
+
+.rowHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.name {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+/* The verdict, in the colour of what it means. */
+.verdict {
+  flex: none;
+  padding: 1px var(--space-3);
+  border-radius: var(--radius-xs);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+}
+
+.verdictHot {
+  background: var(--color-auction-subtle);
+  color: var(--color-auction-text);
+}
+
+.verdictBalanced {
+  background: var(--color-surface-sunken);
+  color: var(--color-text-secondary);
+}
+
+.counts {
+  margin: var(--space-3) 0 0;
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+}
+
+/*
+ * A bar showing demand against supply. Two segments of one track rather than
+ * two bars, because the comparison is the whole point.
+ */
+.bar {
+  display: flex;
+  height: 8px;
+  margin-top: var(--space-3);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: var(--color-surface-sunken);
+}
+
+.barWanted {
+  background: var(--color-auction);
+}
+
+.barSupply {
+  background: var(--color-brand-subtle);
+}
+
+/* ── terms ────────────────────────────────────────────────────────────────── */
+
+.terms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.term {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target-min);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow: var(--ring-hairline);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.termCount {
+  font-size: var(--font-size-2xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-tertiary);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-top: var(--space-7);
+}
+
+.state {
+  padding: var(--space-9) 0;
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+}

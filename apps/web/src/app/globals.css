@@ -1,0 +1,112 @@
+/*
+ * Base stylesheet.
+ *
+ * Every value here reads a token (`var(--color-*)`, `var(--space-*)`). The token
+ * definitions themselves are injected by `layout.tsx` from the design-tokens
+ * package, so this file never needs to change when the visual design lands.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background: var(--color-background);
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * Prices and headline counts use the display face at weight 800, tracked in —
+ * that pairing is the design's main typographic device, so it gets a class
+ * rather than being re-specified per component.
+ */
+.display {
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--letter-spacing-tighter);
+}
+
+/* Countdowns use tabular figures so digits stop shifting width. */
+.numeric {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* Prices are display type AND tabular. */
+.price {
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-black);
+  letter-spacing: var(--letter-spacing-tight);
+  font-variant-numeric: tabular-nums;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Visible focus for keyboard users, suppressed for pointer input (spec §68). */
+:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Screen-reader-only text: available to assistive tech, invisible on screen. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip link, revealed on focus. */
+.skip-link {
+  position: absolute;
+  left: var(--space-5);
+  top: -100px;
+  z-index: var(--z-toast);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface);
+  border: var(--border-width-hairline) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  transition: top var(--duration-fast) var(--easing-standard);
+}
+
+.skip-link:focus {
+  top: var(--space-5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
