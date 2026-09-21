@@ -1,6 +1,6 @@
 # Plan de implementación
 
-Última actualización: 2026-08-19.
+Última actualización: 2026-09-21.
 
 Leyenda: ✅ hecho y verificado · 🟡 parcial · ⬜ pendiente
 
