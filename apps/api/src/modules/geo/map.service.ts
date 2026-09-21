@@ -274,6 +274,20 @@ export class MapService {
   private listingFilters(input: MapQueryInput, context: MapQueryContext): Prisma.Sql {
     const clauses: Prisma.Sql[] = [];
 
+    /*
+     * A shop's products are not pins of their own wherever the shop is on the
+     * map (spec §49).
+     *
+     * The single store marker existed and carried its product count, but the
+     * products kept their individual pins beside it — so a shop with five
+     * hundred things produced five hundred and one markers, which is the exact
+     * outcome the rule is written to prevent. The shop was one marker *and*
+     * five hundred, and only the first half was ever checked.
+     */
+    if (this.shouldIncludeStores(input)) {
+      clauses.push(Prisma.sql`AND l."storeId" IS NULL`);
+    }
+
     switch (input.layer) {
       case 'sales':
         clauses.push(Prisma.sql`AND l."kind" = 'sale'`);
@@ -285,7 +299,9 @@ export class MapService {
         clauses.push(Prisma.sql`AND l."kind" = 'auction'`);
         break;
       case 'stores':
-        clauses.push(Prisma.sql`AND l."storeId" IS NOT NULL`);
+        // Nothing but the shops themselves. Their products are reachable by
+        // tapping one, which is the entire point of the single marker.
+        clauses.push(Prisma.sql`AND FALSE`);
         break;
       case 'friends':
         clauses.push(this.friendOnlyClause(context));

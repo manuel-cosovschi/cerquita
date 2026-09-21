@@ -167,7 +167,12 @@ porque falten. Dicho acá para que la tabla no prometa paridad.
 
 - ✅ Modelo completo: miembros, roles, horarios, ubicación física, seguidores.
 - ✅ Marker único de tienda en el mapa (§49) — una tienda con 500 productos no
-  tapa el mapa.
+  tapa el mapa. Estaba a medias y el contador lo disimulaba: la tienda sí salía
+  como un marcador con su cuenta de productos, pero sus productos seguían
+  además como pines sueltos al lado, así que eran 501 marcadores. Ahora, donde
+  está la tienda no están sus cosas; y en una capa donde la tienda no aparece
+  —"en venta", por ejemplo— sus productos sí, porque si no desaparecerían del
+  mapa sin que nada los represente.
 - ✅ ABM de tienda, miembros con roles jerárquicos y horarios.
 - ✅ Catálogo: producto / opciones / variantes / inventario, con validación de
   combinaciones y guarda de stock comprometido.
@@ -248,7 +253,7 @@ porque falten. Dicho acá para que la tabla no prometa paridad.
   una versión y además hay `packageManager` en el `package.json`. Se sacó la
   versión del workflow; la del `package.json` es la que vale para todos.
 
-- ✅ Tests e2e (Playwright, 95) contra el stack real, sin mocks: precios
+- ✅ Tests e2e (Playwright, 99) contra el stack real, sin mocks: precios
   sociales resueltos en el servidor, ubicación exacta que nunca sale, checkout
   que rechaza un total manipulado, dos pujas simultáneas con un solo ganador,
   un baneo que corta la sesión en el request siguiente, un bloqueo que tapa en
