@@ -130,7 +130,13 @@ porque falten. Dicho acá para que la tabla no prometa paridad.
 
 ### Fase 5 — Comercio ✅ (núcleo)
 
-- ✅ Carrito separado por vendedor (§40).
+- ✅ Carrito separado por vendedor (§40) — testeado en las dos direcciones. No
+  es una decisión de presentación: un pago liquida a un solo destinatario, así
+  que una canasta con cosas de dos personas no se puede pagar, y si la partición
+  se rompiera la falla llegaría en el peor momento —en el checkout, con la
+  tarjeta ya puesta. Un carrito por _ítem_ pasaría la primera mitad del test y
+  estaría igual de mal, así que también se prueba que dos cosas del mismo
+  vendedor comparten uno.
 - ✅ Checkout que **recalcula todo** y rechaza totales manipulados.
 - ✅ Órdenes con snapshots inmutables.
 - ✅ `PaymentProvider` con mock + Mercado Pago.
@@ -180,6 +186,12 @@ porque falten. Dicho acá para que la tabla no prometa paridad.
   en `/demand`, enlazado desde el chooser de publicar. **Sólo agregados** — la
   pantalla nombra categorías y palabras repetidas, nunca a quién las pidió, y
   una categoría con un solo pedido no se reporta (sería señalar a esa persona).
+  El umbral por palabra estaba testeado; el de categoría vive en el SQL crudo,
+  donde ningún test unitario llega, y no lo miraba nada. Ahora el test crea la
+  condición: una categoría que nadie pide, un pedido —invisible—, un segundo
+  pedido de otra persona —aparece—, y retirar uno la devuelve bajo el umbral,
+  porque la protección tiene que seguir valiendo cuando las cosas cambian y no
+  sólo al publicar.
 
 ### Fase 9 — Admin ✅
 
@@ -236,7 +248,7 @@ porque falten. Dicho acá para que la tabla no prometa paridad.
   una versión y además hay `packageManager` en el `package.json`. Se sacó la
   versión del workflow; la del `package.json` es la que vale para todos.
 
-- ✅ Tests e2e (Playwright, 88) contra el stack real, sin mocks: precios
+- ✅ Tests e2e (Playwright, 95) contra el stack real, sin mocks: precios
   sociales resueltos en el servidor, ubicación exacta que nunca sale, checkout
   que rechaza un total manipulado, dos pujas simultáneas con un solo ganador,
   un baneo que corta la sesión en el request siguiente, un bloqueo que tapa en
