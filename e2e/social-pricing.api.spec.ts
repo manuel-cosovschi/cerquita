@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { AS, SELLER_LISTING, findListing, getListing, login } from './helpers';
 
 /**

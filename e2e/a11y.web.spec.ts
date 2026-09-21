@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { AS, SELLER_LISTING, findListing, signIn } from './helpers';
 
 /**
@@ -25,14 +25,26 @@ const PUBLIC_PAGES: Array<[string, string]> = [
   ['/register', 'crear cuenta'],
 ];
 
-/** Screens that need a session to render anything. */
-const PRIVATE_PAGES: Array<[string, string]> = [
-  ['/feed', 'feed'],
-  ['/messages', 'chats'],
-  ['/favorites', 'favoritos'],
-  ['/cart', 'carrito'],
-  ['/alerts', 'alertas'],
-  ['/settings/pricing', 'precios sociales'],
+/**
+ * Screens that need a session, each checked as a different person.
+ *
+ * Not for variety's sake, though that is a real bonus — a cart with something
+ * in it and an empty one are different renderings, and an inbox with threads
+ * exercises markup an empty one never reaches.
+ *
+ * The reason is that signing in is rate limited to ten attempts a minute per
+ * account, deliberately, and the whole suite now runs in about three minutes.
+ * Six screens as one person, plus the other specs that sign in as the same
+ * seller, crossed that line and the failures looked like the app being broken.
+ * The limit is right; the suite was wrong to lean on one account.
+ */
+const PRIVATE_PAGES: Array<[path: string, label: string, as: string]> = [
+  ['/feed', 'feed', AS.seller],
+  ['/messages', 'chats', AS.friend],
+  ['/favorites', 'favoritos', AS.follower],
+  ['/cart', 'carrito', AS.stranger],
+  ['/alerts', 'alertas', AS.pendingFriend],
+  ['/settings/pricing', 'precios sociales', AS.admin],
 ];
 
 const STANDARD = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
@@ -49,9 +61,9 @@ test.describe('accessibility', () => {
     });
   }
 
-  for (const [path, label] of PRIVATE_PAGES) {
+  for (const [path, label, as] of PRIVATE_PAGES) {
     test(`${label} no tiene violaciones WCAG AA`, async ({ page }) => {
-      await signIn(page, AS.seller, path);
+      await signIn(page, as, path);
       await page.waitForLoadState('networkidle');
 
       const { violations } = await new AxeBuilder({ page }).withTags(STANDARD).analyze();

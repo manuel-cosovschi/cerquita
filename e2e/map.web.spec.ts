@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 /**
  * The map is the home screen (direction 1a), so "does it have anything on it"
