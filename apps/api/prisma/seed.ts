@@ -54,6 +54,7 @@ async function main(): Promise<void> {
   await seedOffers(users, listings);
   await seedConversations(users, listings);
   await seedSavedSearches(users, categories);
+  await seedHistory(users);
 
   console.log('\nSeed complete.');
   console.log(`  Users:    ${Object.keys(users).length}`);
@@ -876,6 +877,118 @@ async function seedSavedSearches(
     CENTER.lat,
     saved.id,
   );
+}
+
+/**
+ * Past sales, and the reputation they left behind.
+ *
+ * Without this the seed shows a marketplace where nobody has ever bought
+ * anything: every profile reads "0 ventas" and "0 reseñas", the stars never
+ * render, and three features that exist — reputation, sales history, reviews —
+ * are invisible to anybody running the app locally. A test even claimed Manuel
+ * had one review, which he did not.
+ *
+ * The items are snapshots with no `listingId`, which is what history actually
+ * looks like: things sold a while ago and no longer on the map. That also keeps
+ * the seed from consuming the stock of an active listing, which would quietly
+ * change what the map and the pricing tests see.
+ *
+ * Exactly one review for Manuel, on purpose: singular is the state every seller
+ * passes through before they reach two, and it is where the agreement bugs
+ * live.
+ */
+async function seedHistory(users: Record<string, SeedUser>): Promise<void> {
+  const manuel = users['manuel'];
+  const fran = users['fran'];
+  const lucia = users['lucia'];
+  const santiago = users['santiago'];
+  if (!manuel || !fran || !lucia || !santiago) return;
+
+  const existing = await prisma.order.findFirst({ where: { reference: 'CQ-SEED-0001' } });
+  if (existing) return;
+
+  const sales = [
+    {
+      reference: 'CQ-SEED-0001',
+      seller: manuel,
+      buyer: lucia,
+      title: 'Monitor 24" Full HD',
+      amount: ars(180_000),
+      status: 'completed' as const,
+      daysAgo: 21,
+      review: { rating: 5, body: 'Todo perfecto. Me lo dejó probado antes de llevármelo.' },
+    },
+    {
+      reference: 'CQ-SEED-0002',
+      seller: fran,
+      buyer: santiago,
+      title: 'Teclado mecánico retroiluminado',
+      amount: ars(95_000),
+      status: 'delivered' as const,
+      daysAgo: 9,
+      review: { rating: 4, body: 'Muy bien, tardó un poco en responder pero llegó impecable.' },
+    },
+  ];
+
+  const config = await prisma.globalConfig.findUnique({ where: { id: 1 } });
+  const feeBps = config?.platformFeeBasisPoints ?? 500;
+
+  for (const sale of sales) {
+    const at = new Date(Date.now() - sale.daysAgo * 24 * 3600 * 1000);
+    const platformFee = Math.round((sale.amount * feeBps) / 10_000);
+
+    const order = await prisma.order.create({
+      data: {
+        reference: sale.reference,
+        status: sale.status,
+        buyerId: sale.buyer.id,
+        sellerId: sale.seller.id,
+        subtotal: sale.amount,
+        total: sale.amount,
+        platformFee,
+        deliveryMethod: 'pickup',
+        createdAt: at,
+        paidAt: at,
+        completedAt: at,
+        items: {
+          create: {
+            // No `listingId`: this is something sold and long gone from the
+            // map. The snapshot is what an order is meant to keep anyway.
+            titleSnapshot: sale.title,
+            unitPriceSnapshot: sale.amount,
+            quantity: 1,
+            lineTotal: sale.amount,
+          },
+        },
+      },
+    });
+
+    await prisma.review.create({
+      data: {
+        orderId: order.id,
+        authorId: sale.buyer.id,
+        subjectId: sale.seller.id,
+        rating: sale.review.rating,
+        body: sale.review.body,
+        createdAt: at,
+      },
+    });
+
+    // Reputation and the sales counter move with the review and the sale, the
+    // same way the running app moves them.
+    await prisma.user.update({
+      where: { id: sale.seller.id },
+      data: {
+        ratingSum: { increment: sale.review.rating },
+        reviewCount: { increment: 1 },
+        salesCount: { increment: 1 },
+      },
+    });
+    await prisma.user.update({
+      where: { id: sale.buyer.id },
+      data: { purchasesCount: { increment: 1 } },
+    });
+  }
 }
 
 main()

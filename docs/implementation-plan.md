@@ -68,7 +68,10 @@ conservar, transformar ni borrar. Todo el contenido es nuevo.
   full-text en español y constraints de integridad.
 - Auth: registro, login, refresh con rotación, sesiones, argon2id.
 - Seed con datos ricos, incluida demanda real para que `/demand` tenga algo que
-  mostrar sin que haya que inventar publicaciones a mano.
+  mostrar sin que haya que inventar publicaciones a mano, y dos ventas pasadas
+  con sus reseñas: sin eso el seed mostraba un marketplace donde nadie compró
+  nunca nada, con "0 ventas" y "0 reseñas" en cada perfil y las estrellas sin
+  renderizar.
 - Tests unitarios: 224 al día de hoy, todos en verde.
 
 ### Fase 2 — Reproducir el diseño ✅
@@ -212,7 +215,11 @@ porque falten. Dicho acá para que la tabla no prometa paridad.
   publica tal cual, mientras que el mismo fallback convierte un objeto en el
   inofensivo `[object Object]`.
 - ✅ `/health` y `/ready`, request id correlacionado.
-- ✅ Constraints de integridad en la base.
+- ✅ Constraints de integridad en la base — diez CHECK, testeados contra
+  Postgres directamente, con INSERTs y UPDATEs crudos que saltean toda la
+  aplicación. Probarlos por la API sólo demostraría que la API está bien, que es
+  justo lo que se está poniendo en duda: un CHECK existe para el día que la capa
+  de arriba se equivoca. Son baratos de escribir y silenciosos de perder.
 - ✅ Rate limiting con ventanas por usuario y por IP; las rutas de credenciales
   se limitan por `email + IP`, para que un NAT compartido no deje afuera a un
   barrio entero. Testeado, incluido el bypass: `x-forwarded-for` sólo se lee con
@@ -229,7 +236,7 @@ porque falten. Dicho acá para que la tabla no prometa paridad.
   una versión y además hay `packageManager` en el `package.json`. Se sacó la
   versión del workflow; la del `package.json` es la que vale para todos.
 
-- ✅ Tests e2e (Playwright, 78) contra el stack real, sin mocks: precios
+- ✅ Tests e2e (Playwright, 88) contra el stack real, sin mocks: precios
   sociales resueltos en el servidor, ubicación exacta que nunca sale, checkout
   que rechaza un total manipulado, dos pujas simultáneas con un solo ganador,
   un baneo que corta la sesión en el request siguiente, un bloqueo que tapa en

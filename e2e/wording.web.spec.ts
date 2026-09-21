@@ -69,9 +69,21 @@ function disagreements(raw: string): string[] {
 
 test.describe('counts agree with the nouns beside them', () => {
   test("a seller's profile", async ({ page }) => {
-    // Manuel has exactly one review in the seed, which is the case that broke.
+    /*
+     * Manuel has exactly one review, which is the case that broke.
+     *
+     * The comment used to say that and it was not true: the seed created no
+     * orders and no reviews at all, so his profile read "0 RESEÑAS" and this
+     * test never once exercised the singular it was written for. The seed now
+     * carries two past sales and the reviews they left, so the case exists.
+     */
     await page.goto('/user/manuel');
     await expect(page.getByRole('heading', { name: 'Manuel' }).first()).toBeVisible();
+
+    // Asserted, not assumed: if the seed ever stops producing the singular,
+    // this should say so rather than go quietly back to testing nothing.
+    await expect(page.getByText(/^1$/).first()).toBeVisible();
+    expect(await page.innerText('body')).toMatch(/1\s+RESEÑA\b/i);
 
     expect(disagreements(await page.innerText('body'))).toEqual([]);
   });
